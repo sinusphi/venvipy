@@ -88,9 +88,12 @@ class SetDefaultDirectory(QDialog):
 
     def okButton_clicked(self):
         """
-        Set the selected directory.
+        Store the absolute path to the selected dir as `str` in `def/default`.
         """
-        print(self.defaultDirLineEdit.text())
+        with open("def/default", 'w') as default:
+            default.write(self.defaultDirLineEdit.text())
+            default.close()
+
         self.close()
 
 
