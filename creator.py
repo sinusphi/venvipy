@@ -29,16 +29,16 @@ notFound = []
 versFound = []
 pathFound = []
 
-for i, v in enumerate(versions):
+for i, vers in enumerate(versions):
     try:
         # get python versions
         getVers = Popen(
-            ["python" + v, "-V"], stdout=PIPE, universal_newlines=True
+            ["python" + vers, "-V"], stdout=PIPE, universal_newlines=True
         )
 
         # get paths to the python executables
         getPath = Popen(
-            ["which", "python" + v], stdout=PIPE, universal_newlines=True
+            ["which", "python" + vers], stdout=PIPE, universal_newlines=True
         )
 
         version = getVers.communicate()[0].strip()
