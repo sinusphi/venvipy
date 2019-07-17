@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """The main menu of VenviPy."""
 from subprocess import Popen, PIPE
+import os
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import (Qt, QRect, QSize, QMetaObject, pyqtSignal, pyqtSlot,
@@ -219,7 +220,6 @@ class Ui_MainWindow(QMainWindow):
             self.modelTV1.setItem(0, 0, QStandardItem(creator.versFound[i]))
             self.modelTV1.setItem(0, 1, QStandardItem(creator.pathFound[i]))
 
-
         #]===================================================================[#
 
         # spacer between interpreter table and venv table title
@@ -228,7 +228,6 @@ class Ui_MainWindow(QMainWindow):
         )
 
         #]===================================================================[#
-
 
         # venv table header
         self.venvTableLabel = QLabel(
@@ -257,15 +256,41 @@ class Ui_MainWindow(QMainWindow):
         self.modelTV2 = QStandardItemModel(centralwidget)
         self.modelTV2.setColumnCount(3)
         self.modelTV2.setHorizontalHeaderLabels(
-            ["Venv Name", "Path", "Version"]
+            ["Venv Name", "Version", "Path"]
         )
         venvTable.setModel(self.modelTV2)
 
+        # get the path (str) to the default dir from file
+        with open("def/default", 'r') as default:
+            defDir = default.read()
+            default.close()
 
-        #]===================================================================[#
-        # TODO: get the data of existing virtual environments from the default
-        #       venv directory and display the content in the lower table view
-        #]===================================================================[#
+        # get all folders inside the selected default dir
+        subDirs = os.listdir(defDir)
+
+        # loop over the subdirs of the selected default dir
+        for i, _dir in enumerate(subDirs):
+            # if there's a 'bin' folder inside the subdir, and it contains a
+            # file named 'python', then try to get the version
+            if ("bin" in os.listdir('/'.join([defDir, _dir]))
+            and "python" in os.listdir('/'.join([defDir, _dir, "bin"]))):
+
+                try:
+                    getVers = Popen(
+                        ['/'.join([defDir, _dir, "bin", "python"]), "-V"],
+                        stdout=PIPE, universal_newlines=True
+                    )
+                    version = getVers.communicate()[0].strip()
+
+                except Exception as err:
+                    print(err)
+                    continue
+
+                # fill the cells
+                self.modelTV2.insertRow(0)
+                self.modelTV2.setItem(0, 0, QStandardItem(_dir))
+                self.modelTV2.setItem(0, 1, QStandardItem(version))
+                self.modelTV2.setItem(0, 2, QStandardItem(defDir))
 
 
         # add widgets to layout
