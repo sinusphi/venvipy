@@ -83,7 +83,7 @@ for i, _dir in enumerate(subDirs):
 
 if __name__ == "__main__":
 
-    for i in range(len(subDirs)):
-        print(venvDirs)
-        print(venvVers)
+    for i in range(len(venvDirs)):
+        print(venvDirs[i])
+        print(venvVers[i])
         print(defDir)
