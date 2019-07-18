@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
                              QComboBox, QToolButton, QDialog)
 
 import venvipy_rc
+import organize
 import settings
 import creator
 import info
@@ -215,10 +216,10 @@ class Ui_MainWindow(QMainWindow):
         interprTable.setModel(self.modelTV1)
 
         # fill the cells
-        for i in range(len(creator.versFound)):
+        for i in range(len(organize.versFound)):
             self.modelTV1.insertRow(0)
-            self.modelTV1.setItem(0, 0, QStandardItem(creator.versFound[i]))
-            self.modelTV1.setItem(0, 1, QStandardItem(creator.pathFound[i]))
+            self.modelTV1.setItem(0, 0, QStandardItem(organize.versFound[i]))
+            self.modelTV1.setItem(0, 1, QStandardItem(organize.pathFound[i]))
 
         #]===================================================================[#
 
@@ -260,38 +261,12 @@ class Ui_MainWindow(QMainWindow):
         )
         venvTable.setModel(self.modelTV2)
 
-        # get the path (str) to the default dir from file
-        with open("def/default", 'r') as default:
-            defDir = default.read()
-            default.close()
-
-        # get all folders inside the selected default dir
-        subDirs = os.listdir(defDir)
-
-        # loop over the subdirs of the selected default dir
-        for i, _dir in enumerate(subDirs):
-            # if there's a 'bin' folder inside the subdir, and it contains a
-            # file named 'python', then try to get the version
-            if ("bin" in os.listdir('/'.join([defDir, _dir]))
-            and "python" in os.listdir('/'.join([defDir, _dir, "bin"]))):
-
-                try:
-                    getVers = Popen(
-                        ['/'.join([defDir, _dir, "bin", "python"]), "-V"],
-                        stdout=PIPE, universal_newlines=True
-                    )
-                    version = getVers.communicate()[0].strip()
-
-                except Exception as err:
-                    print(err)
-                    continue
-
-                # fill the cells
-                self.modelTV2.insertRow(0)
-                self.modelTV2.setItem(0, 0, QStandardItem(_dir))
-                self.modelTV2.setItem(0, 1, QStandardItem(version))
-                self.modelTV2.setItem(0, 2, QStandardItem(defDir))
-
+        # fill the cells
+        for i in range(len(organize.venvDirs)):
+            self.modelTV2.insertRow(0)
+            self.modelTV2.setItem(0, 0, QStandardItem(organize.venvDirs[i]))
+            self.modelTV2.setItem(0, 1, QStandardItem(organize.venvVers[i]))
+            self.modelTV2.setItem(0, 2, QStandardItem(organize.defDir))
 
         # add widgets to layout
         v_Layout1.addWidget(self.interprTableLabel)
@@ -396,7 +371,7 @@ class Ui_MainWindow(QMainWindow):
 
         # if the notFound list is full (none of the versions is found), then
         #  there's no Python install in the common paths -> display message
-        if len(creator.notFound) == 8:
+        if len(organize.notFound) == 8:
             print("WARNING: No Python 3 installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
