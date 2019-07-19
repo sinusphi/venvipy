@@ -4,8 +4,7 @@ from subprocess import Popen, PIPE
 import os
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import (Qt, QRect, QSize, QMetaObject, pyqtSignal, pyqtSlot,
-                          QObject, QTimer, QThread)
+from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (QIcon, QFont, QPixmap, QStandardItemModel,
                          QStandardItem)
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
@@ -261,12 +260,14 @@ class Ui_MainWindow(QMainWindow):
         )
         venvTable.setModel(self.modelTV2)
 
+        '''
         # fill the cells
         for i in range(len(organize.venvDirs)):
             self.modelTV2.insertRow(0)
             self.modelTV2.setItem(0, 0, QStandardItem(organize.venvDirs[i]))
             self.modelTV2.setItem(0, 1, QStandardItem(organize.venvVers[i]))
-            self.modelTV2.setItem(0, 2, QStandardItem(organize.defDir))
+            self.modelTV2.setItem(0, 2, QStandardItem(organize.venvPath[i]))
+        '''
 
         # add widgets to layout
         v_Layout1.addWidget(self.interprTableLabel)
@@ -417,6 +418,21 @@ class Ui_MainWindow(QMainWindow):
 
 
     #]=======================================================================[#
+    #] POPULATE THE VENV TABLE VIEW [#=======================================[#
+    #]=======================================================================[#
+
+    def popVenvTable(self):
+        """
+        Populate the venv table view.
+        """
+        for i in range(len(organize.venvDirs)):
+            self.modelTV2.insertRow(0)
+            self.modelTV2.setItem(0, 0, QStandardItem(organize.venvDirs[i]))
+            self.modelTV2.setItem(0, 1, QStandardItem(organize.venvVers[i]))
+            self.modelTV2.setItem(0, 2, QStandardItem(organize.venvPath[i]))
+
+
+    #]=======================================================================[#
     #] OPEN WIDGETS / WINDOWS [#=============================================[#
     #]=======================================================================[#
 
@@ -457,6 +473,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     mainUI = Ui_MainWindow()
+
+    mainUI.popVenvTable()
     mainUI.show()
 
     sys.exit(app.exec_())
