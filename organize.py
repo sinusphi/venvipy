@@ -73,7 +73,11 @@ for i, _dir in enumerate(subDirs):
             venvVersion = getVers.communicate()[0].strip()
 
         except Exception as err:
-            print(err)
+            print(
+                err.args[1]+':',
+                "[list index:", str(i)+']',
+                '/'.join([defDir, _dir, "bin"])
+            )
             continue
 
         venvDirs.append(_dir)
