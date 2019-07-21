@@ -92,7 +92,7 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         self.wizard = creator.VenvWizard()
-        self.setDefaultDir = settings.SetDefaultDirectory()
+        self.selectDefaultDir = settings.SelectDefaultDir()
         self.appInfo = info.AppInfo()
 
 
@@ -187,7 +187,7 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # interpreter table header
-        self.interprTableLabel = QLabel(
+        interprTableLabel = QLabel(
             "<b>Available Interpreters</b>", centralwidget
         )
 
@@ -230,21 +230,22 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # venv table header
-        self.venvTableLabel = QLabel(
+        venvTableLabel = QLabel(
             "<b>Available virtual environments</b>", centralwidget
         )
 
         # venv table
-        venvTable = QTableView(centralwidget)
-        venvTable.verticalHeader().setVisible(False)
-        venvTable.setSelectionBehavior(QAbstractItemView.SelectRows)
-        venvTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        venvTable.setAlternatingRowColors(True)
+        venvTable = QTableView(
+            centralwidget,
+            selectionBehavior=QAbstractItemView.SelectRows,
+            editTriggers=QAbstractItemView.NoEditTriggers,
+            alternatingRowColors=True
+        )
 
         # adjust vertical headers
         v_HeaderTV2 = venvTable.verticalHeader()
-        v_HeaderTV2.setVisible(False)
         v_HeaderTV2.setDefaultSectionSize(27.5)
+        v_HeaderTV2.hide()
 
         # adjust (horizontal) headers
         h_HeaderTV2 = venvTable.horizontalHeader()
@@ -253,27 +254,17 @@ class Ui_MainWindow(QMainWindow):
         h_HeaderTV2.setStretchLastSection(True)
 
         # set table view model
-        self.modelTV2 = QStandardItemModel(centralwidget)
-        self.modelTV2.setColumnCount(3)
+        self.modelTV2 = QStandardItemModel(0, 3, centralwidget)
         self.modelTV2.setHorizontalHeaderLabels(
             ["Venv Name", "Version", "Path"]
         )
         venvTable.setModel(self.modelTV2)
 
-        '''
-        # fill the cells
-        for i in range(len(organize.venvDirs)):
-            self.modelTV2.insertRow(0)
-            self.modelTV2.setItem(0, 0, QStandardItem(organize.venvDirs[i]))
-            self.modelTV2.setItem(0, 1, QStandardItem(organize.venvVers[i]))
-            self.modelTV2.setItem(0, 2, QStandardItem(organize.venvPath[i]))
-        '''
-
         # add widgets to layout
-        v_Layout1.addWidget(self.interprTableLabel)
+        v_Layout1.addWidget(interprTableLabel)
         v_Layout1.addWidget(interprTable)
         v_Layout1.addItem(spacerItem2)
-        v_Layout1.addWidget(self.venvTableLabel)
+        v_Layout1.addWidget(venvTableLabel)
         v_Layout1.addWidget(venvTable)
 
         gridLayout.addLayout(v_Layout1, 0, 0, 1, 1)
@@ -320,10 +311,10 @@ class Ui_MainWindow(QMainWindow):
             shortcut="Ctrl+M", triggered=self.openManager
         )
 
-        self.actSetDefaultDir = QAction(
+        self.actSelectDefaultDir = QAction(
             settings_icon, "Set &default venv directory", self,
             statusTip="Set default venv directory",
-            shortcut="Ctrl+D", triggered=self.openSetDefaultDir
+            shortcut="Ctrl+D", triggered=self.openSelectDefaultDir
         )
 
         self.actExit = QAction(
@@ -343,7 +334,7 @@ class Ui_MainWindow(QMainWindow):
         self.menuVenv.addSeparator()
         self.menuVenv.addAction(self.actNewVenv)
         self.menuVenv.addAction(self.actManageVenvs)
-        self.menuVenv.addAction(self.actSetDefaultDir)
+        self.menuVenv.addAction(self.actSelectDefaultDir)
         self.menuVenv.addSeparator()
         self.menuVenv.addAction(self.actExit)
         self.menuHelp.addAction(self.actAbout)
@@ -425,11 +416,18 @@ class Ui_MainWindow(QMainWindow):
         """
         Populate the venv table view.
         """
-        for i in range(len(organize.venvDirs)):
+        self.modelTV2.setRowCount(0)
+        for info in organize.get_venvs_default():
             self.modelTV2.insertRow(0)
-            self.modelTV2.setItem(0, 0, QStandardItem(organize.venvDirs[i]))
-            self.modelTV2.setItem(0, 1, QStandardItem(organize.venvVers[i]))
-            self.modelTV2.setItem(0, 2, QStandardItem(organize.venvPath[i]))
+
+            for i, text in enumerate((info.name, info.version, info.directory)):
+                self.modelTV2.setItem(0, i, QStandardItem(text))
+
+            print(info)
+
+
+
+
 
 
     #]=======================================================================[#
@@ -450,11 +448,12 @@ class Ui_MainWindow(QMainWindow):
         self.appInfo.exec_()
 
 
-    def openSetDefaultDir(self):
+    def openSelectDefaultDir(self):
         """
-        Open the set-default-directory window.
+        Open the select-default-directory window.
         """
-        self.setDefaultDir.exec_()
+        if self.selectDefaultDir.exec_() == QDialog.Accepted:
+            self.popVenvTable()
 
 
     def openManager(self):
@@ -466,14 +465,12 @@ class Ui_MainWindow(QMainWindow):
 
 
 
-
 if __name__ == "__main__":
     import sys
 
     app = QApplication(sys.argv)
 
     mainUI = Ui_MainWindow()
-
     mainUI.popVenvTable()
     mainUI.show()
 
