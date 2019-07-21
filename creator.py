@@ -115,9 +115,9 @@ class BasicSettings(QWizardPage):
 
         # add items from versFound to combobox
         self.interprComboBox.addItem("---")
-        for i in range(len(organize.versFound)):
+        for i in range(len(organize.vers_found)):
             self.interprComboBox.addItem(
-                organize.versFound[i], organize.pathFound[i]
+                organize.vers_found[i], organize.paths_found[i]
             )
 
         venvNameLabel = QLabel("Venv &name:")
