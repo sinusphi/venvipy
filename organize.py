@@ -22,17 +22,22 @@ def get_python_installs():
     for i, vers in enumerate(versions):
         try:
             # get python versions
-            getVers = Popen(
-                ["python" + vers, "-V"], stdout=PIPE, universal_newlines=True
+            res1 = Popen(
+                ["python" + vers, "-V"],
+                stdout=PIPE,
+                universal_newlines=True
             )
+            out1, _ = res1.communicate()
+            version = out1.strip()
 
             # get paths to the python executables
-            getPath = Popen(
-                ["which", "python" + vers], stdout=PIPE, universal_newlines=True
+            res2 = Popen(
+                ["which", "python" + vers],
+                stdout=PIPE,
+                universal_newlines=True
             )
-
-            version = getVers.communicate()[0].strip()
-            path = getPath.communicate()[0].strip()
+            out2, _ = res2.communicate()
+            path = out2.strip()
 
             versFound.append(version)
             pathFound.append(path)
@@ -73,9 +78,14 @@ def get_venvs(path):
             continue
 
         try:
-            res = Popen([python_binary, "-V"], stdout=PIPE, universal_newlines=True)
+            res = Popen(
+                [python_binary, "-V"],
+                stdout=PIPE,
+                universal_newlines=True
+            )
             out, _ = res.communicate()
             version = out.strip()
+
             info = VenvInfo(_dir, path, version)
             infos.append(info)
 
