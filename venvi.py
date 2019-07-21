@@ -192,15 +192,17 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # interpreter table
-        interprTable = QTableView(centralwidget)
-        interprTable.setSelectionBehavior(QAbstractItemView.SelectRows)
-        interprTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        interprTable.setAlternatingRowColors(True)
+        interprTable = QTableView(
+            centralwidget,
+            selectionBehavior=QAbstractItemView.SelectRows,
+            editTriggers=QAbstractItemView.NoEditTriggers,
+            alternatingRowColors=True
+        )
 
         # adjust vertical headers
         v_HeaderTV1 = interprTable.verticalHeader()
-        v_HeaderTV1.setVisible(False)
         v_HeaderTV1.setDefaultSectionSize(27.5)
+        v_HeaderTV1.hide()
 
         # adjust (horizontal) headers
         h_HeaderTV1 = interprTable.horizontalHeader()
@@ -209,8 +211,7 @@ class Ui_MainWindow(QMainWindow):
         h_HeaderTV1.setStretchLastSection(True)
 
         # set table view model
-        self.modelTV1 = QStandardItemModel(centralwidget)
-        self.modelTV1.setColumnCount(2)
+        self.modelTV1 = QStandardItemModel(0, 2, centralwidget)
         self.modelTV1.setHorizontalHeaderLabels(["Version", "Path"])
         interprTable.setModel(self.modelTV1)
 
