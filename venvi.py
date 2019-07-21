@@ -217,10 +217,10 @@ class Ui_MainWindow(QMainWindow):
         interprTable.setModel(self.modelTV1)
 
         # fill the cells
-        for i in range(len(organize.versFound)):
+        for i in range(len(organize.vers_found)):
             self.modelTV1.insertRow(0)
-            self.modelTV1.setItem(0, 0, QStandardItem(organize.versFound[i]))
-            self.modelTV1.setItem(0, 1, QStandardItem(organize.pathFound[i]))
+            self.modelTV1.setItem(0, 0, QStandardItem(organize.vers_found[i]))
+            self.modelTV1.setItem(0, 1, QStandardItem(organize.paths_found[i]))
 
         #]===================================================================[#
 
@@ -365,7 +365,7 @@ class Ui_MainWindow(QMainWindow):
 
         # if the notFound list is full (none of the versions is found), then
         #  there's no Python install in the common paths -> display message
-        if len(organize.notFound) == 8:
+        if len(organize.not_found) == 8:
             print("WARNING: No Python 3 installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
@@ -381,33 +381,31 @@ class Ui_MainWindow(QMainWindow):
         """
         Specify path to a python executable and add it to list.
         """
-        fileDiag = QFileDialog()
-
-        fileName = fileDiag.getOpenFileName(
+        file_name = QFileDialog.getOpenFileName(
             self,
             "Select Python Interpreter",
-            "~",
-            "Python executable (python3 python3.3 python3.4 \
+            "/$HOME",
+            "Python binary (python3 python3.3 python3.4 \
                                 python3.5 python3.6 python3.7 \
                                 python3.8 python3.9 python4.0)"
         )
 
-        binFile = fileName[0]
+        bin_file = file_name[0]
 
-        if binFile != "":
-            # get version info and path of selected interpreter
-            getVersInf = Popen(
-                [binFile, "-V"], stdout=PIPE, universal_newlines=True
+        if bin_file != "":
+            # get version info and path of the selected binary
+            res = Popen(
+                [bin_file, "-V"], stdout=PIPE, universal_newlines=True
             )
+            out, _ = res.communicate()
+            version = out.strip()
 
-            versInf = getVersInf.communicate()[0].strip()
+            path = file_name[0]
 
-            pathInf = fileName[0]
-
-            # fill cells with the returned values
+            # fill cells
             self.modelTV1.insertRow(0)
-            self.modelTV1.setItem(0, 0, QStandardItem(versInf))
-            self.modelTV1.setItem(0, 1, QStandardItem(pathInf))
+            self.modelTV1.setItem(0, 0, QStandardItem(version))
+            self.modelTV1.setItem(0, 1, QStandardItem(path))
 
 
     #]=======================================================================[#
@@ -426,10 +424,6 @@ class Ui_MainWindow(QMainWindow):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
             print(info)
-
-
-
-
 
 
     #]=======================================================================[#
