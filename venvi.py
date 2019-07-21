@@ -41,6 +41,7 @@ class Ui_MainWindow(QMainWindow):
 
         self.setWindowTitle("VenviPy")
         self.setGeometry(430, 150, 830, 525)
+        self.setWindowIcon(QIcon(":/img/python.png"))
 
         self.setStyleSheet(
             """
