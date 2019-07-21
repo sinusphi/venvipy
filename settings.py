@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Settings."""
+import os
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -11,20 +13,17 @@ from PyQt5.QtWidgets import (QApplication, QAction, QVBoxLayout, QHBoxLayout,
 
 
 
-class SetDefaultDirectory(QDialog):
+class SelectDefaultDir(QDialog):
     """
     Set the default directory, where to look for virtual environments.
     """
+
     def __init__(self):
         super().__init__()
-
         self.initUI()
 
 
     def initUI(self):
-        #]===================================================================[#
-        #] WINDOW SETTINGS [#================================================[#
-        #]===================================================================[#
 
         self.setWindowTitle("Set Default Directory")
         self.setGeometry(600, 365, 500, 100)
@@ -42,17 +41,18 @@ class SetDefaultDirectory(QDialog):
 
         selectDirToolButton = QToolButton(
             toolTip="Browse",
+            icon=folder_icon,
             clicked=self.selectDirTButton_clicked
         )
         selectDirToolButton.setFixedSize(26, 27)
-        selectDirToolButton.setIcon(folder_icon)
 
-        horizontalLine = QFrame()
-        horizontalLine.setFrameShape(QFrame.HLine)
-        horizontalLine.setFrameShadow(QFrame.Sunken)
+        horizontalLine = QFrame(
+            frameShape=QtWidgets.QFrame.HLine,
+            frameShadow=QtWidgets.QFrame.Sunken
+        )
 
         cancelButton = QPushButton(
-            "Cancel", clicked=self.close
+            "Cancel", clicked=self.reject
         )
 
         okButton = QPushButton(
@@ -80,9 +80,7 @@ class SetDefaultDirectory(QDialog):
         """
         Select directory which should be set as default.
         """
-        fileDiag = QFileDialog()
-
-        directory = fileDiag.getExistingDirectory()
+        directory = QFileDialog.getExistingDirectory()
         self.defaultDirLineEdit.setText(directory)
 
 
@@ -90,12 +88,13 @@ class SetDefaultDirectory(QDialog):
         """
         Store the absolute path to the selected dir as `str` in `def/default`.
         """
-        with open("def/default", 'w') as default:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        default_file = os.path.join(current_dir, "def", "default")
+
+        with open(default_file, "w") as default:
             default.write(self.defaultDirLineEdit.text())
-            default.close()
 
-        self.close()
-
+        self.accept()
 
 
 
@@ -105,7 +104,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    settingsUI = SetDefaultDirectory()
+    settingsUI = SelectDefaultDir()
     settingsUI.show()
 
     sys.exit(app.exec_())
