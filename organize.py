@@ -49,11 +49,7 @@ def get_python_installs():
             infos.append(info)
 
         except FileNotFoundError as err:
-            # determining the amount of the versions which were not found
-            # (need this to display a message in case there's no python 3
-            # installation found at all)
-            print(err.args[1])
-            #not_found.append(i)
+            print(f"{err.args[1][:12]}: Python {vers}")
 
     return infos
 
