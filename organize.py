@@ -36,7 +36,7 @@ def get_python_installs():
             out1, _ = res1.communicate()
             version = out1.strip()
 
-            # get paths to the python executables
+            # get paths to the python binaries
             res2 = Popen(
                 ["which", "python" + vers],
                 stdout=PIPE,
@@ -49,7 +49,7 @@ def get_python_installs():
             infos.append(info)
 
         except FileNotFoundError as err:
-            print(f"{err.args[1][:12]}: Python {vers}")
+            print(f"{err.args[1]}")
 
     return infos
 
@@ -96,7 +96,7 @@ def get_venvs(path):
             info = VenvInfo(_dir, path, version)
             infos.append(info)
 
-        except Exception as err:
+        except OSError as err:
             print(f"{err.args[1]}: {python_binary}")
 
     return infos
@@ -115,7 +115,6 @@ def get_venvs_default():
             return get_venvs(default_dir)
 
     return []
-
 
 
 
