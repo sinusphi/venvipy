@@ -113,12 +113,10 @@ class BasicSettings(QWizardPage):
         self.interprComboBox = QComboBox()
         interpreterLabel.setBuddy(self.interprComboBox)
 
-        # add items from versFound to combobox
+        # add the found Python versions to combobox
         self.interprComboBox.addItem("---")
-        for i in range(len(organize.vers_found)):
-            self.interprComboBox.addItem(
-                organize.vers_found[i], organize.paths_found[i]
-            )
+        for info in organize.get_python_installs():
+            self.interprComboBox.addItem(info.version, info.path)
 
         venvNameLabel = QLabel("Venv &name:")
         self.venvNameLineEdit = QLineEdit(
