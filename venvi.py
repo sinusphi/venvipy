@@ -364,16 +364,12 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
 
-        #]===================================================================[#
-        # TODO: add condition if no Python install is found on system
-        #]===================================================================[#
+        if not organize.get_python_installs():
+            print("WARNING: No Python 3 installation found!")
 
-        #if len(organize.not_found) == 8:
-            #print("WARNING: No Python 3 installation found!")
-
-            #if self.messageBox.exec_() == QMessageBox.AcceptRole:
-                # let user specify the path to an interpreter
-                #self.selectInterpreter()
+            if self.messageBox.exec_() == QMessageBox.AcceptRole:
+                # let user specify path to an interpreter
+                self.selectInterpreter()
 
 
     #]=======================================================================[#
@@ -419,14 +415,16 @@ class Ui_MainWindow(QMainWindow):
         """
         Populate the interpreter table view.
         """
-        self.modelTV1.setRowCount(0)
-        for info in organize.get_python_installs():
-            self.modelTV1.insertRow(0)
+        if organize.get_python_installs():
+            self.modelTV1.setRowCount(0)
 
-            for i, text in enumerate((info.version, info.path)):
-                self.modelTV1.setItem(0, i, QStandardItem(text))
+            for info in organize.get_python_installs():
+                self.modelTV1.insertRow(0)
 
-            print(info)
+                for i, text in enumerate((info.version, info.path)):
+                    self.modelTV1.setItem(0, i, QStandardItem(text))
+
+                print(info)
 
 
     #]=======================================================================[#
@@ -438,6 +436,7 @@ class Ui_MainWindow(QMainWindow):
         Populate the venv table view.
         """
         self.modelTV2.setRowCount(0)
+
         for info in organize.get_venvs_default():
             self.modelTV2.insertRow(0)
 
@@ -478,7 +477,6 @@ class Ui_MainWindow(QMainWindow):
         Open the window for managing venvs.
         """
         # TODO: add the manage menu
-
 
 
 
