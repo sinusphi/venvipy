@@ -11,13 +11,19 @@ from dataclasses import dataclass
 #] FIND PYTHON 3 INSTALLATIONS [#============================================[#
 #]===========================================================================[#
 
-vers_found, paths_found, not_found = [], [], []
+@dataclass
+class PythonInfo:
+    version: str
+    path: str
+
 
 def get_python_installs():
     """
     Determine if Python 3 installations exist and where they are.
     """
     versions = ['3.9', '3.8', '3.7', '3.6', '3.5', '3.4', '3.3', '3']
+
+    infos = []
 
     for i, vers in enumerate(versions):
         try:
@@ -39,16 +45,20 @@ def get_python_installs():
             out2, _ = res2.communicate()
             path = out2.strip()
 
-            vers_found.append(version)
-            paths_found.append(path)
+            info = PythonInfo(version, path)
+            infos.append(info)
+
+            #vers_found.append(version)
+            #paths_found.append(path)
 
         except FileNotFoundError as err:
             # determining the amount of the versions which were not found
             # (need this to display a message in case there's no python 3
             # installation found at all)
             print(err.args[1])
-            not_found.append(i)
+            #not_found.append(i)
 
+    return infos
 
 
 #]===========================================================================[#
@@ -111,12 +121,15 @@ def get_venvs_default():
     return []
 
 
-get_python_installs()
+#get_python_installs()
 
 
 
 
 if __name__ == "__main__":
 
-    for venv in get_venvs_default():
-        print(venv.name, venv.version, venv.directory)
+    for python in get_python_installs():
+        print(python.version, python.path)
+
+    #for venv in get_venvs_default():
+        #print(venv.name, venv.version, venv.directory)
