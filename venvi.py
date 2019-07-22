@@ -124,7 +124,7 @@ class Ui_MainWindow(QMainWindow):
         v_Layout2 = QVBoxLayout()
 
         v_Layout1.setContentsMargins(12, 19, 5, -1)
-        v_Layout2.setContentsMargins(-1, 0, 6, -1)
+        v_Layout2.setContentsMargins(-1, 2, 6, -1)
 
         # python logo
         self.logo = QLabel(centralwidget)
@@ -189,7 +189,10 @@ class Ui_MainWindow(QMainWindow):
 
         # interpreter table header
         interprTableLabel = QLabel(
-            "<b>Available Interpreters</b>", centralwidget
+            '<span style="font-size: 13pt;">\
+                <b>Available Interpreters</b>\
+            </span>',
+            centralwidget
         )
 
         # interpreter table
@@ -216,12 +219,6 @@ class Ui_MainWindow(QMainWindow):
         self.modelTV1.setHorizontalHeaderLabels(["Version", "Path"])
         interprTable.setModel(self.modelTV1)
 
-        # fill the cells
-        for i in range(len(organize.vers_found)):
-            self.modelTV1.insertRow(0)
-            self.modelTV1.setItem(0, 0, QStandardItem(organize.vers_found[i]))
-            self.modelTV1.setItem(0, 1, QStandardItem(organize.paths_found[i]))
-
         #]===================================================================[#
 
         # spacer between interpreter table and venv table title
@@ -233,7 +230,10 @@ class Ui_MainWindow(QMainWindow):
 
         # venv table header
         venvTableLabel = QLabel(
-            "<b>Available virtual environments</b>", centralwidget
+            '<span style="font-size: 13pt;">\
+                <b>Available virtual environments</b>\
+            </span>',
+            centralwidget
         )
 
         # venv table
@@ -363,14 +363,17 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Search", QMessageBox.AcceptRole)
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
-        # if the notFound list is full (none of the versions is found), then
-        #  there's no Python install in the common paths -> display message
-        if len(organize.not_found) == 8:
-            print("WARNING: No Python 3 installation found!")
 
-            if self.messageBox.exec_() == QMessageBox.AcceptRole:
+        #]===================================================================[#
+        # TODO: add condition if no Python install is found on system
+        #]===================================================================[#
+
+        #if len(organize.not_found) == 8:
+            #print("WARNING: No Python 3 installation found!")
+
+            #if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify the path to an interpreter
-                self.selectInterpreter()
+                #self.selectInterpreter()
 
 
     #]=======================================================================[#
@@ -409,7 +412,25 @@ class Ui_MainWindow(QMainWindow):
 
 
     #]=======================================================================[#
-    #] POPULATE THE VENV TABLE VIEW [#=======================================[#
+    #] POPULATE INTERPRETER TABLE VIEW [#====================================[#
+    #]=======================================================================[#
+
+    def popInterprTable(self):
+        """
+        Populate the interpreter table view.
+        """
+        self.modelTV1.setRowCount(0)
+        for info in organize.get_python_installs():
+            self.modelTV1.insertRow(0)
+
+            for i, text in enumerate((info.version, info.path)):
+                self.modelTV1.setItem(0, i, QStandardItem(text))
+
+            print(info)
+
+
+    #]=======================================================================[#
+    #] POPULATE VENV TABLE VIEW [#===========================================[#
     #]=======================================================================[#
 
     def popVenvTable(self):
@@ -467,6 +488,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     mainUI = Ui_MainWindow()
+    mainUI.popInterprTable()
     mainUI.popVenvTable()
     mainUI.show()
 
