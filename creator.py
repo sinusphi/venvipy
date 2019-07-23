@@ -2,9 +2,9 @@
 """Wizard for creating and setting up virtual environments."""
 from subprocess import Popen, PIPE, CalledProcessError
 from functools import partial
-#from venv import create
 import venv
 import sys
+import os
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
@@ -119,15 +119,11 @@ class BasicSettings(QWizardPage):
             self.interprComboBox.addItem(info.version, info.path)
 
         venvNameLabel = QLabel("Venv &name:")
-        self.venvNameLineEdit = QLineEdit(
-            textChanged=self.collectData
-        )
+        self.venvNameLineEdit = QLineEdit()
         venvNameLabel.setBuddy(self.venvNameLineEdit)
 
         venvLocationLabel = QLabel("&Location:")
-        self.venvLocationLineEdit = QLineEdit(
-            textChanged=self.collectData
-        )
+        self.venvLocationLineEdit = QLineEdit()
         venvLocationLabel.setBuddy(self.venvLocationLineEdit)
 
         selectDirToolButton = QToolButton(
@@ -158,35 +154,15 @@ class BasicSettings(QWizardPage):
             "Launch a &terminal with activated venv after installation"
         )
 
-        # events
-        self.interprComboBox.currentIndexChanged.connect(self.collectData)
-        self.withPipCBox.toggled.connect(self.collectData)
-        self.sitePackagesCBox.toggled.connect(self.collectData)
-        self.symlinksCBox.toggled.connect(self.collectData)
-        self.launchVenvCBox.toggled.connect(self.collectData)
-
-        # store the collected data in line edits
-        self.interprVers = QLineEdit()
-        self.interprPath = QLineEdit()
-        self.venvName = QLineEdit()
-        self.venvLocation = QLineEdit()
-        self.withPip = QLineEdit()
-        self.sitePackages = QLineEdit()
-        self.launchVenv = QLineEdit()
-        self.symlinks = QLineEdit()
-
         # register fields
-        self.registerField("interprComboBox*", self.interprComboBox)
-        self.registerField("venvNameLineEdit*", self.venvNameLineEdit)
-        self.registerField("venvLocationLineEdit*", self.venvLocationLineEdit)
-        self.registerField("interprVers", self.interprVers)
-        self.registerField("interprPath", self.interprPath)
-        self.registerField("venvName", self.venvName)
-        self.registerField("venvLocation", self.venvLocation)
-        self.registerField("withPip", self.withPip)
-        self.registerField("sitePackages", self.sitePackages)
-        self.registerField("launchVenv", self.launchVenv)
-        self.registerField("symlinks", self.symlinks)
+        self.registerField("interprVers*", self.interprComboBox, "currentText")
+        self.registerField("interprPath", self.interprComboBox, "currentData")
+        self.registerField("venvName*", self.venvNameLineEdit)
+        self.registerField("venvLocation*", self.venvLocationLineEdit)
+        self.registerField("withPip", self.withPipCBox)
+        self.registerField("sitePackages", self.sitePackagesCBox)
+        self.registerField("launchVenv", self.launchVenvCBox)
+        self.registerField("symlinks", self.symlinksCBox)
 
         # grid layout
         gridLayout = QGridLayout()
@@ -210,35 +186,12 @@ class BasicSettings(QWizardPage):
         groupBox.setLayout(groupBoxLayout)
 
 
-    #]=======================================================================[#
-    #] SELECTIONS [#=========================================================[#
-    #]=======================================================================[#
-
     def selectDir(self):
         """
         Specify path where to create the virtual environment.
         """
-        fileDiag = QFileDialog()
-
-        folderName = fileDiag.getExistingDirectory()
+        folderName = QFileDialog.getExistingDirectory()
         self.venvLocationLineEdit.setText(folderName)
-
-
-    def collectData(self, i):
-        """
-        Collect all input data and create the virtual environment.
-        """
-        self.interprVers.setText(self.interprComboBox.currentText())
-        self.interprPath.setText(self.interprComboBox.currentData())
-        self.venvName.setText(self.venvNameLineEdit.text())
-        self.venvLocation.setText(self.venvLocationLineEdit.text())
-
-        # options
-        self.withPip.setText(str(self.withPipCBox.isChecked()))
-        self.sitePackages.setText(str(self.sitePackagesCBox.isChecked()))
-        self.launchVenv.setText(str(self.launchVenvCBox.isChecked()))
-        self.symlinks.setText(str(self.symlinksCBox.isChecked()))
-
 
 
 #]===========================================================================[#
@@ -247,7 +200,7 @@ class BasicSettings(QWizardPage):
 
 class CreationWorker(QObject):
     """
-    Worker sending start and finish signal to the progress bar dialog.
+    Worker informing about start and finish of the create process.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
@@ -258,21 +211,14 @@ class CreationWorker(QObject):
 
         name, location, with_pip, site_packages, symlinks = args
 
-        # TODO: Need to determine why the create() method arguments from the
-        #       venv module do not inherit the status of the corresponding
-        #       checkboxes. Currently, the virtual environment is always
-        #       created with default settings (with pip, ...) and ignores
-        #       the args passed from the createProcess() method.
-
         venv.create(
-            "/".join([location, name]),
+            os.path.join(location, name),
             with_pip=with_pip,
             system_site_packages=site_packages,
             symlinks=symlinks,
         )
 
         self.finished.emit()
-
 
 
 class InstallPackages(QWizardPage):
@@ -385,7 +331,6 @@ class InstallPackages(QWizardPage):
         #]===================================================================[#
 
 
-
 class Summary(QWizardPage):
     def __init__(self):
         super().__init__()
@@ -401,9 +346,6 @@ class Summary(QWizardPage):
 
     def initializePage(self):
         pass
-
-
-
 
 
 
