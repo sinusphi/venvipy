@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 """Wizard for creating and setting up virtual environments."""
-from subprocess import Popen, PIPE, CalledProcessError
+from venv import create as create_venv
 from functools import partial
-import venv
 import sys
 import os
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
-                             QPushButton, QSpacerItem, QSizePolicy, QWizard,
-                             QWizardPage, QToolButton, QComboBox, QCheckBox,
-                             QLineEdit, QGroupBox)
+                             QWizard, QWizardPage, QToolButton, QComboBox,
+                             QCheckBox, QLineEdit, QGroupBox)
 
-import organize
-
+from organize import get_python_installs
 
 
 
@@ -115,7 +111,7 @@ class BasicSettings(QWizardPage):
 
         # add the found Python versions to combobox
         self.interprComboBox.addItem("---")
-        for info in organize.get_python_installs():
+        for info in get_python_installs():
             self.interprComboBox.addItem(info.version, info.path)
 
         venvNameLabel = QLabel("Venv &name:")
@@ -155,7 +151,8 @@ class BasicSettings(QWizardPage):
         )
 
         # register fields
-        self.registerField("interprVers*", self.interprComboBox, "currentText")
+        self.registerField("interprComboBox*", self.interprComboBox)
+        self.registerField("interprVers", self.interprComboBox, "currentText")
         self.registerField("interprPath", self.interprComboBox, "currentData")
         self.registerField("venvName*", self.venvNameLineEdit)
         self.registerField("venvLocation*", self.venvLocationLineEdit)
@@ -211,7 +208,7 @@ class CreationWorker(QObject):
 
         name, location, with_pip, site_packages, symlinks = args
 
-        venv.create(
+        create_venv(
             os.path.join(location, name),
             with_pip=with_pip,
             system_site_packages=site_packages,
