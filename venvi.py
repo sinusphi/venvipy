@@ -385,8 +385,8 @@ class Ui_MainWindow(QMainWindow):
             "Select Python Interpreter",
             "/$HOME",
             "Python binary (python3 python3.3 python3.4 \
-                                python3.5 python3.6 python3.7 \
-                                python3.8 python3.9 python4.0)"
+                            python3.5 python3.6 python3.7 \
+                            python3.8 python3.9)"
         )
 
         bin_file = file_name[0]
