@@ -126,11 +126,11 @@ class BasicSettings(QWizardPage):
         venvLocationLabel.setBuddy(self.venvLocationLineEdit)
 
         selectDirToolButton = QToolButton(
+            icon=folder_icon,
             toolTip="Browse",
             clicked=self.selectDir
         )
         selectDirToolButton.setFixedSize(26, 27)
-        selectDirToolButton.setIcon(folder_icon)
 
         #]===================================================================[#
         # TODO: remove placeholder and add a spacer instead
