@@ -105,6 +105,7 @@ class Ui_MainWindow(QMainWindow):
         #copy_icon = QIcon.fromTheme("edit-copy")
         #paste_icon = QIcon.fromTheme("edit-paste")
         #folder_icon = QIcon.fromTheme("folder")
+        refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
         about_icon = QIcon.fromTheme("dialog-information")
@@ -122,6 +123,7 @@ class Ui_MainWindow(QMainWindow):
 
         v_Layout1 = QVBoxLayout()
         v_Layout2 = QVBoxLayout()
+        h_Layout1 = QHBoxLayout()
 
         v_Layout1.setContentsMargins(12, 19, 5, -1)
         v_Layout2.setContentsMargins(-1, 2, 6, -1)
@@ -161,6 +163,13 @@ class Ui_MainWindow(QMainWindow):
             clicked=self.close
         )
 
+        self.refreshButton = QToolButton(
+            icon=refresh_icon,
+            toolTip="Refresh list",
+            statusTip="Refresh venv table view",
+            clicked=self.popVenvTable
+        )
+        self.refreshButton.setFixedSize(20, 20)
 
         #]===================================================================[#
 
@@ -171,8 +180,6 @@ class Ui_MainWindow(QMainWindow):
 
         #]===================================================================[#
 
-
-        # add widgets to layout
         v_Layout2.addWidget(self.logo)
         v_Layout2.addWidget(self.addButton)
         v_Layout2.addWidget(self.newVenvButton)
@@ -266,7 +273,9 @@ class Ui_MainWindow(QMainWindow):
         v_Layout1.addWidget(interprTableLabel)
         v_Layout1.addWidget(interprTable)
         v_Layout1.addItem(spacerItem2)
-        v_Layout1.addWidget(venvTableLabel)
+        v_Layout1.addLayout(h_Layout1)
+        h_Layout1.addWidget(venvTableLabel)
+        h_Layout1.addWidget(self.refreshButton)
         v_Layout1.addWidget(venvTable)
 
         gridLayout.addLayout(v_Layout1, 0, 0, 1, 1)
