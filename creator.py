@@ -2,6 +2,7 @@
 """Wizard for creating and setting up virtual environments."""
 from venv import create as create_venv
 from functools import partial
+import shutil
 import sys
 import os
 
@@ -154,8 +155,8 @@ class BasicSettings(QWizardPage):
 
         # register fields
         self.registerField("interprComboBox*", self.interprComboBox)
-        self.registerField("interprVers", self.interprComboBox, "currentText")
-        self.registerField("interprPath", self.interprComboBox, "currentData")
+        self.registerField("pythonVers", self.interprComboBox, "currentText")
+        self.registerField("pythonPath", self.interprComboBox, "currentData")
         self.registerField("venvName*", self.venvNameLineEdit)
         self.registerField("venvLocation*", self.venvLocationLineEdit)
         self.registerField("withPip", self.withPipCBox)
@@ -246,6 +247,7 @@ class InstallPackages(QWizardPage):
 
         self.m_install_worker.started.connect(self.progressBar.exec_)
         self.m_install_worker.finished.connect(self.progressBar.close)
+        self.m_install_worker.finished.connect(self.post_install_venv)
         self.m_install_worker.finished.connect(self.reEnablePage)
 
 
@@ -273,8 +275,8 @@ class InstallPackages(QWizardPage):
 
 
     def initializePage(self):
-        self.interprVers = self.field("interprVers")
-        self.interprPath = self.field("interprPath")
+        self.pythonVers = self.field("pythonVers")
+        self.pythonPath = self.field("pythonPath")
         self.venvName = self.field("venvName")
         self.venvLocation = self.field("venvLocation")
         self.withPip = self.field("withPip")
@@ -282,18 +284,18 @@ class InstallPackages(QWizardPage):
         self.launchVenv = self.field("launchVenv")
         self.symlinks = self.field("symlinks")
 
-        # overwrite with the interpreter selected
-        sys.executable = self.interprPath
-
-        # display which interpreter version is used
+        # display which python version is used to create the virt. env
         self.progressBar.statusLabel.setText(
-            "Creating venv using %s " % self.interprVers
+            f"Creating venv using {self.pythonVers[:12]}"
         )
+
+        # overwrite executable with the python version selected
+        sys.executable = self.pythonPath
 
         # run the create process
         self.createProcess()
 
-        # disable wizard page during create process
+        # disable the next wizard page during create process
         self.setEnabled(False)
 
 
@@ -313,6 +315,50 @@ class InstallPackages(QWizardPage):
         QTimer.singleShot(0, wrapper)
 
 
+    def clean_venv_dir(self):
+        """
+        Remove unnecessarily created dirs from `lib` dir.
+        """
+        lib_dir = os.path.join(self.venvLocation, self.venvName, "lib")
+        valid_dir_name = f"python{self.pythonVers[7:10]}"
+
+        valid_dir = os.path.join(
+            self.venvLocation,
+            self.venvName,
+            "lib",
+            valid_dir_name
+        )
+
+        for fn in os.listdir(lib_dir):
+            fn = os.path.join(lib_dir, fn)
+            if os.path.islink(fn) or os.path.isfile(fn):
+                os.remove(fn)
+            elif os.path.isdir(fn) and fn != valid_dir:
+                shutil.rmtree(fn)
+                print(f"removed dir: '{fn}'")
+
+
+    def post_install_venv(self):
+        """
+        Create a configuration file and remove unnecessary dirs.
+        """
+        cfg_path = os.path.join(self.venvLocation, self.venvName, "pyvenv.cfg")
+        bin_path = os.path.split(self.pythonPath)[0]
+
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            f.write(f"home = {bin_path}\n")
+
+            if self.sitePackages:
+                include = "true"
+            else:
+                include = "false"
+
+            f.write(f"include-system-site-packages = {include}\n")
+            f.write(f"version = {self.pythonVers[7:12]}\n")
+
+        self.clean_venv_dir()
+
+
     def reEnablePage(self):
         """
         Re-enable wizard page when create process has finished.
@@ -325,8 +371,8 @@ class InstallPackages(QWizardPage):
         Launch a terminal with the created virtual environment activated.
         """
         #]===================================================================[#
-        # TODO: launch a terminal and activate the created venv
-        #       (not yet sure if this is possible)
+        # TODO: launch a terminal and activate the created virt. env
+        #       (not yet sure if this is easy to realize)
         #]===================================================================[#
 
 
