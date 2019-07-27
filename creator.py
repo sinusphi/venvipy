@@ -6,12 +6,13 @@ import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QStandardItemModel
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
-                             QCheckBox, QLineEdit, QGroupBox)
+                             QCheckBox, QLineEdit, QGroupBox, QTableView,
+                             QAbstractItemView, QFrame, QPushButton)
 
 from organize import get_python_installs
 
@@ -67,8 +68,8 @@ class VenvWizard(QWizard):
         super().__init__()
 
         self.setWindowTitle("Venv Wizard")
-        self.resize(535, 430)
-        self.move(578, 183)
+        self.resize(635, 480)
+        self.move(528, 153)
 
         self.setStyleSheet(
             """
@@ -255,23 +256,41 @@ class InstallPackages(QWizardPage):
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
 
-        # content for tests
-        TestLabel1 = QLabel("This is a test label:", self)
-        TestLineEdit1 = QLineEdit(self)
-        TestLabel1.setBuddy(TestLineEdit1)
+        verticalLayout = QVBoxLayout()
+        gridLayout = QGridLayout(self)
 
-        TestLabel2 = QLabel("This is a test label:", self)
-        TestLineEdit2 = QLineEdit(self)
-        TestLabel2.setBuddy(TestLineEdit2)
+        pkgNameLabel = QLabel("Package name:")
+        self.pkgNameLineEdit = QLineEdit()
+        pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
+        self.searchButton = QPushButton("Search")
 
-        v_layout = QVBoxLayout(self)
-        v_layout.addWidget(TestLabel1)
-        v_layout.addWidget(TestLineEdit1)
-        v_layout.addWidget(TestLabel2)
-        v_layout.addWidget(TestLineEdit2)
+        resultsTable = QTableView(
+            selectionBehavior=QAbstractItemView.SelectRows,
+            editTriggers=QAbstractItemView.NoEditTriggers,
+            alternatingRowColors=True
+        )
 
-        self.setLayout(v_layout)
+        # adjust vertical headers
+        v_Header = resultsTable.verticalHeader()
+        v_Header.hide()
+
+        # adjust (horizontal) headers
+        h_Header = resultsTable.horizontalHeader()
+        h_Header.setDefaultAlignment(Qt.AlignLeft)
+        h_Header.setStretchLastSection(True)
+
+        # set table view model
+        self.resultsModel = QStandardItemModel(0, 2, self)
+        self.resultsModel.setHorizontalHeaderLabels(["Name", "Description"])
+        resultsTable.setModel(self.resultsModel)
+
+        gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
+        gridLayout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
+        gridLayout.addWidget(self.searchButton, 0, 2, 1, 1)
+        gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
+
+        verticalLayout.addLayout(gridLayout)
 
 
     def initializePage(self):
