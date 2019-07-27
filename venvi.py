@@ -3,7 +3,6 @@
 from subprocess import Popen, PIPE
 import os
 
-from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (QIcon, QFont, QPixmap, QStandardItemModel,
                          QStandardItem)
