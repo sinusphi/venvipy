@@ -139,15 +139,15 @@ def get_package_infos(name):
     infos = []
 
     for i, proj in enumerate(res):
-        if name is None:
-            break
-
         pkg_name = proj["name"]
         pkg_vers = proj["version"]
         pkg_sum = proj["summary"]
 
         info = PackageInfo(pkg_name, pkg_vers, pkg_sum)
         infos.append(info)
+
+    if not infos:
+        print(f"No packages found.")
 
     return infos
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
     #]=======================================================================[#
 
-    test_pkg = "requests"
+    test_pkg = "test"
 
     for pkg in get_package_infos(test_pkg):
         print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
