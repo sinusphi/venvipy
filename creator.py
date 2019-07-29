@@ -14,7 +14,8 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
-                             QAbstractItemView, QFrame, QPushButton)
+                             QAbstractItemView, QPushButton, QFrame,
+                             QMessageBox)
 
 from organize import get_python_installs, get_package_infos
 
@@ -384,7 +385,18 @@ class InstallPackages(QWizardPage):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
         if not get_package_infos(self.pkgNameLineEdit.text()):
+            self.no_results_msg()
             print("No results!")
+
+
+    def no_results_msg(self):
+        """
+        Show info message if no packages were found.
+        """
+        QMessageBox.information(self,
+            "No results!",
+            f'No projects matching "{self.pkgNameLineEdit.text()}".\n'
+        )
 
 
     def initializePage(self):
