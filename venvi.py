@@ -14,8 +14,8 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
                              QCheckBox, QLineEdit, QGroupBox, QHBoxLayout,
                              QComboBox, QToolButton, QDialog)
 
+from organize import get_python_installs, get_venvs_default
 import venvipy_rc
-import organize
 import settings
 import creator
 import info
@@ -372,7 +372,7 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
 
-        if not organize.get_python_installs():
+        if not get_python_installs():
             print("WARNING: No Python 3 installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
@@ -423,16 +423,16 @@ class Ui_MainWindow(QMainWindow):
         """
         Populate the interpreter table view.
         """
-        if organize.get_python_installs():
+        if get_python_installs():
             self.modelTV1.setRowCount(0)
 
-            for info in organize.get_python_installs():
+            for info in get_python_installs():
                 self.modelTV1.insertRow(0)
 
                 for i, text in enumerate((info.version, info.path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                print(info)
+                #print(info)
 
 
     #]=======================================================================[#
@@ -445,13 +445,13 @@ class Ui_MainWindow(QMainWindow):
         """
         self.modelTV2.setRowCount(0)
 
-        for info in organize.get_venvs_default():
+        for info in get_venvs_default():
             self.modelTV2.insertRow(0)
 
             for i, text in enumerate((info.name, info.version, info.directory)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
-            print(info)
+            #print(info)
 
 
     #]=======================================================================[#
