@@ -242,10 +242,10 @@ class InstallPackages(QWizardPage):
 
         self.setTitle("Install Packages")
         self.setSubTitle(
-            "Specify the packages you want to install into the "
-            "virtual environment. Right-click on the item to "
-            "mark it for installation. Click next button when "
-            "ready."
+            "Specify the packages you want to install into the virtual "
+            "environment. Right-click on the item to mark it for "
+            "installation and click next when ready."
+            ""
         )
 
         self.progressBar = ProgBarDialog()
@@ -383,14 +383,15 @@ class InstallPackages(QWizardPage):
             ):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
-            #print(info)
+        if not get_package_infos(self.pkgNameLineEdit.text()):
+            print("No results!")
 
 
     def initializePage(self):
+        # disable wizards next button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
         QTimer.singleShot(0, lambda: next_button.setDefault(False))
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
-        #QTimer.singleShot(0, lambda: self.pkgNameLineEdit.setFocus())
 
         self.pythonVers = self.field("pythonVers")
         self.pythonPath = self.field("pythonPath")
