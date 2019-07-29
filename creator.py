@@ -64,7 +64,7 @@ class ProgBarDialog(QDialog):
 
 class VenvWizard(QWizard):
     """
-    Wizard for creating and setting up virtual environments.
+    Wizard for creating and setting up a virtual environment.
     """
     def __init__(self):
         super().__init__()
@@ -279,7 +279,7 @@ class InstallPackages(QWizardPage):
         pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
         self.searchButton = QPushButton(
-            "Search",
+            "&Search",
             clicked=self.popResultsTable
         )
 
@@ -297,7 +297,7 @@ class InstallPackages(QWizardPage):
         # adjust (horizontal) headers
         h_Header = resultsTable.horizontalHeader()
         h_Header.setDefaultAlignment(Qt.AlignLeft)
-        h_Header.setDefaultSectionSize(150)
+        h_Header.setDefaultSectionSize(120)
         h_Header.setStretchLastSection(True)
 
         # set table view model
@@ -387,6 +387,11 @@ class InstallPackages(QWizardPage):
 
 
     def initializePage(self):
+        next_button = self.wizard().button(QWizard.NextButton)
+        QTimer.singleShot(0, lambda: next_button.setDefault(False))
+        QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
+        #QTimer.singleShot(0, lambda: self.pkgNameLineEdit.setFocus())
+
         self.pythonVers = self.field("pythonVers")
         self.pythonPath = self.field("pythonPath")
         self.venvName = self.field("venvName")
@@ -407,7 +412,7 @@ class InstallPackages(QWizardPage):
         # run the create process
         self.createProcess()
 
-        # disable the next wizard page during create process
+        # disable the InstallPackages page during create process
         self.setEnabled(False)
 
 
@@ -473,9 +478,11 @@ class InstallPackages(QWizardPage):
 
     def reEnablePage(self):
         """
-        Re-enable wizard page when create process has finished.
+        Re-enable wizard page when create process has finished and set focus
+        on the input field.
         """
         self.setEnabled(True)
+        self.pkgNameLineEdit.setFocus()
 
 
     def launchTerminal(self):
