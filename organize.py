@@ -146,9 +146,6 @@ def get_package_infos(name):
         info = PackageInfo(pkg_name, pkg_vers, pkg_sum)
         infos.append(info)
 
-    if not infos:
-        print(f"No packages found.")
-
     return infos
 
 
@@ -169,3 +166,6 @@ if __name__ == "__main__":
 
     for pkg in get_package_infos(test_pkg):
         print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
+
+    if not get_package_infos(test_pkg):
+        print("No packages found!")
