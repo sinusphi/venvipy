@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Collect and serve data."""
 from subprocess import Popen, PIPE
+from dataclasses import dataclass
+import xmlrpc.client
 import os
 
-from dataclasses import dataclass
 
 
 
@@ -117,11 +118,54 @@ def get_venvs_default():
     return []
 
 
+#]===========================================================================[#
+#] GET INFOS FROM PYTHON PACKAGE INDEX [#====================================[#
+#]===========================================================================[#
+
+@dataclass
+class PackageInfo:
+    pkg_name: str
+    pkg_vers: str
+    pkg_sum: str
+
+
+def get_package_infos(name):
+    """
+    Get package name, version and description from https://pypi.org/pypi.
+    """
+    client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
+    res = client.search({"name": name})
+
+    infos = []
+
+    for i, proj in enumerate(res):
+        if name is None:
+            break
+
+        pkg_name = proj["name"]
+        pkg_vers = proj["version"]
+        pkg_sum = proj["summary"]
+
+        info = PackageInfo(pkg_name, pkg_vers, pkg_sum)
+        infos.append(info)
+
+    return infos
+
+
 
 if __name__ == "__main__":
 
     for python in get_python_installs():
         print(python.version, python.path)
 
+    #]=======================================================================[#
+
     for venv in get_venvs_default():
         print(venv.name, venv.version, venv.directory)
+
+    #]=======================================================================[#
+
+    test_pkg = "requests"
+
+    for pkg in get_package_infos(test_pkg):
+        print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
