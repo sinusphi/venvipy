@@ -82,6 +82,15 @@ class VenvWizard(QWizard):
                 padding: 2px;
                 opacity: 325
             }
+
+            QTableView {
+                gridline-color: rgb(230, 230, 230)
+            }
+
+            QTableView::item {
+                selection-background-color: rgb(120, 120, 130);
+                selection-color: rgb(255, 255, 255)
+            }
             """
         )
 
@@ -232,8 +241,12 @@ class InstallPackages(QWizardPage):
         super().__init__()
 
         self.setTitle("Install Packages")
-        self.setSubTitle("Specify the packages which you want Pip to "
-                         "install into the virtual environment.")
+        self.setSubTitle(
+            "Specify the packages you want to install into the "
+            "virtual environment. Right-click on the item to "
+            "mark it for installation. Click next button when "
+            "ready."
+        )
 
         self.progressBar = ProgBarDialog()
 
@@ -278,11 +291,13 @@ class InstallPackages(QWizardPage):
 
         # adjust vertical headers
         v_Header = resultsTable.verticalHeader()
+        v_Header.setDefaultSectionSize(27.5)
         v_Header.hide()
 
         # adjust (horizontal) headers
         h_Header = resultsTable.horizontalHeader()
         h_Header.setDefaultAlignment(Qt.AlignLeft)
+        h_Header.setDefaultSectionSize(150)
         h_Header.setStretchLastSection(True)
 
         # set table view model
@@ -311,7 +326,7 @@ class InstallPackages(QWizardPage):
             default_dir = default.read()
 
         script_path = os.path.join(current_dir, "scripts")
-        script = "perform.sh"
+        script = "installpkgs.sh"
         self.script_file = os.path.join(script_path, script)
 
         # test if bash is available
@@ -383,7 +398,7 @@ class InstallPackages(QWizardPage):
 
         # display which python version is used to create the virt. env
         self.progressBar.statusLabel.setText(
-            f"Creating venv using {self.pythonVers[:12]}"
+            f"Creating new venv using {self.pythonVers[:12]}"
         )
 
         # overwrite executable with the python version selected
