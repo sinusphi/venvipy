@@ -111,7 +111,7 @@ def get_venvs_default():
     default_file = os.path.join(current_dir, "def", "default")
 
     if os.path.isfile(default_file):
-        with open(default_file, 'r') as f:
+        with open(default_file, "r") as f:
             default_dir = f.read()
             return get_venvs(default_dir)
 
@@ -149,9 +149,119 @@ def get_package_infos(name):
     return infos
 
 
+#]===========================================================================[#
+#] INSTALL SELECTED PACKAGES [#==============================================[#
+#]===========================================================================[#
+
+@dataclass
+class PipActions:
+    venvs_dir: str
+    venv_name: str
+
+
+def install():
+    """
+    Install selected packages.
+    """
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    default_file = os.path.join(current_dir, "def", "default")
+    script_file = os.path.join(current_dir, "scripts", "installpkgs.sh")
+
+    if os.path.isfile(default_file):
+        with open(default_file, "r") as f:
+            default_dir = f.read()
+
+
+
+def install_packages(default_dir, venv_name, script_file):
+    """
+    Activate virtual environment and install the selected packages.
+    """
+    if has_bash():
+        # create install script and make it executable
+        with open(script_file, "w") as f:
+            f.write(
+                "#!/bin/bash\n"
+                f"source {default_dir}/{venv_name}/bin/activate\n"
+                "pip --version\n"
+                "deactivate\n"
+            )
+            os.system(f"chmod +x {script_file}")
+
+        # run install script
+        res = Popen(
+            ["/bin/bash", script_file],
+            stdout=PIPE, stderr=PIPE,
+            universal_newlines=True
+        )
+        out, _ = res.communicate()
+
+        # show output
+        print(out)
+
+        # remove install script
+        #os.remove(script_file)
+
+    else:
+        print("[ERROR] : Bash not found!")
+
+
+def has_bash():
+    """
+    Test if bash is available. If present the string `/bin/bash` is returned,
+    an empty string otherwise.
+    """
+    res = Popen(
+        ["which", "bash"],
+        stdout=PIPE,
+        stderr=PIPE,
+        universal_newlines=True
+    )
+    out, _ = res.communicate()
+    shell = out.strip()
+
+    return shell
+
+
+
+def update_pip(default_dir, venv_name):
+    """
+    Update pip.
+    """
+    if has_bash():
+        # create install script and make it executable
+        with open(script_file, "w") as f:
+            f.write(
+                "#!/bin/bash\n"
+                f"source {default_dir}/{venv_name}/bin/activate\n"
+                "pip freeze\n"
+                "deactivate\n"
+            )
+            os.system(f"chmod +x {script_file}")
+
+        # run install script
+        res = Popen(
+            ["/bin/bash", script_file],
+            stdout=PIPE, stderr=PIPE,
+            universal_newlines=True
+        )
+        out, _ = res.communicate()
+
+        # show output
+        print(out)
+
+        # remove install script
+        #os.remove(script_file)
+
+    else:
+        print("[ERROR] : Bash not found!")
+
+
+
+
 
 if __name__ == "__main__":
-
+    '''
     for python in get_python_installs():
         print(python.version, python.path)
 
@@ -169,3 +279,14 @@ if __name__ == "__main__":
 
     if not get_package_infos(test_pkg):
         print("No packages found!")
+    '''
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    default_file = os.path.join(current_dir, "def", "default")
+    script_file = os.path.join(current_dir, "scripts", "installpkgs.sh")
+    venv_name = "testenv1"
+
+    if os.path.isfile(default_file):
+        with open(default_file, "r") as f:
+            default_dir = f.read()
+
+update_pip(default_dir, venv_name)
