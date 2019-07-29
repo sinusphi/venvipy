@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """Wizard for creating and setting up virtual environments."""
 from venv import create as create_venv
+from subprocess import Popen, PIPE
 from functools import partial
+import xmlrpc.client
 import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon, QStandardItemModel
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
@@ -14,7 +16,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
                              QAbstractItemView, QFrame, QPushButton)
 
-from organize import get_python_installs
+from organize import get_python_installs, get_package_infos
 
 
 
@@ -115,7 +117,7 @@ class BasicSettings(QWizardPage):
         self.interprComboBox.addItem("---")
         for info in get_python_installs():
             self.interprComboBox.addItem(
-                f"{info.version} ~ {info.path}", info.path
+                f"{info.version} - {info.path}", info.path
             )
 
         venvNameLabel = QLabel("Venv &name:")
@@ -263,7 +265,10 @@ class InstallPackages(QWizardPage):
         self.pkgNameLineEdit = QLineEdit()
         pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
-        self.searchButton = QPushButton("Search")
+        self.searchButton = QPushButton(
+            "Search",
+            clicked=self.popResultsTable
+        )
 
         resultsTable = QTableView(
             selectionBehavior=QAbstractItemView.SelectRows,
@@ -282,7 +287,9 @@ class InstallPackages(QWizardPage):
 
         # set table view model
         self.resultsModel = QStandardItemModel(0, 2, self)
-        self.resultsModel.setHorizontalHeaderLabels(["Name", "Description"])
+        self.resultsModel.setHorizontalHeaderLabels(
+            ["Name", "Version", "Description"]
+        )
         resultsTable.setModel(self.resultsModel)
 
         gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
@@ -291,6 +298,77 @@ class InstallPackages(QWizardPage):
         gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
 
         verticalLayout.addLayout(gridLayout)
+
+
+    def install(self):
+        """
+        Install selected packages.
+        """
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        default_file = os.path.join(current_dir, "def", "default")
+
+        with open(default_file, "r") as default:
+            default_dir = default.read()
+
+        script_path = os.path.join(current_dir, "scripts")
+        script = "perform.sh"
+        self.script_file = os.path.join(script_path, script)
+
+        # test if bash is available
+        res = Popen(
+            ["which", "bash"],
+            stdout=PIPE,
+            stderr=PIPE,
+            universal_newlines=True
+        )
+        out, _ = res.communicate()
+        shell = out.strip()
+
+
+        if shell == "/bin/bash":
+            # create install script and make it executable
+            with open(self.script_file, "w") as f:
+                f.write(
+                    "#!/bin/bash\n"
+                    f"source /media/SQ-Core/venvs/{self.venvName}/bin/activate\n"
+                    "pip freeze\n"
+                    "deactivate\n"
+                )
+                os.system(f"chmod +x {self.script_file}")
+
+            # run install script
+            res = Popen(
+                ["/bin/bash", self.script_file],
+                stdout=PIPE, stderr=PIPE,
+                universal_newlines=True
+            )
+            out, _ = res.communicate()
+
+            # show output
+            print(out)
+
+            # remove install script
+            #os.remove(script_file)
+
+        else:
+            print("[ERROR] : Bash not found!")
+
+
+    def popResultsTable(self):
+        """
+        Populate the results table view.
+        """
+        self.resultsModel.setRowCount(0)
+
+        for info in get_package_infos(self.pkgNameLineEdit.text()):
+            self.resultsModel.insertRow(0)
+
+            for i, text in enumerate(
+                (info.pkg_name, info.pkg_vers, info.pkg_sum)
+            ):
+                self.resultsModel.setItem(0, i, QStandardItem(text))
+
+            #print(info)
 
 
     def initializePage(self):
