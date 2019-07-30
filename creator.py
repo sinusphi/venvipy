@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """Wizard for creating and setting up virtual environments."""
 from venv import create as create_venv
-from subprocess import Popen, PIPE
 from functools import partial
-import xmlrpc.client
 import shutil
 import sys
 import os
@@ -18,7 +16,11 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QMessageBox, QHeaderView)
 
 from organize import (get_python_installs, get_package_infos, get_venvs_default,
-                      update_pip)
+                      run_pip)
+
+cmd = ["install", "list", "show"]
+opt = ["--upgrade"]
+PIP = "pip"
 
 
 
@@ -141,7 +143,7 @@ class BasicSettings(QWizardPage):
         selectDirToolButton = QToolButton(
             icon=folder_icon,
             toolTip="Browse",
-            clicked=self.selectDir
+            clicked=self.select_dir
         )
         selectDirToolButton.setFixedSize(26, 27)
 
@@ -199,7 +201,7 @@ class BasicSettings(QWizardPage):
         groupBox.setLayout(groupBoxLayout)
 
 
-    def selectDir(self):
+    def select_dir(self):
         """
         Specify path where to create the virtual environment.
         """
@@ -234,7 +236,7 @@ class CreationWorker(QObject):
 
         if with_pip:
             self.step1.emit()
-            update_pip(location, name, pipup_script)
+            run_pip(cmd[0], opt[0], PIP, location, name)
 
         self.finished.emit()
 
@@ -271,7 +273,7 @@ class InstallPackages(QWizardPage):
         self.m_install_worker.step1.connect(self.switch_progressbar_label)
         self.m_install_worker.finished.connect(self.progressBar.close)
         self.m_install_worker.finished.connect(self.post_install_venv)
-        self.m_install_worker.finished.connect(self.reEnablePage)
+        self.m_install_worker.finished.connect(self.re_enable_page)
 
 
         #]===================================================================[#
@@ -287,7 +289,7 @@ class InstallPackages(QWizardPage):
 
         self.searchButton = QPushButton(
             "&Search",
-            clicked=self.popResultsTable
+            clicked=self.pop_results_table
         )
 
         #]===================================================================[#
@@ -332,6 +334,27 @@ class InstallPackages(QWizardPage):
         verticalLayout.addLayout(gridLayout)
 
 
+        #]===================================================================[#
+        #] PIP OPERATIONS [#=================================================[#
+        #]===================================================================[#
+
+        # the application directory
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        # the file containing the default directory (str) if set
+        default_file = os.path.join(current_dir, "def", "default")
+
+        # script that installs the selected packages
+        self.install_script = os.path.join(
+            current_dir, "scripts", "install_pkgs.sh"
+        )
+
+        # script that updates pip
+        self.pipup_script = os.path.join(
+            current_dir, "scripts", "update_pip.sh"
+        )
+
+
     def initializePage(self):
         # disable wizards next button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
@@ -354,19 +377,14 @@ class InstallPackages(QWizardPage):
         # overwrite executable with the python version selected
         sys.executable = self.pythonPath
 
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        default_file = os.path.join(current_dir, "def", "default")
-        install_script = os.path.join(current_dir, "scripts", "install_pkgs.sh")
-        self.pipup_script = os.path.join(current_dir, "scripts", "update_pip.sh")
-
         # run the create process
-        self.createProcess()
+        self.create_process()
 
         # disable the InstallPackages page during create process
         self.setEnabled(False)
 
 
-    def createProcess(self):
+    def create_process(self):
         """
         Create the virtual environment.
         """
@@ -435,7 +453,7 @@ class InstallPackages(QWizardPage):
         self.clean_venv_dir()
 
 
-    def reEnablePage(self):
+    def re_enable_page(self):
         """
         Re-enable wizard page when create process has finished and set focus
         on the input field.
@@ -444,7 +462,7 @@ class InstallPackages(QWizardPage):
         self.pkgNameLineEdit.setFocus()
 
 
-    def popResultsTable(self):
+    def pop_results_table(self):
         """
         Populate the results table view.
         """
@@ -482,7 +500,7 @@ class InstallPackages(QWizardPage):
             print(index.data())
 
 
-    def launchTerminal(self):
+    def launch_terminal(self):
         """
         Launch a terminal with the created virtual environment activated.
         """
