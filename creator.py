@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QWizard, QWizardPage, QToolButton, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
                              QAbstractItemView, QPushButton, QFrame,
-                             QMessageBox)
+                             QMessageBox, QHeaderView)
 
 from organize import (get_python_installs, get_package_infos, get_venvs_default,
                       update_pip)
@@ -290,34 +290,44 @@ class InstallPackages(QWizardPage):
             clicked=self.popResultsTable
         )
 
-        resultsTable = QTableView(
+        #]===================================================================[#
+        #] RESULTS TABLE VIEW [#=============================================[#
+        #]===================================================================[#
+
+        self.resultsTable = QTableView(
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
-            alternatingRowColors=True
+            alternatingRowColors=True,
+            doubleClicked=self.get_selected_row
         )
+        self.resultsTable.setSortingEnabled(True)
 
         # adjust vertical headers
-        v_Header = resultsTable.verticalHeader()
+        v_Header = self.resultsTable.verticalHeader()
         v_Header.setDefaultSectionSize(27.5)
         v_Header.hide()
 
-        # adjust (horizontal) headers
-        h_Header = resultsTable.horizontalHeader()
-        h_Header.setDefaultAlignment(Qt.AlignLeft)
-        h_Header.setDefaultSectionSize(120)
-        h_Header.setStretchLastSection(True)
+        # adjust horizontal headers
+        self.h_Header = self.resultsTable.horizontalHeader()
+        self.h_Header.setDefaultAlignment(Qt.AlignLeft)
+        self.h_Header.setDefaultSectionSize(120)
+        self.h_Header.setStretchLastSection(True)
+        self.h_Header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # set table view model
+        # item model
         self.resultsModel = QStandardItemModel(0, 2, self)
         self.resultsModel.setHorizontalHeaderLabels(
             ["Name", "Version", "Description"]
         )
-        resultsTable.setModel(self.resultsModel)
+        self.resultsTable.setModel(self.resultsModel)
+
+        # selection model
+        self.selectionModel = self.resultsTable.selectionModel()
 
         gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
         gridLayout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
         gridLayout.addWidget(self.searchButton, 0, 2, 1, 1)
-        gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
+        gridLayout.addWidget(self.resultsTable, 1, 0, 1, 3)
 
         verticalLayout.addLayout(gridLayout)
 
@@ -463,6 +473,13 @@ class InstallPackages(QWizardPage):
         )
 
 
+    def get_selected_row(self):
+        """
+        Get package name from the results table view.
+        """
+        indexes = self.selectionModel.selectedRows()
+        for index in sorted(indexes):
+            print(index.data())
 
 
     def launchTerminal(self):
