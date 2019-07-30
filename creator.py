@@ -17,7 +17,8 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QAbstractItemView, QPushButton, QFrame,
                              QMessageBox)
 
-from organize import get_python_installs, get_package_infos, get_venvs_default
+from organize import (get_python_installs, get_package_infos, get_venvs_default,
+                      update_pip)
 
 
 
@@ -31,32 +32,32 @@ class ProgBarDialog(QDialog):
     """
     def __init__(self):
         super().__init__()
-
         self.initUI()
 
 
     def initUI(self):
-        self.setGeometry(684, 365, 325, 80)
-        self.setFixedSize(325, 80)
-        self.setWindowTitle("Creating")
+        self.setGeometry(675, 365, 325, 80)
+        self.setFixedSize(350, 85)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
         h_Layout = QHBoxLayout(self)
         v_Layout = QVBoxLayout()
+        h_Layout.setContentsMargins(0, 15, 0, 0)
 
         self.statusLabel = QLabel(self)
+        self.placeHolder = QLabel(self)
 
         self.progressBar = QProgressBar(self)
-        self.progressBar.setFixedSize(300, 23)
+        self.progressBar.setFixedSize(325, 23)
         self.progressBar.setRange(0, 0)
 
         v_Layout.addWidget(self.statusLabel)
         v_Layout.addWidget(self.progressBar)
+        v_Layout.addWidget(self.placeHolder)
 
         h_Layout.addLayout(v_Layout)
         self.setLayout(h_Layout)
-
 
 
 #]===========================================================================[#
@@ -98,7 +99,6 @@ class VenvWizard(QWizard):
         self.addPage(BasicSettings())
         self.addPage(InstallPackages())
         self.addPage(Summary())
-
 
 
 class BasicSettings(QWizardPage):
@@ -216,13 +216,14 @@ class CreationWorker(QObject):
     Worker informing about start and finish of the create process.
     """
     started = pyqtSignal()
+    step1 = pyqtSignal()
     finished = pyqtSignal()
 
     @pyqtSlot(tuple)
     def install(self, args):
         self.started.emit()
 
-        name, location, with_pip, site_packages, symlinks = args
+        name, location, with_pip, site_packages, symlinks, pipup_script = args
 
         create_venv(
             os.path.join(location, name),
@@ -230,6 +231,10 @@ class CreationWorker(QObject):
             system_site_packages=site_packages,
             symlinks=symlinks,
         )
+
+        if with_pip:
+            self.step1.emit()
+            update_pip(location, name, pipup_script)
 
         self.finished.emit()
 
@@ -263,6 +268,7 @@ class InstallPackages(QWizardPage):
         self.m_install_worker.moveToThread(thread)
 
         self.m_install_worker.started.connect(self.progressBar.exec_)
+        self.m_install_worker.step1.connect(self.switch_progressbar_label)
         self.m_install_worker.finished.connect(self.progressBar.close)
         self.m_install_worker.finished.connect(self.post_install_venv)
         self.m_install_worker.finished.connect(self.reEnablePage)
@@ -332,12 +338,16 @@ class InstallPackages(QWizardPage):
         self.symlinks = self.field("symlinks")
 
         # display which python version is used to create the virt. env
-        self.progressBar.statusLabel.setText(
-            f"Creating new venv using {self.pythonVers[:12]}"
-        )
+        self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
+        self.progressBar.statusLabel.setText("Creating virtual environment...")
 
         # overwrite executable with the python version selected
         sys.executable = self.pythonPath
+
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        default_file = os.path.join(current_dir, "def", "default")
+        install_script = os.path.join(current_dir, "scripts", "install_pkgs.sh")
+        self.pipup_script = os.path.join(current_dir, "scripts", "update_pip.sh")
 
         # run the create process
         self.createProcess()
@@ -356,10 +366,19 @@ class InstallPackages(QWizardPage):
             self.withPip,
             self.sitePackages,
             self.symlinks,
+            self.pipup_script
         )
 
         wrapper = partial(self.m_install_worker.install, args)
         QTimer.singleShot(0, wrapper)
+
+
+    def switch_progressbar_label(self):
+        """
+        Switch the progress bar label text to display when Pip is being
+        updated.
+        """
+        self.progressBar.statusLabel.setText("Updating Pip...")
 
 
     def clean_venv_dir(self):
@@ -442,6 +461,8 @@ class InstallPackages(QWizardPage):
             "No results!",
             f'No projects matching "{self.pkgNameLineEdit.text()}".\n'
         )
+
+
 
 
     def launchTerminal(self):
