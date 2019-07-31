@@ -18,8 +18,8 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
 from organize import (get_python_installs, get_package_infos, get_venvs_default,
                       run_pip)
 
-cmd = ["install", "list", "show"]
-opt = ["--upgrade"]
+cmd = ["install ", "list ", "show "]
+opt = ["--upgrade "]
 PIP = "pip"
 
 
@@ -63,6 +63,38 @@ class ProgBarDialog(QDialog):
 
 
 #]===========================================================================[#
+#] WORKER (CREATE PROCESS) [#================================================[#
+#]===========================================================================[#
+
+class CreationWorker(QObject):
+    """
+    Worker informing about start and finish of the create process.
+    """
+    started = pyqtSignal()
+    step1 = pyqtSignal()
+    finished = pyqtSignal()
+
+    @pyqtSlot(tuple)
+    def install(self, args):
+        self.started.emit()
+
+        name, location, with_pip, site_packages, symlinks = args
+
+        create_venv(
+            os.path.join(location, name),
+            with_pip=with_pip,
+            system_site_packages=site_packages,
+            symlinks=symlinks,
+        )
+
+        if with_pip:
+            self.step1.emit()
+            run_pip(cmd[0], opt[0], PIP, location, name)
+
+        self.finished.emit()
+
+
+#]===========================================================================[#
 #] WIZARD [#=================================================================[#
 #]===========================================================================[#
 
@@ -98,9 +130,21 @@ class VenvWizard(QWizard):
             """
         )
 
-        self.addPage(BasicSettings())
-        self.addPage(InstallPackages())
-        self.addPage(Summary())
+        basicSettings = BasicSettings()
+        self.addPage(basicSettings)
+
+        installId = self.addPage(InstallPackages())
+        summaryId = self.addPage(Summary())
+
+        basicSettings.nextId = (
+            lambda: installId
+            if basicSettings.withPipCBox.isChecked()
+            else summaryId
+        )
+
+        #self.addPage(BasicSettings())
+        #self.addPage(InstallPackages())
+        #self.addPage(Summary())
 
 
 class BasicSettings(QWizardPage):
@@ -209,38 +253,6 @@ class BasicSettings(QWizardPage):
         self.venvLocationLineEdit.setText(folderName)
 
 
-#]===========================================================================[#
-#] WORKER (CREATE PROCESS) [#================================================[#
-#]===========================================================================[#
-
-class CreationWorker(QObject):
-    """
-    Worker informing about start and finish of the create process.
-    """
-    started = pyqtSignal()
-    step1 = pyqtSignal()
-    finished = pyqtSignal()
-
-    @pyqtSlot(tuple)
-    def install(self, args):
-        self.started.emit()
-
-        name, location, with_pip, site_packages, symlinks, pipup_script = args
-
-        create_venv(
-            os.path.join(location, name),
-            with_pip=with_pip,
-            system_site_packages=site_packages,
-            symlinks=symlinks,
-        )
-
-        if with_pip:
-            self.step1.emit()
-            run_pip(cmd[0], opt[0], PIP, location, name)
-
-        self.finished.emit()
-
-
 class InstallPackages(QWizardPage):
     """
     Install packages via `pip` into the created virtual environment.
@@ -258,7 +270,6 @@ class InstallPackages(QWizardPage):
 
         self.progressBar = ProgBarDialog()
 
-
         #]===================================================================[#
         #] THREAD (CREATE PROCESS) [#========================================[#
         #]===================================================================[#
@@ -274,7 +285,6 @@ class InstallPackages(QWizardPage):
         self.m_install_worker.finished.connect(self.progressBar.close)
         self.m_install_worker.finished.connect(self.post_install_venv)
         self.m_install_worker.finished.connect(self.re_enable_page)
-
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -300,7 +310,7 @@ class InstallPackages(QWizardPage):
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
-            doubleClicked=self.get_selected_row
+            doubleClicked=self.install_package
         )
         self.resultsTable.setSortingEnabled(True)
 
@@ -356,7 +366,7 @@ class InstallPackages(QWizardPage):
 
 
     def initializePage(self):
-        # disable wizards next button and set search button to default
+        # disable wizard's next button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
         QTimer.singleShot(0, lambda: next_button.setDefault(False))
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
@@ -393,8 +403,7 @@ class InstallPackages(QWizardPage):
             self.venvLocation,
             self.withPip,
             self.sitePackages,
-            self.symlinks,
-            self.pipup_script
+            self.symlinks
         )
 
         wrapper = partial(self.m_install_worker.install, args)
@@ -491,13 +500,24 @@ class InstallPackages(QWizardPage):
         )
 
 
-    def get_selected_row(self):
+    def install_package(self):
         """
-        Get package name from the results table view.
+        Get the name of the double-clicked package from the results table
+        view and ask user for confirmation before installing. If confirmed
+        install the selected package into the created virtual environment,
+        else abort.
         """
         indexes = self.selectionModel.selectedRows()
         for index in sorted(indexes):
-            print(index.data())
+            self.pkg = index.data()
+
+        self.messageBoxConfirm = QMessageBox.question(self,
+            "Confirm", f'Are you sure you want to install "{self.pkg}"?',
+            QMessageBox.Yes | QMessageBox.Cancel
+        )
+
+        if self.messageBoxConfirm == QMessageBox.Yes:
+            run_pip(cmd[0], opt[0], self.pkg, self.venvLocation, self.venvName)
 
 
     def launch_terminal(self):
