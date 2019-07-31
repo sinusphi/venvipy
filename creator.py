@@ -129,7 +129,7 @@ class VenvWizard(QWizard):
             }
             """
         )
-
+        '''
         basicSettings = BasicSettings()
         self.addPage(basicSettings)
 
@@ -145,6 +145,19 @@ class VenvWizard(QWizard):
         #self.addPage(BasicSettings())
         #self.addPage(InstallPackages())
         #self.addPage(Summary())
+        '''
+        self.basicSettings = BasicSettings()
+        self.addPage(self.basicSettings)
+        self.installId = self.addPage(InstallPackages())
+        self.summaryId = 20
+        self.setPage(self.summaryId, Summary())
+
+    def nextId(self):
+        if self.currentPage() == self.basicSettings:
+            if self.basicSettings.withPipCBox.isChecked():
+                return self.installId
+            return self.summaryId
+        return QWizard.nextId(self)
 
 
 class BasicSettings(QWizardPage):
@@ -166,19 +179,19 @@ class BasicSettings(QWizardPage):
         #]===================================================================[#
 
         interpreterLabel = QLabel("&Interpreter:")
-        self.interprComboBox = QComboBox()
-        interpreterLabel.setBuddy(self.interprComboBox)
+        interprComboBox = QComboBox()
+        interpreterLabel.setBuddy(interprComboBox)
 
         # add the found Python versions to combobox
-        self.interprComboBox.addItem("---")
+        interprComboBox.addItem("---")
         for info in get_python_installs():
-            self.interprComboBox.addItem(
+            interprComboBox.addItem(
                 f"{info.version} - {info.path}", info.path
             )
 
         venvNameLabel = QLabel("Venv &name:")
-        self.venvNameLineEdit = QLineEdit()
-        venvNameLabel.setBuddy(self.venvNameLineEdit)
+        venvNameLineEdit = QLineEdit()
+        venvNameLabel.setBuddy(venvNameLineEdit)
 
         venvLocationLabel = QLabel("&Location:")
         self.venvLocationLineEdit = QLineEdit()
@@ -213,22 +226,22 @@ class BasicSettings(QWizardPage):
         )
 
         # register fields
-        self.registerField("interprComboBox*", self.interprComboBox)
-        self.registerField("pythonVers", self.interprComboBox, "currentText")
-        self.registerField("pythonPath", self.interprComboBox, "currentData")
-        self.registerField("venvName*", self.venvNameLineEdit)
+        self.registerField("interprComboBox*", interprComboBox)
+        self.registerField("pythonVers", interprComboBox, "currentText")
+        self.registerField("pythonPath", interprComboBox, "currentData")
+        self.registerField("venvName*", venvNameLineEdit)
         self.registerField("venvLocation*", self.venvLocationLineEdit)
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
-        self.registerField("launchVenv", self.launchVenvCBox)
         self.registerField("symlinks", self.symlinksCBox)
+        self.registerField("launchVenv", self.launchVenvCBox)
 
         # grid layout
         gridLayout = QGridLayout()
         gridLayout.addWidget(interpreterLabel, 0, 0, 1, 1)
-        gridLayout.addWidget(self.interprComboBox, 0, 1, 1, 2)
+        gridLayout.addWidget(interprComboBox, 0, 1, 1, 2)
         gridLayout.addWidget(venvNameLabel, 1, 0, 1, 1)
-        gridLayout.addWidget(self.venvNameLineEdit, 1, 1, 1, 2)
+        gridLayout.addWidget(venvNameLineEdit, 1, 1, 1, 2)
         gridLayout.addWidget(venvLocationLabel, 2, 0, 1, 1)
         gridLayout.addWidget(self.venvLocationLineEdit, 2, 1, 1, 1)
         gridLayout.addWidget(selectDirToolButton, 2, 2, 1, 1)
@@ -345,7 +358,7 @@ class InstallPackages(QWizardPage):
 
 
         #]===================================================================[#
-        #] PIP OPERATIONS [#=================================================[#
+        #] DIR OPERATIONS [#=================================================[#
         #]===================================================================[#
 
         # the application directory
@@ -377,8 +390,8 @@ class InstallPackages(QWizardPage):
         self.venvLocation = self.field("venvLocation")
         self.withPip = self.field("withPip")
         self.sitePackages = self.field("sitePackages")
-        self.launchVenv = self.field("launchVenv")
         self.symlinks = self.field("symlinks")
+        self.launchVenv = self.field("launchVenv")
 
         # display which python version is used to create the virt. env
         self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
