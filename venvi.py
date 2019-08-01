@@ -358,10 +358,11 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # display a message box if no Python installation is found at all
-        messageText = "No Python 3 installation found!\n\n" \
-                      "Please specify the path to a Python 3 " \
-                      "installation or click Continue to go on " \
-                      "anyway.\n\n"
+        messageText = (
+            "No suitable Python installation found!\n\n"
+            "Please specify the path to a Python (>=3.3) \n"
+            "installation or click Continue to go on anyway.\n\n"
+        )
 
         self.messageBox = QMessageBox(
             QMessageBox.Critical, "VenviPy Launcher",
@@ -373,7 +374,7 @@ class Ui_MainWindow(QMainWindow):
 
 
         if not get_python_installs():
-            print("WARNING: No Python 3 installation found!")
+            print("[WARNING]: No suitable Python installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
@@ -432,7 +433,7 @@ class Ui_MainWindow(QMainWindow):
                 for i, text in enumerate((info.version, info.path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                #print(info)
+                print(f"[INTERPRETER]: {info}")
 
 
     #]=======================================================================[#
@@ -451,7 +452,7 @@ class Ui_MainWindow(QMainWindow):
             for i, text in enumerate((info.name, info.version, info.directory)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
-            #print(info)
+            print(f"[VENV]: {info}")
 
 
     #]=======================================================================[#
