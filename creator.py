@@ -71,7 +71,7 @@ class CreationWorker(QObject):
     Worker informing about start and finish of the create process.
     """
     started = pyqtSignal()
-    step1 = pyqtSignal()
+    step_pip = pyqtSignal()
     finished = pyqtSignal()
 
     @pyqtSlot(tuple)
@@ -88,7 +88,7 @@ class CreationWorker(QObject):
         )
 
         if with_pip:
-            self.step1.emit()
+            self.step_pip.emit()
             run_pip(cmd[0], opt[0], PIP, location, name)
 
         self.finished.emit()
@@ -129,7 +129,16 @@ class VenvWizard(QWizard):
             }
             """
         )
+
         '''
+        #]===================================================================[#
+
+        #self.addPage(BasicSettings())
+        #self.addPage(InstallPackages())
+        #self.addPage(Summary())
+
+        #]===================================================================[#
+
         basicSettings = BasicSettings()
         self.addPage(basicSettings)
 
@@ -142,15 +151,15 @@ class VenvWizard(QWizard):
             else summaryId
         )
 
-        #self.addPage(BasicSettings())
-        #self.addPage(InstallPackages())
-        #self.addPage(Summary())
+        #]===================================================================[#
         '''
+
         self.basicSettings = BasicSettings()
         self.addPage(self.basicSettings)
         self.installId = self.addPage(InstallPackages())
         self.summaryId = 20
         self.setPage(self.summaryId, Summary())
+
 
     def nextId(self):
         if self.currentPage() == self.basicSettings:
@@ -174,6 +183,24 @@ class BasicSettings(QWizardPage):
                          "a virtual environment for Python 3. ")
 
 
+        self.progressBar = ProgBarDialog()
+
+        #]===================================================================[#
+        #] THREADS  [#=======================================================[#
+        #]===================================================================[#
+
+        thread = QThread(self)
+        thread.start()
+
+        self.m_install_worker = CreationWorker()
+        self.m_install_worker.moveToThread(thread)
+
+        self.m_install_worker.started.connect(self.progressBar.exec_)
+        self.m_install_worker.step_pip.connect(self.show_pipup_msg)
+        self.m_install_worker.finished.connect(self.progressBar.close)
+        self.m_install_worker.finished.connect(self.post_install_venv)
+        self.m_install_worker.finished.connect(self.re_enable_page)
+
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
@@ -190,8 +217,8 @@ class BasicSettings(QWizardPage):
             )
 
         venvNameLabel = QLabel("Venv &name:")
-        venvNameLineEdit = QLineEdit()
-        venvNameLabel.setBuddy(venvNameLineEdit)
+        self.venvNameLineEdit = QLineEdit()
+        venvNameLabel.setBuddy(self.venvNameLineEdit)
 
         venvLocationLabel = QLabel("&Location:")
         self.venvLocationLineEdit = QLineEdit()
@@ -225,14 +252,17 @@ class BasicSettings(QWizardPage):
             "Launch a &terminal with activated venv after installation"
         )
 
-        createButton = QPushButton("Create", self)
+        createButton = QPushButton(
+            "&Create", self,
+            clicked=self.execute_venv_create,
+        )
         createButton.setFixedWidth(90)
 
         # register fields
         self.registerField("interprComboBox*", interprComboBox)
         self.registerField("pythonVers", interprComboBox, "currentText")
         self.registerField("pythonPath", interprComboBox, "currentData")
-        self.registerField("venvName*", venvNameLineEdit)
+        self.registerField("venvName*", self.venvNameLineEdit)
         self.registerField("venvLocation*", self.venvLocationLineEdit)
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
@@ -249,7 +279,7 @@ class BasicSettings(QWizardPage):
         gridLayout.addWidget(interpreterLabel, 0, 0, 1, 1)
         gridLayout.addWidget(interprComboBox, 0, 1, 1, 2)
         gridLayout.addWidget(venvNameLabel, 1, 0, 1, 1)
-        gridLayout.addWidget(venvNameLineEdit, 1, 1, 1, 2)
+        gridLayout.addWidget(self.venvNameLineEdit, 1, 1, 1, 2)
         gridLayout.addWidget(venvLocationLabel, 2, 0, 1, 1)
         gridLayout.addWidget(self.venvLocationLineEdit, 2, 1, 1, 1)
         gridLayout.addWidget(selectDirToolButton, 2, 2, 1, 1)
@@ -276,8 +306,105 @@ class BasicSettings(QWizardPage):
 
 
     def execute_venv_create(self):
-        pass
+        """
+        Execute the creation process.
+        """
+        self.pythonVers = self.field("pythonVers")
+        self.pythonPath = self.field("pythonPath")
+        self.venvName = self.field("venvName")
+        self.venvLocation = self.field("venvLocation")
+        self.withPip = self.field("withPip")
+        self.sitePackages = self.field("sitePackages")
+        self.symlinks = self.field("symlinks")
+        self.launchVenv = self.field("launchVenv")
 
+
+        # display which python version is used to create the virt. env
+        self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
+        self.progressBar.statusLabel.setText("Creating virtual environment...")
+
+        # overwrite executable with the python version selected
+        sys.executable = self.pythonPath
+
+        # run the create process
+        self.create_process()
+
+        # disable the InstallPackages page during create process
+        self.setEnabled(False)
+
+
+    def create_process(self):
+        """
+        Create the virtual environment.
+        """
+        args = (
+            self.venvName,
+            self.venvLocation,
+            self.withPip,
+            self.sitePackages,
+            self.symlinks
+        )
+
+        wrapper = partial(self.m_install_worker.install, args)
+        QTimer.singleShot(0, wrapper)
+
+
+    def show_pipup_msg(self):
+        """
+        In progress bar show that Pip is being updated.
+        """
+        self.progressBar.statusLabel.setText("Updating Pip...")
+
+
+    def clean_venv_dir(self):
+        """
+        Remove unnecessarily created dirs from `lib` dir.
+        """
+        lib_dir = os.path.join(self.venvLocation, self.venvName, "lib")
+        valid_dir_name = f"python{self.pythonVers[7:10]}"
+
+        valid_dir = os.path.join(
+            self.venvLocation,
+            self.venvName,
+            "lib",
+            valid_dir_name
+        )
+
+        for fn in os.listdir(lib_dir):
+            fn = os.path.join(lib_dir, fn)
+            if os.path.islink(fn) or os.path.isfile(fn):
+                os.remove(fn)
+            elif os.path.isdir(fn) and fn != valid_dir:
+                shutil.rmtree(fn)
+                print(f"Removed directory: '{fn}'")
+
+
+    def post_install_venv(self):
+        """
+        Create the configuration file and remove unnecessary dirs.
+        """
+        cfg_path = os.path.join(self.venvLocation, self.venvName, "pyvenv.cfg")
+        bin_path = os.path.split(self.pythonPath)[0]
+
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            f.write(f"home = {bin_path}\n")
+
+            if self.sitePackages:
+                include = "true"
+            else:
+                include = "false"
+
+            f.write(f"include-system-site-packages = {include}\n")
+            f.write(f"version = {self.pythonVers[7:12]}\n")
+
+        self.clean_venv_dir()
+
+
+    def re_enable_page(self):
+        """
+        Re-enable wizard page when create process has finished.
+        """
+        self.setEnabled(True)
 
 
 class InstallPackages(QWizardPage):
@@ -295,23 +422,7 @@ class InstallPackages(QWizardPage):
             ""
         )
 
-        self.progressBar = ProgBarDialog()
-
-        #]===================================================================[#
-        #] THREAD (CREATE PROCESS) [#========================================[#
-        #]===================================================================[#
-
-        thread = QThread(self)
-        thread.start()
-
-        self.m_install_worker = CreationWorker()
-        self.m_install_worker.moveToThread(thread)
-
-        self.m_install_worker.started.connect(self.progressBar.exec_)
-        self.m_install_worker.step1.connect(self.switch_progressbar_label)
-        self.m_install_worker.finished.connect(self.progressBar.close)
-        self.m_install_worker.finished.connect(self.post_install_venv)
-        self.m_install_worker.finished.connect(self.re_enable_page)
+        #self.progressBar = ProgBarDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -371,27 +482,6 @@ class InstallPackages(QWizardPage):
         verticalLayout.addLayout(gridLayout)
 
 
-        #]===================================================================[#
-        #] DIR OPERATIONS [#=================================================[#
-        #]===================================================================[#
-
-        # the application directory
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-
-        # the file containing the default directory (str) if set
-        default_file = os.path.join(current_dir, "def", "default")
-
-        # script that installs the selected packages
-        self.install_script = os.path.join(
-            current_dir, "scripts", "install_pkgs.sh"
-        )
-
-        # script that updates pip
-        self.pipup_script = os.path.join(
-            current_dir, "scripts", "update_pip.sh"
-        )
-
-
     def initializePage(self):
         # disable wizard's next button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
@@ -402,100 +492,6 @@ class InstallPackages(QWizardPage):
         self.pythonPath = self.field("pythonPath")
         self.venvName = self.field("venvName")
         self.venvLocation = self.field("venvLocation")
-        self.withPip = self.field("withPip")
-        self.sitePackages = self.field("sitePackages")
-        self.symlinks = self.field("symlinks")
-        self.launchVenv = self.field("launchVenv")
-
-        # display which python version is used to create the virt. env
-        self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
-        self.progressBar.statusLabel.setText("Creating virtual environment...")
-
-        # overwrite executable with the python version selected
-        sys.executable = self.pythonPath
-
-        # run the create process
-        self.create_process()
-
-        # disable the InstallPackages page during create process
-        self.setEnabled(False)
-
-
-    def create_process(self):
-        """
-        Create the virtual environment.
-        """
-        args = (
-            self.venvName,
-            self.venvLocation,
-            self.withPip,
-            self.sitePackages,
-            self.symlinks
-        )
-
-        wrapper = partial(self.m_install_worker.install, args)
-        QTimer.singleShot(0, wrapper)
-
-
-    def switch_progressbar_label(self):
-        """
-        Switch the progress bar label text to display when Pip is being
-        updated.
-        """
-        self.progressBar.statusLabel.setText("Updating Pip...")
-
-
-    def clean_venv_dir(self):
-        """
-        Remove unnecessarily created dirs from `lib` dir.
-        """
-        lib_dir = os.path.join(self.venvLocation, self.venvName, "lib")
-        valid_dir_name = f"python{self.pythonVers[7:10]}"
-
-        valid_dir = os.path.join(
-            self.venvLocation,
-            self.venvName,
-            "lib",
-            valid_dir_name
-        )
-
-        for fn in os.listdir(lib_dir):
-            fn = os.path.join(lib_dir, fn)
-            if os.path.islink(fn) or os.path.isfile(fn):
-                os.remove(fn)
-            elif os.path.isdir(fn) and fn != valid_dir:
-                shutil.rmtree(fn)
-                print(f"removed dir: '{fn}'")
-
-
-    def post_install_venv(self):
-        """
-        Create a configuration file and remove unnecessary dirs.
-        """
-        cfg_path = os.path.join(self.venvLocation, self.venvName, "pyvenv.cfg")
-        bin_path = os.path.split(self.pythonPath)[0]
-
-        with open(cfg_path, "w", encoding="utf-8") as f:
-            f.write(f"home = {bin_path}\n")
-
-            if self.sitePackages:
-                include = "true"
-            else:
-                include = "false"
-
-            f.write(f"include-system-site-packages = {include}\n")
-            f.write(f"version = {self.pythonVers[7:12]}\n")
-
-        self.clean_venv_dir()
-
-
-    def re_enable_page(self):
-        """
-        Re-enable wizard page when create process has finished and set focus
-        on the input field.
-        """
-        self.setEnabled(True)
-        self.pkgNameLineEdit.setFocus()
 
 
     def pop_results_table(self):
@@ -529,7 +525,7 @@ class InstallPackages(QWizardPage):
 
     def install_package(self):
         """
-        Get the name of the double-clicked package from the results table
+        Get the name of the double-clicked item from the results table
         view and ask user for confirmation before installing. If confirmed
         install the selected package into the created virtual environment,
         else abort.
@@ -578,7 +574,6 @@ class Summary(QWizardPage):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-
     wiz = VenvWizard()
     wiz.show()
 
