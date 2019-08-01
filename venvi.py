@@ -14,8 +14,8 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
                              QCheckBox, QLineEdit, QGroupBox, QHBoxLayout,
                              QComboBox, QToolButton, QDialog)
 
+from organize import get_python_installs, get_venvs_default
 import venvipy_rc
-import organize
 import settings
 import creator
 import info
@@ -358,10 +358,11 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # display a message box if no Python installation is found at all
-        messageText = "No Python 3 installation found!\n\n" \
-                      "Please specify the path to a Python 3 " \
-                      "installation or click Continue to go on " \
-                      "anyway.\n\n"
+        messageText = (
+            "No suitable Python installation found!\n\n"
+            "Please specify the path to a Python (>=3.3) \n"
+            "installation or click Continue to go on anyway.\n\n"
+        )
 
         self.messageBox = QMessageBox(
             QMessageBox.Critical, "VenviPy Launcher",
@@ -372,8 +373,8 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
 
-        if not organize.get_python_installs():
-            print("WARNING: No Python 3 installation found!")
+        if not get_python_installs():
+            print("[WARNING]: No suitable Python installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
@@ -423,16 +424,16 @@ class Ui_MainWindow(QMainWindow):
         """
         Populate the interpreter table view.
         """
-        if organize.get_python_installs():
+        if get_python_installs():
             self.modelTV1.setRowCount(0)
 
-            for info in organize.get_python_installs():
+            for info in get_python_installs():
                 self.modelTV1.insertRow(0)
 
                 for i, text in enumerate((info.version, info.path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                print(info)
+                print(f"[INTERPRETER]: {info}")
 
 
     #]=======================================================================[#
@@ -445,13 +446,13 @@ class Ui_MainWindow(QMainWindow):
         """
         self.modelTV2.setRowCount(0)
 
-        for info in organize.get_venvs_default():
+        for info in get_venvs_default():
             self.modelTV2.insertRow(0)
 
             for i, text in enumerate((info.name, info.version, info.directory)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
-            print(info)
+            print(f"[VENV]: {info}")
 
 
     #]=======================================================================[#
