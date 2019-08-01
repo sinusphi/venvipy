@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Settings."""
+"""Set the default venv directory."""
 import os
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -29,6 +29,18 @@ class SelectDefaultDir(QDialog):
         self.setGeometry(600, 365, 500, 100)
         self.setFixedSize(500, 100)
 
+        self.setStyleSheet(
+            """
+            QToolTip {
+                background-color: rgb(47, 52, 63);
+                border: rgb(47, 52, 63);
+                color: rgb(210, 210, 210);
+                padding: 1px;
+                opacity: 325
+            }
+            """
+        )
+
         v_Layout = QVBoxLayout(self)
         h_Layout = QHBoxLayout()
         gridLayout = QGridLayout()
@@ -39,12 +51,12 @@ class SelectDefaultDir(QDialog):
 
         folder_icon = QIcon.fromTheme("folder")
 
-        selectDirToolButton = QToolButton(
+        browseToolButton = QToolButton(
             toolTip="Browse",
             icon=folder_icon,
-            clicked=self.selectDirTButton_clicked
+            clicked=self.select_dir
         )
-        selectDirToolButton.setFixedSize(26, 27)
+        browseToolButton.setFixedSize(26, 27)
 
         horizontalLine = QFrame(
             frameShape=QtWidgets.QFrame.HLine,
@@ -65,7 +77,7 @@ class SelectDefaultDir(QDialog):
 
         gridLayout.addWidget(defaultDirLabel, 0, 0, 1, 1)
         gridLayout.addWidget(self.defaultDirLineEdit, 0, 1, 1, 1)
-        gridLayout.addWidget(selectDirToolButton, 0, 2, 1, 1)
+        gridLayout.addWidget(browseToolButton, 0, 2, 1, 1)
 
         h_Layout.addItem(spacerItem)
         h_Layout.addWidget(okButton, 0, Qt.AlignBottom)
@@ -76,7 +88,7 @@ class SelectDefaultDir(QDialog):
         v_Layout.addLayout(h_Layout)
 
 
-    def selectDirTButton_clicked(self):
+    def select_dir(self):
         """
         Select directory which should be set as default.
         """
