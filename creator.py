@@ -225,6 +225,9 @@ class BasicSettings(QWizardPage):
             "Launch a &terminal with activated venv after installation"
         )
 
+        createButton = QPushButton("Create", self)
+        createButton.setFixedWidth(90)
+
         # register fields
         self.registerField("interprComboBox*", interprComboBox)
         self.registerField("pythonVers", interprComboBox, "currentText")
@@ -235,6 +238,11 @@ class BasicSettings(QWizardPage):
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
         self.registerField("launchVenv", self.launchVenvCBox)
+
+        # box layout containing create button
+        h_BoxLayout = QHBoxLayout()
+        h_BoxLayout.setContentsMargins(495, 5, 0, 0)
+        h_BoxLayout.addWidget(createButton)
 
         # grid layout
         gridLayout = QGridLayout()
@@ -247,6 +255,7 @@ class BasicSettings(QWizardPage):
         gridLayout.addWidget(selectDirToolButton, 2, 2, 1, 1)
         gridLayout.addWidget(placeHolder, 3, 0, 1, 2)
         gridLayout.addWidget(groupBox, 4, 0, 1, 3)
+        gridLayout.addLayout(h_BoxLayout, 5, 0, 1, 0)
         self.setLayout(gridLayout)
 
         # options groupbox
@@ -264,6 +273,11 @@ class BasicSettings(QWizardPage):
         """
         folderName = QFileDialog.getExistingDirectory()
         self.venvLocationLineEdit.setText(folderName)
+
+
+    def execute_venv_create(self):
+        pass
+
 
 
 class InstallPackages(QWizardPage):
