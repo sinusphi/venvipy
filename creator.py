@@ -15,13 +15,13 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QAbstractItemView, QPushButton, QFrame,
                              QMessageBox, QHeaderView)
 
-from organize import (get_python_installs, get_package_infos, get_venvs_default,
-                      run_pip)
+from organize import (run_pip, get_package_infos, get_venvs_default,
+                      get_python_installs)
+
+PIP = "pip"
 
 cmd = ["install ", "list ", "show "]
 opt = ["--upgrade "]
-PIP = "pip"
-
 
 
 #]===========================================================================[#
@@ -196,9 +196,10 @@ class BasicSettings(QWizardPage):
         self.m_install_worker.moveToThread(thread)
 
         self.m_install_worker.started.connect(self.progressBar.exec_)
-        self.m_install_worker.step_pip.connect(self.show_pipup_msg)
+        self.m_install_worker.step_pip.connect(self.set_progbar_pipup_label)
         self.m_install_worker.finished.connect(self.progressBar.close)
         self.m_install_worker.finished.connect(self.post_install_venv)
+        self.m_install_worker.finished.connect(self.show_finish_msg)
         self.m_install_worker.finished.connect(self.re_enable_page)
 
         #]===================================================================[#
@@ -252,11 +253,11 @@ class BasicSettings(QWizardPage):
             "Launch a &terminal with activated venv after installation"
         )
 
-        createButton = QPushButton(
+        self.createButton = QPushButton(
             "&Create", self,
             clicked=self.execute_venv_create,
         )
-        createButton.setFixedWidth(90)
+        self.createButton.setFixedWidth(90)
 
         # register fields
         self.registerField("interprComboBox*", interprComboBox)
@@ -272,7 +273,7 @@ class BasicSettings(QWizardPage):
         # box layout containing create button
         h_BoxLayout = QHBoxLayout()
         h_BoxLayout.setContentsMargins(495, 5, 0, 0)
-        h_BoxLayout.addWidget(createButton)
+        h_BoxLayout.addWidget(self.createButton)
 
         # grid layout
         gridLayout = QGridLayout()
@@ -309,6 +310,7 @@ class BasicSettings(QWizardPage):
         """
         Execute the creation process.
         """
+        self.combobox = self.field("interprComboBox")
         self.pythonVers = self.field("pythonVers")
         self.pythonPath = self.field("pythonPath")
         self.venvName = self.field("venvName")
@@ -318,19 +320,28 @@ class BasicSettings(QWizardPage):
         self.symlinks = self.field("symlinks")
         self.launchVenv = self.field("launchVenv")
 
+        if self.combobox and self.venvName and self.venvLocation:
+            # display which python version is used to create the virt. env
+            self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
+            self.progressBar.statusLabel.setText("Creating virtual environment...")
 
-        # display which python version is used to create the virt. env
-        self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
-        self.progressBar.statusLabel.setText("Creating virtual environment...")
+            # overwrite executable with the python version selected
+            sys.executable = self.pythonPath
 
-        # overwrite executable with the python version selected
-        sys.executable = self.pythonPath
+            # run the create process
+            self.create_process()
 
-        # run the create process
-        self.create_process()
+            # disable the InstallPackages page during create process
+            self.setEnabled(False)
 
-        # disable the InstallPackages page during create process
-        self.setEnabled(False)
+        else:
+            print("[ERROR]: Missing input data!")
+            QMessageBox.information(self,
+                "Missing data!",
+                "Please specify at least the interpreter \n"
+                "to use, the path and a name for the \n"
+                "virtual environment.\n"
+            )
 
 
     def create_process(self):
@@ -349,11 +360,27 @@ class BasicSettings(QWizardPage):
         QTimer.singleShot(0, wrapper)
 
 
-    def show_pipup_msg(self):
+    def set_progbar_pipup_label(self):
         """
-        In progress bar show that Pip is being updated.
+        In progress bar status label show that Pip is being updated.
         """
         self.progressBar.statusLabel.setText("Updating Pip...")
+
+
+    def show_finish_msg(self):
+        """
+        Show info message when the creation process has finished successfully.
+        """
+        print(
+            f"[INFO]: Successfully created virtual environment '{self.venvName}' "
+            f"in '{self.venvLocation}'"
+        )
+        QMessageBox.information(self,
+            "Done",
+            f"Successfully created virtual environment '{self.venvName}'. \n"
+            f"New {self.pythonVers[:10]} executable in \n"
+            f"'{self.venvLocation}/{self.venvName}/bin'. \n"
+        )
 
 
     def clean_venv_dir(self):
@@ -372,11 +399,14 @@ class BasicSettings(QWizardPage):
 
         for fn in os.listdir(lib_dir):
             fn = os.path.join(lib_dir, fn)
+
             if os.path.islink(fn) or os.path.isfile(fn):
                 os.remove(fn)
+                print(f"[INFO]: Removed file or directory: '{fn}'")
+
             elif os.path.isdir(fn) and fn != valid_dir:
                 shutil.rmtree(fn)
-                print(f"Removed directory: '{fn}'")
+                print(f"[INFO]: Removed file or directory: '{fn}'")
 
 
     def post_install_venv(self):
@@ -417,8 +447,8 @@ class InstallPackages(QWizardPage):
         self.setTitle("Install Packages")
         self.setSubTitle(
             "Specify the packages you want to install into the virtual "
-            "environment. Right-click on the item to mark it for "
-            "installation and click next when ready."
+            "environment. Double-click on the item to install it for "
+            "installation and click next when finished."
             ""
         )
 
@@ -431,7 +461,7 @@ class InstallPackages(QWizardPage):
         verticalLayout = QVBoxLayout()
         gridLayout = QGridLayout(self)
 
-        pkgNameLabel = QLabel("Package name:")
+        pkgNameLabel = QLabel("Package:")
         self.pkgNameLineEdit = QLineEdit()
         pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
@@ -498,9 +528,11 @@ class InstallPackages(QWizardPage):
         """
         Populate the results table view.
         """
+        search_item = self.pkgNameLineEdit.text()
+
         self.resultsModel.setRowCount(0)
 
-        for info in get_package_infos(self.pkgNameLineEdit.text()):
+        for info in get_package_infos(search_item):
             self.resultsModel.insertRow(0)
 
             for i, text in enumerate(
@@ -508,19 +540,12 @@ class InstallPackages(QWizardPage):
             ):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
-        if not get_package_infos(self.pkgNameLineEdit.text()):
-            self.no_results_msg()
-            print("No results!")
-
-
-    def no_results_msg(self):
-        """
-        Show info message if no packages were found.
-        """
-        QMessageBox.information(self,
-            "No results!",
-            f'No projects matching "{self.pkgNameLineEdit.text()}".\n'
-        )
+        if not get_package_infos(search_item):
+            print(f"[INFO]: No matches for '{search_item}'")
+            QMessageBox.information(self,
+                "No results",
+                f"No packages matching '{search_item}'.\n"
+            )
 
 
     def install_package(self):
@@ -535,11 +560,12 @@ class InstallPackages(QWizardPage):
             self.pkg = index.data()
 
         self.messageBoxConfirm = QMessageBox.question(self,
-            "Confirm", f'Are you sure you want to install "{self.pkg}"?',
+            "Confirm", f"Are you sure you want to install '{self.pkg}'?",
             QMessageBox.Yes | QMessageBox.Cancel
         )
 
         if self.messageBoxConfirm == QMessageBox.Yes:
+            print(f"[INFO]: Installing '{self.pkg}'")
             run_pip(cmd[0], opt[0], self.pkg, self.venvLocation, self.venvName)
 
 
