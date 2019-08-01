@@ -49,7 +49,8 @@ def get_python_installs():
             infos.append(info)
 
         except FileNotFoundError as err:
-            print(f"{err.args[1]}")
+            #print(f"[INFO]: {err.args[1]}")
+            pass  # no need to show which Python versions were not found
 
     return infos
 
@@ -181,7 +182,6 @@ def run_pip(cmd, opt, target, venv_dir, venv_name):
         script = os.path.join(current_dir, "scripts", "update_pip.sh")
     else:
         script = os.path.join(current_dir, "scripts", "install_pkgs.sh")
-        opt = ""
 
     if has_bash():
         # create install script and make it executable
@@ -197,11 +197,10 @@ def run_pip(cmd, opt, target, venv_dir, venv_name):
         # run install script
         res = Popen(
             ["/bin/bash", script],
-            stdout=PIPE, stderr=PIPE,
-            universal_newlines=True
+            stdout=PIPE, stderr=PIPE, text="utf-8"
         )
         out, _ = res.communicate()
-        print(out)  # print output to console
+        #print(out)  # print output to console
 
 
 
@@ -234,10 +233,10 @@ if __name__ == "__main__":
         with open(default_file, "r") as f:
             default_dir = f.read()
 
-    cmd = ["install", "list", "show"]
-    opt = ["--upgrade"]
+    cmd = ["install ", "list ", "show "]
+    opt = ["--upgrade "]
     PIP = "pip"
-    package = "mist"  # returned by get_selected_row()
+    package = "pep8"  # returned by 'self.selectionModel.selectedRows().data()'
     venv_dir = default_dir  # returned by 'location'
     venv_name = "testenv1"  # returned by 'name'
 
