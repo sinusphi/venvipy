@@ -115,7 +115,7 @@ class VenvWizard(QWizard):
                 background-color: rgb(47, 52, 63);
                 border: rgb(47, 52, 63);
                 color: rgb(210, 210, 210);
-                padding: 2px;
+                padding: 1px;
                 opacity: 325
             }
 
@@ -130,15 +130,6 @@ class VenvWizard(QWizard):
             """
         )
 
-        '''
-        #]===================================================================[#
-
-        #self.addPage(BasicSettings())
-        #self.addPage(InstallPackages())
-        #self.addPage(Summary())
-
-        #]===================================================================[#
-
         basicSettings = BasicSettings()
         self.addPage(basicSettings)
 
@@ -146,32 +137,14 @@ class VenvWizard(QWizard):
         summaryId = self.addPage(Summary())
 
         basicSettings.nextId = (
-            lambda: installId
-            if basicSettings.withPipCBox.isChecked()
+            lambda: installId if basicSettings.withPipCBox.isChecked()
             else summaryId
         )
-
-        #]===================================================================[#
-        '''
-
-        self.basicSettings = BasicSettings()
-        self.addPage(self.basicSettings)
-        self.installId = self.addPage(InstallPackages())
-        self.summaryId = 20
-        self.setPage(self.summaryId, Summary())
-
-
-    def nextId(self):
-        if self.currentPage() == self.basicSettings:
-            if self.basicSettings.withPipCBox.isChecked():
-                return self.installId
-            return self.summaryId
-        return QWizard.nextId(self)
 
 
 class BasicSettings(QWizardPage):
     """
-    Basic settings of the virtual environment being created.
+    Basic settings of the virtual environment to create.
     """
     def __init__(self):
         super().__init__()
@@ -180,8 +153,7 @@ class BasicSettings(QWizardPage):
 
         self.setTitle("Basic Settings")
         self.setSubTitle("This wizard will help you to create and set up "
-                         "a virtual environment for Python 3. ")
-
+                         "a virtual environment for Python. ")
 
         self.progressBar = ProgBarDialog()
 
@@ -199,7 +171,7 @@ class BasicSettings(QWizardPage):
         self.m_install_worker.step_pip.connect(self.set_progbar_pipup_label)
         self.m_install_worker.finished.connect(self.progressBar.close)
         self.m_install_worker.finished.connect(self.post_install_venv)
-        self.m_install_worker.finished.connect(self.show_finish_msg)
+        self.m_install_worker.finished.connect(self.show_finished_msg)
         self.m_install_worker.finished.connect(self.re_enable_page)
 
         #]===================================================================[#
@@ -207,13 +179,13 @@ class BasicSettings(QWizardPage):
         #]===================================================================[#
 
         interpreterLabel = QLabel("&Interpreter:")
-        interprComboBox = QComboBox()
-        interpreterLabel.setBuddy(interprComboBox)
+        self.interprComboBox = QComboBox()
+        interpreterLabel.setBuddy(self.interprComboBox)
 
         # add the found Python versions to combobox
-        interprComboBox.addItem("---")
+        self.interprComboBox.addItem("---")
         for info in get_python_installs():
-            interprComboBox.addItem(
+            self.interprComboBox.addItem(
                 f"{info.version} - {info.path}", info.path
             )
 
@@ -225,12 +197,12 @@ class BasicSettings(QWizardPage):
         self.venvLocationLineEdit = QLineEdit()
         venvLocationLabel.setBuddy(self.venvLocationLineEdit)
 
-        selectDirToolButton = QToolButton(
+        self.selectDirToolButton = QToolButton(
             icon=folder_icon,
             toolTip="Browse",
             clicked=self.select_dir
         )
-        selectDirToolButton.setFixedSize(26, 27)
+        self.selectDirToolButton.setFixedSize(26, 27)
 
         #]===================================================================[#
         # TODO: remove placeholder and add a spacer instead
@@ -260,17 +232,17 @@ class BasicSettings(QWizardPage):
         self.createButton.setFixedWidth(90)
 
         # register fields
-        self.registerField("interprComboBox*", interprComboBox)
-        self.registerField("pythonVers", interprComboBox, "currentText")
-        self.registerField("pythonPath", interprComboBox, "currentData")
-        self.registerField("venvName*", self.venvNameLineEdit)
-        self.registerField("venvLocation*", self.venvLocationLineEdit)
+        self.registerField("interprComboBox", self.interprComboBox)
+        self.registerField("pythonVers", self.interprComboBox, "currentText")
+        self.registerField("pythonPath", self.interprComboBox, "currentData")
+        self.registerField("venvName", self.venvNameLineEdit)
+        self.registerField("venvLocation", self.venvLocationLineEdit)
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
         self.registerField("launchVenv", self.launchVenvCBox)
 
-        # box layout containing create button
+        # box layout containing the create button
         h_BoxLayout = QHBoxLayout()
         h_BoxLayout.setContentsMargins(495, 5, 0, 0)
         h_BoxLayout.addWidget(self.createButton)
@@ -278,12 +250,12 @@ class BasicSettings(QWizardPage):
         # grid layout
         gridLayout = QGridLayout()
         gridLayout.addWidget(interpreterLabel, 0, 0, 1, 1)
-        gridLayout.addWidget(interprComboBox, 0, 1, 1, 2)
+        gridLayout.addWidget(self.interprComboBox, 0, 1, 1, 2)
         gridLayout.addWidget(venvNameLabel, 1, 0, 1, 1)
         gridLayout.addWidget(self.venvNameLineEdit, 1, 1, 1, 2)
         gridLayout.addWidget(venvLocationLabel, 2, 0, 1, 1)
         gridLayout.addWidget(self.venvLocationLineEdit, 2, 1, 1, 1)
-        gridLayout.addWidget(selectDirToolButton, 2, 2, 1, 1)
+        gridLayout.addWidget(self.selectDirToolButton, 2, 2, 1, 1)
         gridLayout.addWidget(placeHolder, 3, 0, 1, 2)
         gridLayout.addWidget(groupBox, 4, 0, 1, 3)
         gridLayout.addLayout(h_BoxLayout, 5, 0, 1, 0)
@@ -296,6 +268,13 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.symlinksCBox)
         groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
+
+
+    def isComplete(self):
+        if not self.createButton.isEnabled():
+            # return True after createButton has been disabled
+            return True
+        return False
 
 
     def select_dir(self):
@@ -331,7 +310,7 @@ class BasicSettings(QWizardPage):
             # run the create process
             self.create_process()
 
-            # disable the InstallPackages page during create process
+            # disable page during create process
             self.setEnabled(False)
 
         else:
@@ -367,20 +346,48 @@ class BasicSettings(QWizardPage):
         self.progressBar.statusLabel.setText("Updating Pip...")
 
 
-    def show_finish_msg(self):
+    def show_finished_msg(self):
         """
         Show info message when the creation process has finished successfully.
         """
         print(
-            f"[INFO]: Successfully created virtual environment '{self.venvName}' "
-            f"in '{self.venvLocation}'"
+            f"[INFO]: Successfully created virtual environment "
+            f"'{self.venvName}' in '{self.venvLocation}'"
         )
-        QMessageBox.information(self,
-            "Done",
-            f"Successfully created virtual environment '{self.venvName}'. \n"
-            f"New {self.pythonVers[:10]} executable in \n"
+
+        default_msg = (
+            f"Virtual environment created \nsuccessfully. \n\n"
+            f"New Python{self.pythonVers[7:10]} executable in \n"
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
+
+        withpip_msg = ("Installed pip, setuptools.\n")
+
+        if self.withPipCBox.isChecked():
+            print("[INFO]: Installed pip, setuptools")
+            message_txt = default_msg + withpip_msg
+        else:
+            message_txt = default_msg
+
+        QMessageBox.information(self, "Done", message_txt)
+
+        #]===================================================================[#
+        # TODO: switch to the next page when done
+        #]===================================================================[#
+
+        # disable all widgets to prevent a change of the obtained values
+        self.interprComboBox.setEnabled(False)
+        self.venvNameLineEdit.setEnabled(False)
+        self.venvLocationLineEdit.setEnabled(False)
+        self.selectDirToolButton.setEnabled(False)
+        self.withPipCBox.setEnabled(False)
+        self.sitePackagesCBox.setEnabled(False)
+        self.symlinksCBox.setEnabled(False)
+        self.launchVenvCBox.setEnabled(False)
+        self.createButton.setEnabled(False)
+
+        # emit signal to enable 'next' button
+        self.completeChanged.emit()
 
 
     def clean_venv_dir(self):
