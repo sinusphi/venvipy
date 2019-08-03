@@ -25,7 +25,7 @@ opt = ["--upgrade "]
 
 
 #]===========================================================================[#
-#] PROGRESS BAR [#===========================================================[#
+#] PROGRESS BAR DIALOG [#====================================================[#
 #]===========================================================================[#
 
 class ProgBarDialog(QDialog):
@@ -130,22 +130,26 @@ class VenvWizard(QWizard):
             """
         )
 
-        basicSettings = BasicSettings()
-        self.addPage(basicSettings)
+        self.basicSettings = BasicSettings()
+        self.addPage(self.basicSettings)
 
-        installId = self.addPage(InstallPackages())
-        summaryId = self.addPage(Summary())
+        self.installId = self.addPage(InstallPackages())
+        self.summaryId = self.addPage(Summary())
 
-        basicSettings.nextId = (
-            lambda: installId if basicSettings.withPipCBox.isChecked()
-            else summaryId
-        )
+        self.basicSettings.done.connect(self.next)
+
+    def nextId(self):
+        if self.basicSettings.withPipCBox.isChecked():
+            return self.installId
+        return self.summaryId
 
 
 class BasicSettings(QWizardPage):
     """
     Basic settings of the virtual environment to create.
     """
+    done = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -270,13 +274,6 @@ class BasicSettings(QWizardPage):
         groupBox.setLayout(groupBoxLayout)
 
 
-    def isComplete(self):
-        if not self.createButton.isEnabled():
-            # return True after createButton has been disabled
-            return True
-        return False
-
-
     def select_dir(self):
         """
         Specify path where to create the virtual environment.
@@ -371,23 +368,8 @@ class BasicSettings(QWizardPage):
 
         QMessageBox.information(self, "Done", message_txt)
 
-        #]===================================================================[#
-        # TODO: switch to the next page when done
-        #]===================================================================[#
-
-        # disable all widgets to prevent a change of the obtained values
-        self.interprComboBox.setEnabled(False)
-        self.venvNameLineEdit.setEnabled(False)
-        self.venvLocationLineEdit.setEnabled(False)
-        self.selectDirToolButton.setEnabled(False)
-        self.withPipCBox.setEnabled(False)
-        self.sitePackagesCBox.setEnabled(False)
-        self.symlinksCBox.setEnabled(False)
-        self.launchVenvCBox.setEnabled(False)
-        self.createButton.setEnabled(False)
-
-        # emit signal to enable 'next' button
-        self.completeChanged.emit()
+        # emit signal and go on to next page
+        self.done.emit()
 
 
     def clean_venv_dir(self):
