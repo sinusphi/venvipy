@@ -505,10 +505,14 @@ class InstallPackages(QWizardPage):
 
 
     def initializePage(self):
-        # disable wizard's next button and set search button to default
+        # disable 'next' button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
         QTimer.singleShot(0, lambda: next_button.setDefault(False))
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
+
+        # disable 'back' button to prevent returning back to first page
+        back_button = self.wizard().button(QWizard.BackButton)
+        QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         self.pythonVers = self.field("pythonVers")
         self.pythonPath = self.field("pythonPath")
