@@ -131,7 +131,7 @@ class VenvWizard(QWizard):
         )
 
         self.basicSettings = BasicSettings()
-        self.addPage(self.basicSettings)
+        self.basicSettingsId = self.addPage(self.basicSettings)
 
         self.installId = self.addPage(InstallPackages())
         self.summaryId = self.addPage(Summary())
@@ -139,6 +139,10 @@ class VenvWizard(QWizard):
         self.basicSettings.done.connect(self.next)
 
     def nextId(self):
+        # process the flow only if the current page is BasicSettings()
+        if self.currentId() != self.basicSettingsId:
+            return super().nextId()
+
         if self.basicSettings.withPipCBox.isChecked():
             return self.installId
         return self.summaryId
@@ -236,15 +240,16 @@ class BasicSettings(QWizardPage):
         self.createButton.setFixedWidth(90)
 
         # register fields
-        self.registerField("interprComboBox", self.interprComboBox)
+        self.registerField("interprComboBox*", self.interprComboBox)
         self.registerField("pythonVers", self.interprComboBox, "currentText")
         self.registerField("pythonPath", self.interprComboBox, "currentData")
-        self.registerField("venvName", self.venvNameLineEdit)
-        self.registerField("venvLocation", self.venvLocationLineEdit)
+        self.registerField("venvName*", self.venvNameLineEdit)
+        self.registerField("venvLocation*", self.venvLocationLineEdit)
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
         self.registerField("launchVenv", self.launchVenvCBox)
+        self.registerField("createButton*", self.createButton)
 
         # box layout containing the create button
         h_BoxLayout = QHBoxLayout()
@@ -440,8 +445,6 @@ class InstallPackages(QWizardPage):
             "installation and click next when finished."
             ""
         )
-
-        #self.progressBar = ProgBarDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
