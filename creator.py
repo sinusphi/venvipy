@@ -136,7 +136,6 @@ class VenvWizard(QWizard):
         self.installId = self.addPage(InstallPackages())
         self.summaryId = self.addPage(Summary())
 
-        self.basicSettings.done.connect(self.next)
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
@@ -152,8 +151,6 @@ class BasicSettings(QWizardPage):
     """
     Basic settings of the virtual environment to create.
     """
-    done = pyqtSignal()
-
     def __init__(self):
         super().__init__()
 
@@ -233,12 +230,6 @@ class BasicSettings(QWizardPage):
             "Launch a &terminal with activated venv after installation"
         )
 
-        self.createButton = QPushButton(
-            "&Create", self,
-            clicked=self.execute_venv_create,
-        )
-        self.createButton.setFixedWidth(90)
-
         # register fields
         self.registerField("interprComboBox*", self.interprComboBox)
         self.registerField("pythonVers", self.interprComboBox, "currentText")
@@ -249,12 +240,6 @@ class BasicSettings(QWizardPage):
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
         self.registerField("launchVenv", self.launchVenvCBox)
-        self.registerField("createButton*", self.createButton)
-
-        # box layout containing the create button
-        h_BoxLayout = QHBoxLayout()
-        h_BoxLayout.setContentsMargins(495, 5, 0, 0)
-        h_BoxLayout.addWidget(self.createButton)
 
         # grid layout
         gridLayout = QGridLayout()
@@ -267,7 +252,6 @@ class BasicSettings(QWizardPage):
         gridLayout.addWidget(self.selectDirToolButton, 2, 2, 1, 1)
         gridLayout.addWidget(placeHolder, 3, 0, 1, 2)
         gridLayout.addWidget(groupBox, 4, 0, 1, 3)
-        gridLayout.addLayout(h_BoxLayout, 5, 0, 1, 0)
         self.setLayout(gridLayout)
 
         # options groupbox
@@ -277,6 +261,11 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.symlinksCBox)
         groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
+
+
+    def initializePage(self):
+        next_button = self.wizard().button(QWizard.NextButton)
+        next_button.clicked.connect(self.execute_venv_create)
 
 
     def select_dir(self):
@@ -373,8 +362,9 @@ class BasicSettings(QWizardPage):
 
         QMessageBox.information(self, "Done", message_txt)
 
-        # emit signal and go on to next page
-        self.done.emit()
+        next_button = self.wizard().button(QWizard.NextButton)
+        next_button.disconnect()
+        next_button.clicked.connect(self.wizard().next)
 
 
     def clean_venv_dir(self):
@@ -443,7 +433,6 @@ class InstallPackages(QWizardPage):
             "Specify the packages you want to install into the virtual "
             "environment. Double-click on the item to install it for "
             "installation and click next when finished."
-            ""
         )
 
         #]===================================================================[#
@@ -505,8 +494,9 @@ class InstallPackages(QWizardPage):
 
 
     def initializePage(self):
-        # disable 'next' button and set search button to default
         next_button = self.wizard().button(QWizard.NextButton)
+
+        # disable focus on 'next' button and set 'search' button to default
         QTimer.singleShot(0, lambda: next_button.setDefault(False))
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
 
@@ -589,7 +579,9 @@ class Summary(QWizardPage):
 
 
     def initializePage(self):
-        pass
+        # disable 'back' button to prevent returning back to previous pages
+        back_button = self.wizard().button(QWizard.BackButton)
+        QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
 
 
