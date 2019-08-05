@@ -22,7 +22,6 @@ import info
 
 
 
-
 class Ui_MainWindow(QMainWindow):
     """
     The main window.
@@ -171,12 +170,10 @@ class Ui_MainWindow(QMainWindow):
         self.refreshButton.setFixedSize(20, 20)
 
         #]===================================================================[#
-
         # spacer manage button and exit button
         spacerItem1 = QSpacerItem(
             20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
         )
-
         #]===================================================================[#
 
         v_Layout2.addWidget(self.logo)
@@ -226,12 +223,10 @@ class Ui_MainWindow(QMainWindow):
         interprTable.setModel(self.modelTV1)
 
         #]===================================================================[#
-
         # spacer between interpreter table and venv table title
         spacerItem2 = QSpacerItem(
             20, 12, QSizePolicy.Minimum, QSizePolicy.Fixed
         )
-
         #]===================================================================[#
 
         # venv table header
@@ -372,7 +367,6 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Search", QMessageBox.AcceptRole)
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
-
         if not get_python_installs():
             print("[WARNING]: No suitable Python installation found!")
 
@@ -380,10 +374,6 @@ class Ui_MainWindow(QMainWindow):
                 # let user specify path to an interpreter
                 self.selectInterpreter()
 
-
-    #]=======================================================================[#
-    #] SELECT A CUSTOM INTERPRETER [#========================================[#
-    #]=======================================================================[#
 
     def selectInterpreter(self):
         """
@@ -416,10 +406,6 @@ class Ui_MainWindow(QMainWindow):
             self.modelTV1.setItem(0, 1, QStandardItem(path))
 
 
-    #]=======================================================================[#
-    #] POPULATE INTERPRETER TABLE VIEW [#====================================[#
-    #]=======================================================================[#
-
     def popInterprTable(self):
         """
         Populate the interpreter table view.
@@ -435,10 +421,6 @@ class Ui_MainWindow(QMainWindow):
 
                 print(f"[INTERPRETER]: {info}")
 
-
-    #]=======================================================================[#
-    #] POPULATE VENV TABLE VIEW [#===========================================[#
-    #]=======================================================================[#
 
     def popVenvTable(self):
         """
