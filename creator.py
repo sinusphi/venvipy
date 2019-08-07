@@ -68,14 +68,14 @@ class ProgBarDialog(QDialog):
 
 class CreationWorker(QObject):
     """
-    Worker informing about start and finish of the create process.
+    Worker informing about start and end of the create process.
     """
     started = pyqtSignal()
     step_pip = pyqtSignal()
     finished = pyqtSignal()
 
     @pyqtSlot(tuple)
-    def install(self, args):
+    def install_venv(self, args):
         self.started.emit()
 
         name, location, with_pip, site_packages, symlinks = args
@@ -90,6 +90,38 @@ class CreationWorker(QObject):
         if with_pip:
             self.step_pip.emit()
             run_pip(cmd[0], opt[0], PIP, location, name)
+
+        self.finished.emit()
+
+
+#]===========================================================================[#
+#] WORKER (PIP PACKAGES) [#==================================================[#
+#]===========================================================================[#
+
+class PipWorker(QObject):
+    """
+    Worker informing about start and end of the download and install process.
+    """
+    started = pyqtSignal()
+    finished = pyqtSignal()
+
+    @pyqtSlot(tuple)
+    def install_pkg(self, args):
+        self.started.emit()
+
+        command, option, package, venv_loc, venv_name = args
+
+        run_pip(
+            command,
+            option,
+            package,
+            venv_loc,
+            venv_name
+        )
+
+        #if with_pip:
+            #self.step_pip.emit()
+            #run_pip(cmd[0], opt[0], PIP, location, name)
 
         self.finished.emit()
 
@@ -169,15 +201,15 @@ class BasicSettings(QWizardPage):
         thread = QThread(self)
         thread.start()
 
-        self.m_install_worker = CreationWorker()
-        self.m_install_worker.moveToThread(thread)
+        self.m_install_venv_worker = CreationWorker()
+        self.m_install_venv_worker.moveToThread(thread)
 
-        self.m_install_worker.started.connect(self.progressBar.exec_)
-        self.m_install_worker.step_pip.connect(self.set_progbar_pipup_label)
-        self.m_install_worker.finished.connect(self.progressBar.close)
-        self.m_install_worker.finished.connect(self.post_install_venv)
-        self.m_install_worker.finished.connect(self.show_finished_msg)
-        self.m_install_worker.finished.connect(self.re_enable_page)
+        self.m_install_venv_worker.started.connect(self.progressBar.exec_)
+        self.m_install_venv_worker.step_pip.connect(self.set_progbar_pipup_label)
+        self.m_install_venv_worker.finished.connect(self.progressBar.close)
+        self.m_install_venv_worker.finished.connect(self.post_install_venv)
+        self.m_install_venv_worker.finished.connect(self.show_finished_msg)
+        self.m_install_venv_worker.finished.connect(self.re_enable_page)
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -326,7 +358,7 @@ class BasicSettings(QWizardPage):
             self.symlinks
         )
 
-        wrapper = partial(self.m_install_worker.install, args)
+        wrapper = partial(self.m_install_venv_worker.install_venv, args)
         QTimer.singleShot(0, wrapper)
 
 
@@ -434,6 +466,22 @@ class InstallPackages(QWizardPage):
             "environment. Double-click on the item to install it for "
             "installation and click next when finished."
         )
+
+        self.progressBar = ProgBarDialog()
+
+        #]===================================================================[#
+        #] THREADS  [#=======================================================[#
+        #]===================================================================[#
+
+        thread = QThread(self)
+        thread.start()
+
+        self.m_install_pkg_worker = PipWorker()
+        self.m_install_pkg_worker.moveToThread(thread)
+
+        self.m_install_pkg_worker.started.connect(self.progressBar.exec_)
+        self.m_install_pkg_worker.finished.connect(self.progressBar.close)
+        #self.m_install_pkg_worker.finished.connect(self.show_finished_msg)
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -552,7 +600,19 @@ class InstallPackages(QWizardPage):
 
         if self.messageBoxConfirm == QMessageBox.Yes:
             print(f"[VENVIPY]: Installing '{self.pkg}'")
-            run_pip(cmd[0], opt[0], self.pkg, self.venvLocation, self.venvName)
+            self.progressBar.setWindowTitle(f"Installing {self.pkg}")
+            self.progressBar.statusLabel.setText("show_status")
+
+            args = (
+                cmd[0],
+                opt[0],
+                self.pkg,
+                self.venvLocation,
+                self.venvName
+            )
+
+            wrapper = partial(self.m_install_pkg_worker.install_pkg, args)
+            QTimer.singleShot(0, wrapper)
 
 
     def launch_terminal(self):
