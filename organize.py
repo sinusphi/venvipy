@@ -173,7 +173,7 @@ def has_bash():
 
 def run_script(command):
     """
-    Run the subprocess and catch the realtime output.
+    Run the script and catch the realtime output from subprocess.
     """
     process = Popen(command, stdout=PIPE, text="utf-8")
     while True:
@@ -217,7 +217,7 @@ def run_pip(cmd, opt, target, venv_dir, venv_name):
 
 
 if __name__ == "__main__":
-    '''
+
     for python in get_python_installs():
         print(python.version, python.path)
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         print("No packages found!")
 
     #]=======================================================================[#
-    '''
+
     current_dir = os.path.dirname(os.path.realpath(__file__))
     default_file = os.path.join(current_dir, "def", "default")
 
