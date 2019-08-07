@@ -3,7 +3,6 @@
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
-import shlex
 import os
 
 
