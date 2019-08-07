@@ -342,7 +342,7 @@ class BasicSettings(QWizardPage):
         Show info message when the creation process has finished successfully.
         """
         print(
-            f"[INFO]: Successfully created virtual environment "
+            f"[VENVIPY]: Successfully created virtual environment "
             f"'{self.venvName}' in '{self.venvLocation}'"
         )
 
@@ -355,7 +355,7 @@ class BasicSettings(QWizardPage):
         withpip_msg = ("Installed pip, setuptools.\n")
 
         if self.withPipCBox.isChecked():
-            print("[INFO]: Installed pip, setuptools")
+            #print("[INFO]: Installed pip, setuptools")
             message_txt = default_msg + withpip_msg
         else:
             message_txt = default_msg
@@ -386,11 +386,11 @@ class BasicSettings(QWizardPage):
 
             if os.path.islink(fn) or os.path.isfile(fn):
                 os.remove(fn)
-                print(f"[INFO]: Removed file or directory: '{fn}'")
+                print(f"[VENVIPY]: Removed file or directory: '{fn}'")
 
             elif os.path.isdir(fn) and fn != valid_dir:
                 shutil.rmtree(fn)
-                print(f"[INFO]: Removed file or directory: '{fn}'")
+                print(f"[VENVIPY]: Removed file or directory: '{fn}'")
 
 
     def post_install_venv(self):
@@ -527,7 +527,7 @@ class InstallPackages(QWizardPage):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
         if not get_package_infos(search_item):
-            print(f"[INFO]: No matches for '{search_item}'")
+            print(f"[PIP]: No matches for '{search_item}'")
             QMessageBox.information(self,
                 "No results",
                 f"No packages matching '{search_item}'.\n"
@@ -551,7 +551,7 @@ class InstallPackages(QWizardPage):
         )
 
         if self.messageBoxConfirm == QMessageBox.Yes:
-            print(f"[INFO]: Installing '{self.pkg}'")
+            print(f"[VENVIPY]: Installing '{self.pkg}'")
             run_pip(cmd[0], opt[0], self.pkg, self.venvLocation, self.venvName)
 
 
