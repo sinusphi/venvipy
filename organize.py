@@ -3,6 +3,7 @@
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
+import shlex
 import os
 
 
@@ -170,6 +171,21 @@ def has_bash():
     return shell
 
 
+def run_script(command):
+    """
+    Run the subprocess and catch the realtime output.
+    """
+    process = Popen(command, stdout=PIPE, text="utf-8")
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    rc = process.poll()
+    return rc
+
+
 def run_pip(cmd, opt, target, venv_dir, venv_name):
     """
     Activate the created virtual environment and run pip commands.
@@ -194,18 +210,14 @@ def run_pip(cmd, opt, target, venv_dir, venv_name):
             )
             os.system(f"chmod +x {script}")
 
-        # run install script
-        res = Popen(
-            ["/bin/bash", script],
-            stdout=PIPE, stderr=PIPE, text="utf-8"
-        )
-        out, _ = res.communicate()
-        #print(out)  # print output to console
+        # run the script
+        command = ["/bin/bash", script]
+        run_script(command)
 
 
 
 if __name__ == "__main__":
-
+    '''
     for python in get_python_installs():
         print(python.version, python.path)
 
@@ -225,7 +237,7 @@ if __name__ == "__main__":
         print("No packages found!")
 
     #]=======================================================================[#
-
+    '''
     current_dir = os.path.dirname(os.path.realpath(__file__))
     default_file = os.path.join(current_dir, "def", "default")
 
@@ -236,8 +248,8 @@ if __name__ == "__main__":
     cmd = ["install ", "list ", "show "]
     opt = ["--upgrade "]
     PIP = "pip"
-    package = "pep8"  # returned by 'self.selectionModel.selectedRows().data()'
+    package = "mist"  # returned by 'self.selectionModel.selectedRows().data()'
     venv_dir = default_dir  # returned by 'location'
-    venv_name = "testenv1"  # returned by 'name'
+    venv_name = "asdf"  # returned by 'name'
 
     run_pip(cmd[0], opt[0], package, venv_dir, venv_name)
