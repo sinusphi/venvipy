@@ -31,7 +31,7 @@ def get_python_installs():
             res1 = Popen(
                 ["python" + vers, "-V"],
                 stdout=PIPE,
-                universal_newlines=True
+                text="utf-8"
             )
             out1, _ = res1.communicate()
             version = out1.strip()
@@ -40,7 +40,7 @@ def get_python_installs():
             res2 = Popen(
                 ["which", "python" + vers],
                 stdout=PIPE,
-                universal_newlines=True
+                text="utf-8"
             )
             out2, _ = res2.communicate()
             path = out2.strip()
@@ -49,8 +49,8 @@ def get_python_installs():
             infos.append(info)
 
         except FileNotFoundError as err:
-            #print(f"[INFO]: {err.args[1]}")
             pass  # no need to show which Python versions were not found
+            #print(f"[ERROR]: {err.args[1]}")
 
     return infos
 
@@ -89,7 +89,7 @@ def get_venvs(path):
             res = Popen(
                 [python_binary, "-V"],
                 stdout=PIPE,
-                universal_newlines=True
+                text="utf-8"
             )
             out, _ = res.communicate()
             version = out.strip()
@@ -149,71 +149,6 @@ def get_package_infos(name):
     return infos
 
 
-#]===========================================================================[#
-#] INSTALL SELECTED PACKAGES [#==============================================[#
-#]===========================================================================[#
-
-def has_bash():
-    """
-    Test if bash is available. If present the string `/bin/bash` is returned,
-    an empty string otherwise.
-    """
-    res = Popen(
-        ["which", "bash"],
-        stdout=PIPE,
-        stderr=PIPE,
-        universal_newlines=True
-    )
-    out, _ = res.communicate()
-    shell = out.strip()
-
-    return shell
-
-
-def run_script(command):
-    """
-    Run the script and catch the realtime output from subprocess.
-    """
-    process = Popen(command, stdout=PIPE, text="utf-8")
-    while True:
-        output = process.stdout.readline()
-        if output == "" and process.poll() is not None:
-            break
-        if output:
-            print(f"[PIP]: {output.strip()}")
-    rc = process.poll()
-    return rc
-
-
-def run_pip(cmd, opt, target, venv_dir, venv_name):
-    """
-    Activate the created virtual environment and run pip commands.
-    """
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    pipup_script = os.path.join(current_dir, "scripts", "update_pip.sh")
-    install_script = os.path.join(current_dir, "scripts", "install_pkgs.sh")
-
-    if target == "pip":
-        script = os.path.join(current_dir, "scripts", "update_pip.sh")
-    else:
-        script = os.path.join(current_dir, "scripts", "install_pkgs.sh")
-
-    if has_bash():
-        # create install script and make it executable
-        with open(script, "w") as f:
-            f.write(
-                "#!/bin/bash\n"
-                f"source {venv_dir}/{venv_name}/bin/activate\n"
-                f"pip {cmd}{opt}{target}\n"
-                "deactivate\n"
-            )
-            os.system(f"chmod +x {script}")
-
-        # run the script
-        command = ["/bin/bash", script]
-        run_script(command)
-
-
 
 if __name__ == "__main__":
 
@@ -234,21 +169,3 @@ if __name__ == "__main__":
 
     if not get_package_infos(test_pkg):
         print("No packages found!")
-
-    #]=======================================================================[#
-
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    default_file = os.path.join(current_dir, "def", "default")
-
-    if os.path.isfile(default_file):
-        with open(default_file, "r") as f:
-            default_dir = f.read()
-
-    cmd = ["install ", "list ", "show "]
-    opt = ["--upgrade "]
-    PIP = "pip"
-    package = "mist"  # returned by 'self.selectionModel.selectedRows().data()'
-    venv_dir = default_dir  # returned by 'location'
-    venv_name = "asdf"  # returned by 'name'
-
-    run_pip(cmd[0], opt[0], package, venv_dir, venv_name)
