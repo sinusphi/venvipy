@@ -6,22 +6,25 @@ import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread,
+                         QProcess)
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
                              QAbstractItemView, QPushButton, QFrame,
-                             QMessageBox, QHeaderView)
+                             QMessageBox, QHeaderView, QTextEdit)
 
-from organize import (run_pip, get_package_infos, get_venvs_default,
-                      get_python_installs)
+from organize import get_package_infos, get_venvs_default, get_python_installs
+from managepip import PipManager
 
 PIP = "pip"
 
-cmd = ["install ", "list ", "show "]
-opt = ["--upgrade "]
+
+# pip commands and options
+cmd = ["install", "list", "show"]
+opt = ["--upgrade"]
 
 
 #]===========================================================================[#
@@ -35,7 +38,6 @@ class ProgBarDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.initUI()
-
 
     def initUI(self):
         self.setGeometry(675, 365, 325, 80)
@@ -63,7 +65,61 @@ class ProgBarDialog(QDialog):
 
 
 #]===========================================================================[#
-#] WORKER (CREATE PROCESS) [#================================================[#
+#] CONSOLE DIALOG [#=========================================================[#
+#]===========================================================================[#
+
+class ConsoleDialog(QDialog):
+    """
+    Dialog box displaying the output in a console-like widget during the
+    installation process.
+    """
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setStyleSheet(
+            """
+            QTextEdit {
+                background-color: black;
+                color: lightgrey;
+                selection-background-color: rgb(50, 50, 60);
+                selection-color: rgb(0, 255, 0)
+            }
+            """
+        )
+        self.setFixedWidth(750)
+        self.setMinimumHeight(400)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+
+        self.consoleWindow = QTextEdit()
+        self.consoleWindow.setReadOnly(True)
+        self.consoleWindow.setFontFamily("Monospace")
+        self.consoleWindow.setFontPointSize(10)
+
+        self.progressBar = QProgressBar()
+        self.progressBar.setFixedHeight(25)
+        self.progressBar.setRange(0, 0)
+
+        v_Layout = QVBoxLayout(self)
+        v_Layout.addWidget(self.consoleWindow)
+        v_Layout.addWidget(self.progressBar)
+
+    @pyqtSlot(str)
+    def update_status(self, status):
+        """
+        Set the content to be shown in the console dialog.
+        """
+        metrix = QFontMetrics(self.consoleWindow.font())
+        clippedText = metrix.elidedText(
+            status, Qt.ElideRight, self.consoleWindow.width()
+        )
+        self.consoleWindow.append(clippedText)
+
+
+#]===========================================================================[#
+#] WORKER (CREATE VIRTUAL ENVIRONMENT) [#====================================[#
 #]===========================================================================[#
 
 class CreationWorker(QObject):
@@ -71,7 +127,7 @@ class CreationWorker(QObject):
     Worker informing about start and end of the create process.
     """
     started = pyqtSignal()
-    step_pip = pyqtSignal()
+    textChanged = pyqtSignal()
     finished = pyqtSignal()
 
     @pyqtSlot(tuple)
@@ -87,41 +143,11 @@ class CreationWorker(QObject):
             symlinks=symlinks,
         )
 
+        self.manager = PipManager(location, name)
+
         if with_pip:
-            self.step_pip.emit()
-            run_pip(cmd[0], opt[0], PIP, location, name)
-
-        self.finished.emit()
-
-
-#]===========================================================================[#
-#] WORKER (PIP PACKAGES) [#==================================================[#
-#]===========================================================================[#
-
-class PipWorker(QObject):
-    """
-    Worker informing about start and end of the download and install process.
-    """
-    started = pyqtSignal()
-    finished = pyqtSignal()
-
-    @pyqtSlot(tuple)
-    def install_pkg(self, args):
-        self.started.emit()
-
-        command, option, package, venv_loc, venv_name = args
-
-        run_pip(
-            command,
-            option,
-            package,
-            venv_loc,
-            venv_name
-        )
-
-        #if with_pip:
-            #self.step_pip.emit()
-            #run_pip(cmd[0], opt[0], PIP, location, name)
+            self.textChanged.emit()
+            self.manager.run_command(cmd[0], [opt[0], PIP])
 
         self.finished.emit()
 
@@ -205,7 +231,7 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.moveToThread(thread)
 
         self.m_install_venv_worker.started.connect(self.progressBar.exec_)
-        self.m_install_venv_worker.step_pip.connect(self.set_progbar_pipup_label)
+        self.m_install_venv_worker.textChanged.connect(self.set_progbar_label)
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.post_install_venv)
         self.m_install_venv_worker.finished.connect(self.show_finished_msg)
@@ -362,9 +388,9 @@ class BasicSettings(QWizardPage):
         QTimer.singleShot(0, wrapper)
 
 
-    def set_progbar_pipup_label(self):
+    def set_progbar_label(self):
         """
-        In progress bar status label show that Pip is being updated.
+        Set the text in status label to show that Pip is being updated.
         """
         self.progressBar.statusLabel.setText("Updating Pip...")
 
@@ -467,21 +493,7 @@ class InstallPackages(QWizardPage):
             "installation and click next when finished."
         )
 
-        self.progressBar = ProgBarDialog()
-
-        #]===================================================================[#
-        #] THREADS  [#=======================================================[#
-        #]===================================================================[#
-
-        thread = QThread(self)
-        thread.start()
-
-        self.m_install_pkg_worker = PipWorker()
-        self.m_install_pkg_worker.moveToThread(thread)
-
-        self.m_install_pkg_worker.started.connect(self.progressBar.exec_)
-        self.m_install_pkg_worker.finished.connect(self.progressBar.close)
-        #self.m_install_pkg_worker.finished.connect(self.show_finished_msg)
+        self.console = ConsoleDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -600,19 +612,15 @@ class InstallPackages(QWizardPage):
 
         if self.messageBoxConfirm == QMessageBox.Yes:
             print(f"[VENVIPY]: Installing '{self.pkg}'")
-            self.progressBar.setWindowTitle(f"Installing {self.pkg}")
-            self.progressBar.statusLabel.setText("show_status")
+            self.manager = PipManager(self.venvLocation, self.venvName)
+            self.manager.textChanged.connect(self.console.update_status)
+            self.manager.started.connect(self.console.exec_)
+            self.manager.run_command(cmd[0], [opt[0], self.pkg])
 
-            args = (
-                cmd[0],
-                opt[0],
-                self.pkg,
-                self.venvLocation,
-                self.venvName
-            )
+            # TODO: don't autoclose the console window on finish,
+            #       add a button instead
 
-            wrapper = partial(self.m_install_pkg_worker.install_pkg, args)
-            QTimer.singleShot(0, wrapper)
+            #self.manager.finished.connect(self.console.close)
 
 
     def launch_terminal(self):
