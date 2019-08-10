@@ -89,7 +89,7 @@ class AppInfo(QDialog):
         # version
         labelVersion = QLabel("<b>Version:</b>")
         fieldVersion = QLabel()
-        fieldVersion.setText("0.1.0")
+        fieldVersion.setText("1.0")
 
         # OS
         labelOS = QLabel("<b>OS:</b>")
