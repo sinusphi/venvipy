@@ -6,22 +6,25 @@ import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread,
+                          QProcess)
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
-                             QAbstractItemView, QPushButton, QFrame,
-                             QMessageBox, QHeaderView)
+                             QAbstractItemView, QPushButton, QFrame, QTextEdit,
+                             QMessageBox, QHeaderView, QDesktopWidget)
 
-from organize import (run_pip, get_package_infos, get_venvs_default,
-                      get_python_installs)
+from organize import get_package_infos, get_venvs_default, get_python_installs
+from managepip import PipManager
 
 PIP = "pip"
 
-cmd = ["install ", "list ", "show "]
-opt = ["--upgrade "]
+
+# pip commands and options
+cmd = ["install", "list", "show"]
+opt = ["--upgrade"]
 
 
 #]===========================================================================[#
@@ -36,10 +39,9 @@ class ProgBarDialog(QDialog):
         super().__init__()
         self.initUI()
 
-
     def initUI(self):
-        self.setGeometry(675, 365, 325, 80)
         self.setFixedSize(350, 85)
+        self.center()
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -61,21 +63,90 @@ class ProgBarDialog(QDialog):
         h_Layout.addLayout(v_Layout)
         self.setLayout(h_Layout)
 
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
 
 #]===========================================================================[#
-#] WORKER (CREATE PROCESS) [#================================================[#
+#] CONSOLE DIALOG [#=========================================================[#
+#]===========================================================================[#
+
+class ConsoleDialog(QDialog):
+    """
+    Dialog box displaying the output in a console-like widget during the
+    installation process.
+    """
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.resize(750, 400)
+        self.center()
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+
+        self.setStyleSheet(
+            """
+            QTextEdit {
+                background-color: black;
+                color: lightgrey;
+                selection-background-color: rgb(50, 50, 60);
+                selection-color: rgb(0, 255, 0)
+            }
+            """
+        )
+
+        self.consoleWindow = QTextEdit()
+        self.consoleWindow.setReadOnly(True)
+        self.consoleWindow.setFontFamily("Monospace")
+        self.consoleWindow.setFontPointSize(10)
+
+        self.progressBar = QProgressBar()
+        self.progressBar.setFixedHeight(25)
+        self.progressBar.setRange(0, 0)
+
+        v_Layout = QVBoxLayout(self)
+        v_Layout.addWidget(self.progressBar)
+        v_Layout.addWidget(self.consoleWindow)
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    @pyqtSlot(str)
+    def update_status(self, status):
+        """
+        Set the content to be shown in the console dialog.
+        """
+        metrix = QFontMetrics(self.consoleWindow.font())
+        clippedText = metrix.elidedText(
+            status, Qt.ElideRight, self.consoleWindow.width()
+        )
+        self.consoleWindow.append(clippedText)
+
+
+#]===========================================================================[#
+#] WORKER (CREATE VIRTUAL ENVIRONMENT) [#====================================[#
 #]===========================================================================[#
 
 class CreationWorker(QObject):
     """
-    Worker informing about start and finish of the create process.
+    Worker informing about start and end of the create process.
     """
     started = pyqtSignal()
-    step_pip = pyqtSignal()
+    textChanged = pyqtSignal()
     finished = pyqtSignal()
 
     @pyqtSlot(tuple)
-    def install(self, args):
+    def install_venv(self, args):
         self.started.emit()
 
         name, location, with_pip, site_packages, symlinks = args
@@ -87,9 +158,11 @@ class CreationWorker(QObject):
             symlinks=symlinks,
         )
 
+        self.manager = PipManager(location, name)
+
         if with_pip:
-            self.step_pip.emit()
-            run_pip(cmd[0], opt[0], PIP, location, name)
+            self.textChanged.emit()
+            self.manager.run_command(cmd[0], [opt[0], PIP])
 
         self.finished.emit()
 
@@ -106,8 +179,8 @@ class VenvWizard(QWizard):
         super().__init__()
 
         self.setWindowTitle("Venv Wizard")
-        self.resize(635, 480)
-        self.move(528, 153)
+        self.resize(650, 500)
+        self.center()
 
         self.setStyleSheet(
             """
@@ -136,6 +209,12 @@ class VenvWizard(QWizard):
         self.installId = self.addPage(InstallPackages())
         self.summaryId = self.addPage(Summary())
 
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
@@ -169,15 +248,15 @@ class BasicSettings(QWizardPage):
         thread = QThread(self)
         thread.start()
 
-        self.m_install_worker = CreationWorker()
-        self.m_install_worker.moveToThread(thread)
+        self.m_install_venv_worker = CreationWorker()
+        self.m_install_venv_worker.moveToThread(thread)
 
-        self.m_install_worker.started.connect(self.progressBar.exec_)
-        self.m_install_worker.step_pip.connect(self.set_progbar_pipup_label)
-        self.m_install_worker.finished.connect(self.progressBar.close)
-        self.m_install_worker.finished.connect(self.post_install_venv)
-        self.m_install_worker.finished.connect(self.show_finished_msg)
-        self.m_install_worker.finished.connect(self.re_enable_page)
+        self.m_install_venv_worker.started.connect(self.progressBar.exec_)
+        self.m_install_venv_worker.textChanged.connect(self.set_progbar_label)
+        self.m_install_venv_worker.finished.connect(self.progressBar.close)
+        self.m_install_venv_worker.finished.connect(self.post_install_venv)
+        self.m_install_venv_worker.finished.connect(self.show_finished_msg)
+        self.m_install_venv_worker.finished.connect(self.re_enable_page)
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -262,11 +341,9 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
 
-
     def initializePage(self):
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.clicked.connect(self.execute_venv_create)
-
 
     def select_dir(self):
         """
@@ -274,7 +351,6 @@ class BasicSettings(QWizardPage):
         """
         folderName = QFileDialog.getExistingDirectory()
         self.venvLocationLineEdit.setText(folderName)
-
 
     def execute_venv_create(self):
         """
@@ -313,7 +389,6 @@ class BasicSettings(QWizardPage):
                 "virtual environment.\n"
             )
 
-
     def create_process(self):
         """
         Create the virtual environment.
@@ -326,16 +401,14 @@ class BasicSettings(QWizardPage):
             self.symlinks
         )
 
-        wrapper = partial(self.m_install_worker.install, args)
+        wrapper = partial(self.m_install_venv_worker.install_venv, args)
         QTimer.singleShot(0, wrapper)
 
-
-    def set_progbar_pipup_label(self):
+    def set_progbar_label(self):
         """
-        In progress bar status label show that Pip is being updated.
+        Set the text in status label to show that Pip is being updated.
         """
         self.progressBar.statusLabel.setText("Updating Pip...")
-
 
     def show_finished_msg(self):
         """
@@ -434,6 +507,8 @@ class InstallPackages(QWizardPage):
             "environment. Double-click on the item to install it for "
             "installation and click next when finished."
         )
+
+        self.console = ConsoleDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -552,7 +627,15 @@ class InstallPackages(QWizardPage):
 
         if self.messageBoxConfirm == QMessageBox.Yes:
             print(f"[VENVIPY]: Installing '{self.pkg}'")
-            run_pip(cmd[0], opt[0], self.pkg, self.venvLocation, self.venvName)
+            self.manager = PipManager(self.venvLocation, self.venvName)
+            self.manager.textChanged.connect(self.console.update_status)
+            self.manager.started.connect(self.console.exec_)
+            self.manager.run_command(cmd[0], [opt[0], self.pkg])
+
+            # TODO: don't autoclose the console window on finish,
+            #       add a button instead
+
+            #self.manager.finished.connect(self.console.close)
 
 
     def launch_terminal(self):

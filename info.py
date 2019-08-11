@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (QLabel, QPushButton, QApplication, QHBoxLayout,
                              QSpacerItem, QSizePolicy, QDialog, QGridLayout,
-                             QFormLayout)
+                             QFormLayout, QDesktopWidget)
 
 
 
@@ -16,6 +16,7 @@ class AppInfo(QDialog):
     """
     def __init__(self):
         super().__init__()
+
         self.initUI()
 
 
@@ -24,9 +25,9 @@ class AppInfo(QDialog):
         #] GENERAL WINDOW PARAMETERS [#======================================[#
         #]===================================================================[#
 
-        self.setGeometry(629, 178, 435, 425)
-        self.setFixedSize(435, 410)
-        self.setWindowTitle("VenviPy")
+        self.setWindowTitle("About VenviPy")
+        self.setFixedSize(420, 390)
+        self.center()
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -43,8 +44,8 @@ class AppInfo(QDialog):
         horizontalLayout_2 = QHBoxLayout()
         horizontalLayout_3 = QHBoxLayout()
 
-        horizontalLayout_0.setContentsMargins(257, 8, 0, 25)
-        horizontalLayout_1.setContentsMargins(0, 0, 75, 25)
+        horizontalLayout_0.setContentsMargins(247, 8, 0, 25)
+        horizontalLayout_1.setContentsMargins(0, 0, 55, 25)
         horizontalLayout_3.setContentsMargins(0, 75, 6, 0)
         formLayout.setContentsMargins(37, -1, 20, -1)
 
@@ -89,7 +90,7 @@ class AppInfo(QDialog):
         # version
         labelVersion = QLabel("<b>Version:</b>")
         fieldVersion = QLabel()
-        fieldVersion.setText("0.1.0")
+        fieldVersion.setText("1.0")
 
         # OS
         labelOS = QLabel("<b>OS:</b>")
@@ -154,6 +155,13 @@ class AppInfo(QDialog):
         formLayout.setWidget(5, QFormLayout.FieldRole, fieldRepo)
         formLayout.setWidget(6, QFormLayout.LabelRole, labelPython)
         formLayout.setWidget(6, QFormLayout.FieldRole, fieldPython)
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 
 
