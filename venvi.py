@@ -147,13 +147,13 @@ class Ui_MainWindow(QMainWindow):
         self.newVenvButton = QPushButton(
             "New Venv", centralwidget,
             statusTip="Create a new virtual environment",
-            clicked=self.openWizard
+            clicked=self.wizard.exec_
         )
 
         self.manageVenvButton = QPushButton(
             "Manage Venvs", centralwidget,
-            statusTip="Manage your virtual environments",
-            clicked=self.openManager
+            statusTip="Manage virtual environments"
+            #clicked=self.openManager
         )
 
         self.exitButton = QPushButton(
@@ -171,7 +171,7 @@ class Ui_MainWindow(QMainWindow):
         self.refreshButton.setFixedSize(20, 20)
 
         #]===================================================================[#
-        # spacer manage button and exit button
+        # spacer between manage button and exit button
         spacerItem1 = QSpacerItem(
             20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
         )
@@ -308,13 +308,13 @@ class Ui_MainWindow(QMainWindow):
         self.actNewVenv = QAction(
             new_icon, "&New Venv", self,
             statusTip="Create a new virtual environment",
-            shortcut="Ctrl+N", triggered=self.openWizard
+            shortcut="Ctrl+N", triggered=self.wizard.exec_
         )
 
         self.actManageVenvs = QAction(
             manage_icon, "&Manage Venvs", self,
             statusTip="Manage your virtual environments",
-            shortcut="Ctrl+M", triggered=self.openManager
+            shortcut="Ctrl+M", #triggered=self.openManager
         )
 
         self.actSelectDefaultDir = QAction(
@@ -332,7 +332,7 @@ class Ui_MainWindow(QMainWindow):
         self.actAbout = QAction(
             about_icon, "&About", self,
             statusTip="About VenviPy",
-            shortcut="Ctrl+B", triggered=self.openInfo
+            shortcut="Ctrl+B", triggered=self.appInfo.exec_
         )
 
         # add actions to menus
@@ -428,7 +428,7 @@ class Ui_MainWindow(QMainWindow):
                 for i, text in enumerate((info.version, info.path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                print(f"[INTERPRETER]: {info}")
+                print(f"[PYTHON]: {info}")
 
 
     def popVenvTable(self):
@@ -446,37 +446,12 @@ class Ui_MainWindow(QMainWindow):
             print(f"[VENV]: {info}")
 
 
-    #]=======================================================================[#
-    #] OPEN WIDGETS / WINDOWS [#=============================================[#
-    #]=======================================================================[#
-
-    def openWizard(self):
-        """
-        Open the wizard that creates the virtual environment.
-        """
-        self.wizard.exec_()
-
-
-    def openInfo(self):
-        """
-        Open the application info window.
-        """
-        self.appInfo.exec_()
-
-
     def openSelectDefaultDir(self):
         """
         Open the select-default-directory window.
         """
         if self.selectDefaultDir.exec_() == QDialog.Accepted:
             self.popVenvTable()
-
-
-    def openManager(self):
-        """
-        Open the window for managing venvs.
-        """
-        # TODO: add the manage menu
 
 
 
