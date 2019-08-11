@@ -8,13 +8,13 @@ import os
 
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread,
-                         QProcess)
+                          QProcess)
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
-                             QAbstractItemView, QPushButton, QFrame,
-                             QMessageBox, QHeaderView, QTextEdit)
+                             QAbstractItemView, QPushButton, QFrame, QTextEdit,
+                             QMessageBox, QHeaderView, QDesktopWidget)
 
 from organize import get_package_infos, get_venvs_default, get_python_installs
 from managepip import PipManager
@@ -40,8 +40,8 @@ class ProgBarDialog(QDialog):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(675, 365, 325, 80)
         self.setFixedSize(350, 85)
+        self.center()
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -63,6 +63,13 @@ class ProgBarDialog(QDialog):
         h_Layout.addLayout(v_Layout)
         self.setLayout(h_Layout)
 
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
 
 #]===========================================================================[#
 #] CONSOLE DIALOG [#=========================================================[#
@@ -78,6 +85,11 @@ class ConsoleDialog(QDialog):
         self.initUI()
 
     def initUI(self):
+        self.resize(750, 400)
+        self.center()
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+
         self.setStyleSheet(
             """
             QTextEdit {
@@ -88,10 +100,6 @@ class ConsoleDialog(QDialog):
             }
             """
         )
-        self.setFixedWidth(750)
-        self.setMinimumHeight(400)
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
         self.consoleWindow = QTextEdit()
         self.consoleWindow.setReadOnly(True)
@@ -103,8 +111,15 @@ class ConsoleDialog(QDialog):
         self.progressBar.setRange(0, 0)
 
         v_Layout = QVBoxLayout(self)
-        v_Layout.addWidget(self.consoleWindow)
         v_Layout.addWidget(self.progressBar)
+        v_Layout.addWidget(self.consoleWindow)
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     @pyqtSlot(str)
     def update_status(self, status):
@@ -164,8 +179,8 @@ class VenvWizard(QWizard):
         super().__init__()
 
         self.setWindowTitle("Venv Wizard")
-        self.resize(635, 480)
-        self.move(528, 153)
+        self.resize(650, 500)
+        self.center()
 
         self.setStyleSheet(
             """
@@ -194,6 +209,12 @@ class VenvWizard(QWizard):
         self.installId = self.addPage(InstallPackages())
         self.summaryId = self.addPage(Summary())
 
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
@@ -320,11 +341,9 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
 
-
     def initializePage(self):
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.clicked.connect(self.execute_venv_create)
-
 
     def select_dir(self):
         """
@@ -332,7 +351,6 @@ class BasicSettings(QWizardPage):
         """
         folderName = QFileDialog.getExistingDirectory()
         self.venvLocationLineEdit.setText(folderName)
-
 
     def execute_venv_create(self):
         """
@@ -371,7 +389,6 @@ class BasicSettings(QWizardPage):
                 "virtual environment.\n"
             )
 
-
     def create_process(self):
         """
         Create the virtual environment.
@@ -387,13 +404,11 @@ class BasicSettings(QWizardPage):
         wrapper = partial(self.m_install_venv_worker.install_venv, args)
         QTimer.singleShot(0, wrapper)
 
-
     def set_progbar_label(self):
         """
         Set the text in status label to show that Pip is being updated.
         """
         self.progressBar.statusLabel.setText("Updating Pip...")
-
 
     def show_finished_msg(self):
         """

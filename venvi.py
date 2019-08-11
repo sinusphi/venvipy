@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
                              QTableView, QAbstractItemView, QMenuBar, QMenu,
                              QStatusBar, QMessageBox, QWizard, QWizardPage,
                              QCheckBox, QLineEdit, QGroupBox, QHBoxLayout,
-                             QComboBox, QToolButton, QDialog)
+                             QComboBox, QToolButton, QDialog, QDesktopWidget)
 
 from organize import get_python_installs, get_venvs_default
 import venvipy_rc
@@ -38,7 +38,8 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         self.setWindowTitle("VenviPy")
-        self.setGeometry(430, 150, 830, 525)
+        self.resize(900, 570)
+        self.center()
         self.setWindowIcon(QIcon(":/img/python.png"))
 
         self.setStyleSheet(
@@ -373,6 +374,14 @@ class Ui_MainWindow(QMainWindow):
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
                 self.selectInterpreter()
+
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 
     def selectInterpreter(self):

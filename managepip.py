@@ -5,7 +5,7 @@ import os
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess, Qt
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import (QApplication, QDialog, QProgressBar, QTextEdit,
-                             QVBoxLayout)
+                             QVBoxLayout, QDesktopWidget)
 
 
 
@@ -121,6 +121,11 @@ if __name__ == "__main__":
             self.initUI()
 
         def initUI(self):
+            self.resize(750, 400)
+            self.center()
+            self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+            self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+
             self.setStyleSheet(
                 """
                 QTextEdit {
@@ -131,10 +136,6 @@ if __name__ == "__main__":
                 }
                 """
             )
-            self.setFixedWidth(750)
-            self.setMinimumHeight(400)
-            self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-            self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
             self.consoleWindow = QTextEdit()
             self.consoleWindow.setReadOnly(True)
@@ -148,6 +149,13 @@ if __name__ == "__main__":
             v_Layout = QVBoxLayout(self)
             v_Layout.addWidget(self.consoleWindow)
             v_Layout.addWidget(self.progressBar)
+
+        def center(self):
+            """Center window."""
+            qr = self.frameGeometry()
+            cp = QDesktopWidget().availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
         @pyqtSlot(str)
         def update_status(self, status):
