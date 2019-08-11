@@ -662,9 +662,14 @@ class Summary(QWizardPage):
 
 
     def initializePage(self):
-        # disable 'back' button to prevent returning back to previous pages
         back_button = self.wizard().button(QWizard.BackButton)
+        finish_button = self.wizard().button(QWizard.FinishButton)
+
+        # disable 'back' button to prevent returning back to previous pages
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
+
+        # reset wizard
+        finish_button.clicked.connect(self.wizard().restart)
 
 
 
