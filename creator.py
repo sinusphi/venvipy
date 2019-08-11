@@ -77,7 +77,7 @@ class ProgBarDialog(QDialog):
 
 class ConsoleDialog(QDialog):
     """
-    Dialog box displaying the output in a console-like widget during the
+    Dialog box displaying the output inside a console-like widget during the
     installation process.
     """
     def __init__(self):
@@ -85,7 +85,8 @@ class ConsoleDialog(QDialog):
         self.initUI()
 
     def initUI(self):
-        self.resize(750, 400)
+        self.setWindowTitle("Installing")
+        self.resize(880, 510)
         self.center()
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
@@ -106,12 +107,7 @@ class ConsoleDialog(QDialog):
         self.consoleWindow.setFontFamily("Monospace")
         self.consoleWindow.setFontPointSize(10)
 
-        self.progressBar = QProgressBar()
-        self.progressBar.setFixedHeight(25)
-        self.progressBar.setRange(0, 0)
-
         v_Layout = QVBoxLayout(self)
-        v_Layout.addWidget(self.progressBar)
         v_Layout.addWidget(self.consoleWindow)
 
     def center(self):
@@ -179,7 +175,7 @@ class VenvWizard(QWizard):
         super().__init__()
 
         self.setWindowTitle("Venv Wizard")
-        self.resize(650, 500)
+        self.resize(680, 510)
         self.center()
 
         self.setStyleSheet(
@@ -631,11 +627,12 @@ class InstallPackages(QWizardPage):
             self.manager.textChanged.connect(self.console.update_status)
             self.manager.started.connect(self.console.exec_)
             self.manager.run_command(cmd[0], [opt[0], self.pkg])
+            #self.manager.finished.connect(self.console.close)
 
+            #]===============================================================[#
             # TODO: don't autoclose the console window on finish,
             #       add a button instead
-
-            #self.manager.finished.connect(self.console.close)
+            #]===============================================================[#
 
 
     def launch_terminal(self):
