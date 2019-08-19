@@ -4,16 +4,15 @@ from subprocess import Popen, PIPE
 import os
 
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
-from PyQt5.QtGui import (QIcon, QFont, QPixmap, QStandardItemModel,
-                         QStandardItem)
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QAction, QProgressBar,
-                             QFileDialog, QWidget, QGridLayout, QVBoxLayout,
-                             QLabel, QPushButton, QSpacerItem, QSizePolicy,
-                             QTableView, QAbstractItemView, QMenuBar, QMenu,
-                             QStatusBar, QMessageBox, QWizard, QWizardPage,
-                             QCheckBox, QLineEdit, QGroupBox, QHBoxLayout,
-                             QComboBox, QToolButton, QDialog, QDesktopWidget)
-
+from PyQt5.QtGui import (
+    QIcon, QFont, QPixmap, QStandardItemModel, QStandardItem
+)
+from PyQt5.QtWidgets import (
+    QMainWindow, QApplication, QAction, QProgressBar, QFileDialog, QLabel,
+    QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QWizard,
+    QSizePolicy, QTableView, QAbstractItemView, QMenuBar, QMenu, QDialog,
+    QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
+)
 from organize import get_python_installs, get_venvs_default
 import venvipy_rc
 import settings
@@ -33,10 +32,6 @@ class Ui_MainWindow(QMainWindow):
 
 
     def initUI(self):
-        #]===================================================================[#
-        #] WINDOW SETTINGS [#================================================[#
-        #]===================================================================[#
-
         self.setWindowTitle("VenviPy")
         self.resize(900, 570)
         self.center()
@@ -86,11 +81,6 @@ class Ui_MainWindow(QMainWindow):
             """
         )
 
-
-        #]===================================================================[#
-        #] INSTANCES [#======================================================[#
-        #]===================================================================[#
-
         self.wizard = creator.VenvWizard()
         self.selectDefaultDir = settings.SelectDefaultDir()
         self.appInfo = info.AppInfo()
@@ -100,10 +90,6 @@ class Ui_MainWindow(QMainWindow):
         #] ICONS [#==========================================================[#
         #]===================================================================[#
 
-        #del_icon = QIcon.fromTheme("edit-delete")
-        #copy_icon = QIcon.fromTheme("edit-copy")
-        #paste_icon = QIcon.fromTheme("edit-paste")
-        #folder_icon = QIcon.fromTheme("folder")
         refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
