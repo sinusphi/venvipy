@@ -11,7 +11,8 @@ from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QProgressBar, QFileDialog, QLabel,
     QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QWizard,
     QSizePolicy, QTableView, QAbstractItemView, QMenuBar, QMenu, QDialog,
-    QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
+    QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,
+    QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
 )
 from organize import get_python_installs, get_venvs_default
 import venvipy_rc
