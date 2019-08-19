@@ -21,10 +21,6 @@ class AppInfo(QDialog):
 
 
     def initUI(self):
-        #]===================================================================[#
-        #] GENERAL WINDOW PARAMETERS [#======================================[#
-        #]===================================================================[#
-
         self.setWindowTitle("About VenviPy")
         self.setFixedSize(420, 390)
         self.center()
@@ -90,7 +86,7 @@ class AppInfo(QDialog):
         # version
         labelVersion = QLabel("<b>Version:</b>")
         fieldVersion = QLabel()
-        fieldVersion.setText("1.0")
+        fieldVersion.setText("1.1")
 
         # OS
         labelOS = QLabel("<b>OS:</b>")
