@@ -4,6 +4,8 @@
 
 #### *A lightweight GUI for managing virtual environments in Python. Built with Python and PyQt5.*
 
+___
+
 ### Contributing
 
 Contributions are welcomed, as well as [Pull requests](https://github.com/sinusphi/venvipy/pulls), [bug reports](https://github.com/sinusphi/venvipy/issues), and [feature requests](https://github.com/sinusphi/venvipy/issues).
