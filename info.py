@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Infos about VenviPy."""
 from platform import system, release
+import sys
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap, QIcon
 from PyQt5.QtWidgets import (QLabel, QPushButton, QApplication, QHBoxLayout,
                              QSpacerItem, QSizePolicy, QDialog, QGridLayout,
                              QFormLayout, QDesktopWidget)
@@ -24,6 +25,7 @@ class AppInfo(QDialog):
         self.setWindowTitle("About VenviPy")
         self.setFixedSize(420, 390)
         self.center()
+        self.setWindowIcon(QIcon(":/img/python.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -61,21 +63,39 @@ class AppInfo(QDialog):
         logo.setPixmap(QPixmap(":/img/pylogo.png"))
         logo.setAlignment(Qt.AlignVCenter)
 
-        # title
-        labelTitle = QLabel(
-            '<p align="center"><span style="font-size:35pt;">\
-                <b>VenviPy</b>\
-            </span></p>'
-        )
-        labelTitle.setFont(QFont("FreeSerif", italic=True))
+        if sys.platform == "win32":
+            # title
+            labelTitle = QLabel(
+                '<p align="center"><span style="font-size:31pt;">\
+                    <b>VenviPy</b>\
+                </span></p>'
+            )
+            labelTitle.setFont(QFont("Segoe Print", italic=True))
 
-        # subtitle
-        labelSubtitle = QLabel(
-            '<p align="center"><span style="font-size:13.5pt;">\
-                Virtual Environment Manager for Python\
-            </span></p>'
-        )
-        labelSubtitle.setFont(QFont("FreeSerif", italic=True))
+            # subtitle
+            labelSubtitle = QLabel(
+                '<p align="center"><span style="font-size:11pt;">\
+                    Virtual Environment Manager for Python\
+                </span></p>'
+            )
+            labelSubtitle.setFont(QFont("", italic=True))
+
+        else:
+            # title
+            labelTitle = QLabel(
+                '<p align="center"><span style="font-size:35pt;">\
+                    <b>VenviPy</b>\
+                </span></p>'
+            )
+            labelTitle.setFont(QFont("FreeSerif", italic=True))
+
+            # subtitle
+            labelSubtitle = QLabel(
+                '<p align="center"><span style="font-size:13.5pt;">\
+                    Virtual Environment Manager for Python\
+                </span></p>'
+            )
+            labelSubtitle.setFont(QFont("FreeSerif", italic=True))
 
         #]===================================================================[#
 
@@ -162,7 +182,6 @@ class AppInfo(QDialog):
 
 
 if __name__ == "__main__":
-    import sys
 
     app = QApplication(sys.argv)
 
