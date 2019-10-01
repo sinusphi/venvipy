@@ -376,15 +376,6 @@ class BasicSettings(QWizardPage):
             # disable page during create process
             self.setEnabled(False)
 
-        else:
-            print("[ERROR]: Missing input data!")
-            QMessageBox.information(self,
-                "Missing data!",
-                "Please specify at least the interpreter \n"
-                "to use, the path and a name for the \n"
-                "virtual environment.\n"
-            )
-
     def create_process(self):
         """
         Create the virtual environment.
@@ -500,8 +491,8 @@ class InstallPackages(QWizardPage):
         self.setTitle("Install Packages")
         self.setSubTitle(
             "Specify the packages you want to install into the virtual "
-            "environment. Double-click on the item to install it for "
-            "installation and click next when finished."
+            "environment. Double-click the item you want to install and "
+            "click next when finished."
         )
 
         self.console = ConsoleDialog()
