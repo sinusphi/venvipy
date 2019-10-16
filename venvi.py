@@ -196,7 +196,7 @@ class Ui_MainWindow(QMainWindow):
 
         # adjust vertical headers
         v_HeaderTV1 = interprTable.verticalHeader()
-        v_HeaderTV1.setDefaultSectionSize(27.5)
+        v_HeaderTV1.setDefaultSectionSize(27)
         v_HeaderTV1.hide()
 
         # adjust (horizontal) headers
@@ -235,7 +235,7 @@ class Ui_MainWindow(QMainWindow):
 
         # adjust vertical headers
         v_HeaderTV2 = venvTable.verticalHeader()
-        v_HeaderTV2.setDefaultSectionSize(27.5)
+        v_HeaderTV2.setDefaultSectionSize(27)
         v_HeaderTV2.hide()
 
         # adjust (horizontal) headers
