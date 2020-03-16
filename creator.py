@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Wizard for creating and setting up virtual environments."""
-from venv import create as create_venv
 from functools import partial
 import shutil
 import sys
@@ -16,7 +15,8 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QAbstractItemView, QPushButton, QFrame, QTextEdit,
                              QMessageBox, QHeaderView, QDesktopWidget)
 
-from organize import get_package_infos, get_venvs_default, get_python_installs
+from organize import (get_package_infos, get_venvs_default, get_python_installs,
+                      create_venv)
 from managepip import PipManager
 
 PIP = "pip"
@@ -145,9 +145,10 @@ class CreationWorker(QObject):
     def install_venv(self, args):
         self.started.emit()
 
-        name, location, with_pip, site_packages, symlinks = args
+        py_vers, name, location, with_pip, site_packages, symlinks = args
 
         create_venv(
+            py_vers,
             os.path.join(location, name),
             with_pip=with_pip,
             system_site_packages=site_packages,
@@ -250,7 +251,6 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.started.connect(self.progressBar.exec_)
         self.m_install_venv_worker.textChanged.connect(self.set_progbar_label)
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
-        self.m_install_venv_worker.finished.connect(self.post_install_venv)
         self.m_install_venv_worker.finished.connect(self.show_finished_msg)
         self.m_install_venv_worker.finished.connect(self.re_enable_page)
 
@@ -266,7 +266,7 @@ class BasicSettings(QWizardPage):
         self.interprComboBox.addItem("---")
         for info in get_python_installs():
             self.interprComboBox.addItem(
-                f"{info.version} - {info.path}", info.path
+                f"{info.version} -> {info.path}", info.path
             )
 
         venvNameLabel = QLabel("Venv &name:")
@@ -367,9 +367,6 @@ class BasicSettings(QWizardPage):
             self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
             self.progressBar.statusLabel.setText("Creating virtual environment...")
 
-            # overwrite executable with the python version selected
-            sys.executable = self.pythonPath
-
             # run the create process
             self.create_process()
 
@@ -381,6 +378,7 @@ class BasicSettings(QWizardPage):
         Create the virtual environment.
         """
         args = (
+            self.pythonPath,
             self.venvName,
             self.venvLocation,
             self.withPip,
@@ -453,27 +451,6 @@ class BasicSettings(QWizardPage):
                 print(f"[VENVIPY]: Removed file or directory: '{fn}'")
 
 
-    def post_install_venv(self):
-        """
-        Create the configuration file and remove unnecessary dirs.
-        """
-        cfg_path = os.path.join(self.venvLocation, self.venvName, "pyvenv.cfg")
-        bin_path = os.path.split(self.pythonPath)[0]
-
-        with open(cfg_path, "w", encoding="utf-8") as f:
-            f.write(f"home = {bin_path}\n")
-
-            if self.sitePackages:
-                include = "true"
-            else:
-                include = "false"
-
-            f.write(f"include-system-site-packages = {include}\n")
-            f.write(f"version = {self.pythonVers[7:12]}\n")
-
-        self.clean_venv_dir()
-
-
     def re_enable_page(self):
         """
         Re-enable wizard page when create process has finished.
@@ -527,7 +504,7 @@ class InstallPackages(QWizardPage):
 
         # adjust vertical headers
         v_Header = self.resultsTable.verticalHeader()
-        v_Header.setDefaultSectionSize(27.5)
+        v_Header.setDefaultSectionSize(28)
         v_Header.hide()
 
         # adjust horizontal headers
