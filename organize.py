@@ -3,6 +3,7 @@
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
+import shutil
 import os
 
 
@@ -13,46 +14,27 @@ import os
 
 @dataclass
 class PythonInfo:
+    """_"""
     version: str
     path: str
 
 
 def get_python_installs():
     """
-    Determine if Python 3 installations exist and where they are.
+    Get the available python versions installed.
     """
-    versions = ['3.9', '3.8', '3.7', '3.6', '3.5', '3.4', '3.3', '3']
-
-    infos = []
+    versions = ['3.9', '3.8', '3.7', '3.6', '3.5', '3.4', '3.3']
+    py_info_list = []
 
     for i, vers in enumerate(versions):
-        try:
-            # get python versions
-            res1 = Popen(
-                ["python" + vers, "-V"],
-                stdout=PIPE,
-                text="utf-8"
-            )
-            out1, _ = res1.communicate()
-            version = out1.strip()
+        python_version = f"Python {vers}"
+        python_path = shutil.which(f"python{vers}")
 
-            # get paths to the python binaries
-            res2 = Popen(
-                ["which", "python" + vers],
-                stdout=PIPE,
-                text="utf-8"
-            )
-            out2, _ = res2.communicate()
-            path = out2.strip()
+        if python_path is not None:
+            py_info = PythonInfo(python_version, python_path)
+            py_info_list.append(py_info)
 
-            info = PythonInfo(version, path)
-            infos.append(info)
-
-        except FileNotFoundError as err:
-            pass  # no need to show which Python versions were not found
-            #print(f"[ERROR]: {err.args[1]}")
-
-    return infos
+    return py_info_list
 
 
 #]===========================================================================[#
@@ -61,46 +43,50 @@ def get_python_installs():
 
 @dataclass
 class VenvInfo:
+    """_"""
     name: str
-    directory: str
     version: str
 
 
 def get_venvs(path):
     """
-    Get the venv directories from default directory.
+    Get the available virtual environments
+    from the specified folder.
     """
+    # return an emtpty list if directory doesn't exist
     if not os.path.isdir(path):
         return []
 
-    infos = []
+    venv_info_list = []
 
-    for i, _dir in enumerate(os.listdir(path)):
-
-        bin_folder = os.path.join(path, _dir, "bin")
-        if not os.path.isdir(bin_folder):
+    for i, venv in enumerate(os.listdir(path)):
+        # build path to venv directory
+        valid_venv = os.path.join(path, venv)
+        if not os.path.isdir(valid_venv):
             continue
 
-        python_binary = os.path.join(bin_folder, "python")
-        if not os.path.isfile(python_binary):
+        # build path to pyvenv.cfg file
+        cfg_file = os.path.join(valid_venv, "pyvenv.cfg")
+        if not os.path.isfile(cfg_file):
             continue
 
-        try:
-            res = Popen(
-                [python_binary, "-V"],
-                stdout=PIPE,
-                text="utf-8"
-            )
-            out, _ = res.communicate()
-            version = out.strip()
+        version = get_python_vers(cfg_file)
 
-            info = VenvInfo(_dir, path, version)
-            infos.append(info)
+        venv_info = VenvInfo(os.path.basename(valid_venv), version)
+        venv_info_list.append(venv_info)
 
-        except OSError as err:
-            print(f"{err.args[1]}: {python_binary}")
+    return venv_info_list
 
-    return infos
+
+def get_python_vers(cfg_file):
+    """
+    Get the Python version of a virtual environment by
+    reading the version str from it's `pyvenv.cfg` file.
+    """
+    with open(cfg_file, "r") as f:
+        lines = f.readlines()
+
+    return f"Python {lines[2][10:]}".strip()
 
 
 def get_venvs_default():
@@ -116,6 +102,33 @@ def get_venvs_default():
             return get_venvs(default_dir)
 
     return []
+
+
+#]===========================================================================[#
+#] CREATE A VIRTUAL ENVIRONMENT [#===========================================[#
+#]===========================================================================[#
+
+def create_venv(py_vers, env_dir, with_pip=False,
+                system_site_packages=False, symlinks=False):
+    """
+    Create a virtual environment in a directory.
+    """
+    pip = "" if with_pip else " --without-pip"
+    ssp = " --system-site-packages" if system_site_packages else ""
+    sym = " --symlinks" if symlinks else ""
+
+    script = f"{py_vers} -m venv {env_dir}{pip}{ssp}{sym};"
+
+    res = Popen(
+            ["bash", "-c", script],
+            stdout=PIPE,
+            text="utf-8"
+        )
+
+    out, _ = res.communicate()
+    output = out.strip()
+
+    return output
 
 
 #]===========================================================================[#
@@ -157,15 +170,15 @@ if __name__ == "__main__":
 
     #]=======================================================================[#
 
-    for venv in get_venvs_default():
-        print(venv.name, venv.version, venv.directory)
+    # venv in get_venvs_default():
+        #print(venv.name, venv.version)
 
     #]=======================================================================[#
 
-    test_pkg = "test"
+    #test_pkg = "test"
 
-    for pkg in get_package_infos(test_pkg):
-        print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
+    #for pkg in get_package_infos(test_pkg):
+        #print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
 
-    if not get_package_infos(test_pkg):
-        print("No packages found!")
+    #if not get_package_infos(test_pkg):
+        #print("No packages found!")
