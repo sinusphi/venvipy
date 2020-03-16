@@ -245,9 +245,9 @@ class Ui_MainWindow(QMainWindow):
         h_HeaderTV2.setStretchLastSection(True)
 
         # set table view model
-        self.modelTV2 = QStandardItemModel(0, 3, centralwidget)
+        self.modelTV2 = QStandardItemModel(0, 2, centralwidget)
         self.modelTV2.setHorizontalHeaderLabels(
-            ["Venv Name", "Version", "Path"]
+            ["Venv Name", "Version"]
         )
         venvTable.setModel(self.modelTV2)
 
@@ -389,7 +389,8 @@ class Ui_MainWindow(QMainWindow):
         if bin_file != "":
             # get version info and path of the selected binary
             res = Popen(
-                [bin_file, "-V"], stdout=PIPE, universal_newlines=True
+                [bin_file, "-V"],
+                stdout=PIPE, universal_newlines=True
             )
             out, _ = res.communicate()
             version = out.strip()
@@ -427,7 +428,7 @@ class Ui_MainWindow(QMainWindow):
         for info in get_venvs_default():
             self.modelTV2.insertRow(0)
 
-            for i, text in enumerate((info.name, info.version, info.directory)):
+            for i, text in enumerate((info.name, info.version)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
             print(f"[VENV]: {info}")
