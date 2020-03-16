@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""This module manages all pip processes."""
+"""Module that manages all pip processes."""
 import os
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess, Qt
@@ -28,7 +28,7 @@ def has_bash():
 
 class PipManager(QObject):
     """
-    Manages the installation process.
+    Manage the installation process.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
@@ -54,6 +54,7 @@ class PipManager(QObject):
         self._process.finished.connect(self.onFinished)
         self._process.setWorkingDirectory(venv_dir)
 
+
     def run_command(self, command="", options=None):
         """
         Run the commands needed to activate the virtual environment and
@@ -62,12 +63,15 @@ class PipManager(QObject):
         if has_bash():
             if options is None:
                 options = []
-            script = f"""
-                source {self._venv_name}/bin/activate; \
-                pip {command} {" ".join(options)}; \
-                deactivate;
-                """
+
+            script = (
+                f"source {self._venv_name}/bin/activate;" \
+                f"pip {command} {' '.join(options)};" \
+                "deactivate;"
+            )
+
             self._process.start("bash", ["-c", script])
+
 
     @pyqtSlot(QProcess.ProcessState)
     def onStateChanged(self, state):
@@ -79,13 +83,13 @@ class PipManager(QObject):
         elif state == QProcess.Running:
             print("[PROCESS]: Running")
 
+
     @pyqtSlot(int, QProcess.ExitStatus)
     def onFinished(self, exitCode, exitStatus):
         """Show exit code and exit status when finished."""
-        print(
-            f"[PROCESS]: Exit code: {exitCode}\n"
-            f"[PROCESS]: Exit status: {exitStatus}"
-        )
+        print(f"[PROCESS]: Exit code: {exitCode}")
+        print(f"[PROCESS]: Exit status: {exitStatus}")
+
 
     @pyqtSlot()
     def onReadyReadStandardError(self):
@@ -93,10 +97,11 @@ class PipManager(QObject):
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print("[WARNING]:", message.split("\n")[0])
+        print(f"[WARNING]: {message}")
         self.finished.emit()
         self._process.kill()
-        """self.textChanged.emit(message)"""
+        self.textChanged.emit(message)
+
 
     @pyqtSlot()
     def onReadyReadStandardOutput(self):
