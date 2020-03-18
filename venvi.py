@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""The main menu of VenviPy."""
+"""
+The main menu of VenviPy.
+"""
 from subprocess import Popen, PIPE
 import os
 
@@ -14,10 +16,11 @@ from PyQt5.QtWidgets import (
     QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,
     QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
 )
+
 from organize import get_python_installs, get_venvs_default
 import venvipy_rc
 import settings
-import creator
+import wizard
 import info
 
 
@@ -82,7 +85,7 @@ class Ui_MainWindow(QMainWindow):
             """
         )
 
-        self.wizard = creator.VenvWizard()
+        self.wizard = wizard.VenvWizard()
         self.selectDefaultDir = settings.SelectDefaultDir()
         self.appInfo = info.AppInfo()
 
