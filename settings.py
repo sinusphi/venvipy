@@ -101,14 +101,14 @@ class SelectDefaultDir(QDialog):
         Store the absolute path to the selected dir as `str` in `def/default`.
         """
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        default_file = os.path.join(current_dir, "def", "default")
+        default_file = os.path.join(current_dir, "resources", "default")
         default_path = self.defaultDirLineEdit.text()
 
         with open(default_file, "w") as f:
             f.write(default_path)
             print(
-                "[INFO]: Set default venv directory "
-                f"to '{default_path}'")
+                f"[INFO]: Setting default venv directory to '{default_path}'"
+            )
 
         self.accept()
 
