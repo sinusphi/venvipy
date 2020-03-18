@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Collect and serve data."""
+"""
+This module ...
+"""
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
@@ -15,8 +17,8 @@ import os
 @dataclass
 class PythonInfo:
     """_"""
-    version: str
-    path: str
+    py_version: str
+    py_path: str
 
 
 def get_python_installs():
@@ -26,9 +28,9 @@ def get_python_installs():
     versions = ['3.9', '3.8', '3.7', '3.6', '3.5', '3.4', '3.3']
     py_info_list = []
 
-    for i, vers in enumerate(versions):
-        python_version = f"Python {vers}"
-        python_path = shutil.which(f"python{vers}")
+    for i, version in enumerate(versions):
+        python_version = f"Python {version}"
+        python_path = shutil.which(f"python{version}")
 
         if python_path is not None:
             py_info = PythonInfo(python_version, python_path)
@@ -38,14 +40,14 @@ def get_python_installs():
 
 
 #]===========================================================================[#
-#] GET VENVS FROM DEFAULT DIRECTORY [#=======================================[#
+#] GET VENVS [#==============================================================[#
 #]===========================================================================[#
 
 @dataclass
 class VenvInfo:
     """_"""
-    name: str
-    version: str
+    venv_name: str
+    venv_version: str
 
 
 def get_venvs(path):
@@ -70,20 +72,20 @@ def get_venvs(path):
         if not os.path.isfile(cfg_file):
             continue
 
-        version = get_python_vers(cfg_file)
+        version_found = get_python_vers(cfg_file)
 
-        venv_info = VenvInfo(os.path.basename(valid_venv), version)
+        venv_info = VenvInfo(os.path.basename(valid_venv), version_found)
         venv_info_list.append(venv_info)
 
     return venv_info_list
 
 
-def get_python_vers(cfg_file):
+def get_python_vers(pyvenv_cfg):
     """
     Get the Python version of a virtual environment by
     reading the version str from it's `pyvenv.cfg` file.
     """
-    with open(cfg_file, "r") as f:
+    with open(pyvenv_cfg, "r") as f:
         lines = f.readlines()
 
     return f"Python {lines[2][10:]}".strip()
@@ -137,9 +139,10 @@ def create_venv(py_vers, env_dir, with_pip=False,
 
 @dataclass
 class PackageInfo:
+    """_"""
     pkg_name: str
-    pkg_vers: str
-    pkg_sum: str
+    pkg_version: str
+    pkg_summary: str
 
 
 def get_package_infos(name):
@@ -147,26 +150,26 @@ def get_package_infos(name):
     Get package name, version and description from https://pypi.org/pypi.
     """
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
-    res = client.search({"name": name})
+    search_result = client.search({"name": name})
 
-    infos = []
+    package_info_list = []
 
-    for i, proj in enumerate(res):
-        pkg_name = proj["name"]
-        pkg_vers = proj["version"]
-        pkg_sum = proj["summary"]
+    for i, pkg in enumerate(search_result):
+        pkg_name = pkg["name"]
+        pkg_version = pkg["version"]
+        pkg_summary = pkg["summary"]
 
-        info = PackageInfo(pkg_name, pkg_vers, pkg_sum)
-        infos.append(info)
+        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_summary)
+        package_info_list.append(pkg_info)
 
-    return infos
+    return package_info_list
 
 
 
 if __name__ == "__main__":
 
     for python in get_python_installs():
-        print(python.version, python.path)
+        print(python.py_version, python.py_path)
 
     #]=======================================================================[#
 
@@ -178,7 +181,7 @@ if __name__ == "__main__":
     #test_pkg = "test"
 
     #for pkg in get_package_infos(test_pkg):
-        #print(pkg.pkg_name, pkg.pkg_vers, pkg.pkg_sum)
+        #print(pkg.pkg_name, pkg.pkg_version, pkg.pkg_summary)
 
     #if not get_package_infos(test_pkg):
         #print("No packages found!")
