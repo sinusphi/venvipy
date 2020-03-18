@@ -171,7 +171,7 @@ class CreationWorker(QObject):
 
         if with_pip:
             self.textChanged.emit()
-            self.manager.run_pip(self.cmds[0], [self.opts[0], "pip"])
+            self.manager.run_pip(cmds[0], [opts[0], "pip"])
 
         self.finished.emit()
 
@@ -284,7 +284,7 @@ class BasicSettings(QWizardPage):
         self.interprComboBox.addItem("---")
         for info in get_python_installs():
             self.interprComboBox.addItem(
-                f"{info.version} -> {info.path}", info.path
+                f"{info.py_version} -> {info.py_path}", info.py_path
             )
 
         venvNameLabel = QLabel("Venv &name:")
@@ -625,7 +625,7 @@ class InstallPackages(QWizardPage):
 
             # start installing the selected module
             print(f"[PROCESS]: Start installing module '{self.pkg}'")
-            self.manager.run_pip(self.cmds[0], [self.opts[0], self.pkg])
+            self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
             self.manager.textChanged.connect(self.console.update_status)
