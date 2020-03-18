@@ -21,8 +21,10 @@ def has_bash():
     process.start("which bash")
     process.waitForStarted()
     process.waitForFinished()
+
     if process.exitStatus() == QProcess.NormalExit:
         return bool(process.readAll())
+
     return False
 
 
@@ -55,7 +57,7 @@ class PipManager(QObject):
         self._process.setWorkingDirectory(venv_dir)
 
 
-    def run_command(self, command="", options=None):
+    def run_pip(self, command="", options=None):
         """
         Run the commands needed to activate the virtual environment and
         install the selected packages.
@@ -78,6 +80,9 @@ class PipManager(QObject):
         """Show the current process status."""
         if state == QProcess.NotRunning:
             print("[PROCESS]: Stopped")
+            self.textChanged.emit(
+                "Done.\n\nYou can close this window now."
+            )
         elif state == QProcess.Starting:
             print("[PROCESS]: Started")
         elif state == QProcess.Running:
@@ -85,10 +90,9 @@ class PipManager(QObject):
 
 
     @pyqtSlot(int, QProcess.ExitStatus)
-    def onFinished(self, exitCode, exitStatus):
-        """Show exit code and exit status when finished."""
+    def onFinished(self, exitCode):
+        """Show exit code when finished."""
         print(f"[PROCESS]: Exit code: {exitCode}")
-        print(f"[PROCESS]: Exit status: {exitStatus}")
 
 
     @pyqtSlot()
@@ -97,7 +101,8 @@ class PipManager(QObject):
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[WARNING]: {message}")
+        print(f"[ERROR]: {message}")
+
         self.finished.emit()
         self._process.kill()
         self.textChanged.emit(message)
@@ -109,8 +114,9 @@ class PipManager(QObject):
         Read from `stdout` and send the output to `update_status()`.
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
-        self.textChanged.emit(message)
+        print(f"[PIP]: {message}")
 
+        self.textChanged.emit(message)
 
 
 if __name__ == "__main__":
@@ -184,7 +190,7 @@ if __name__ == "__main__":
     manager = PipManager(current_dir, venv_name)
     manager.textChanged.connect(console.update_status)
     manager.started.connect(console.show)
-    manager.run_command("install", ["--upgrade", "test"])
+    manager.run_pip("install", ["--upgrade", "test"])
     #manager.finished.connect(console.close)
 
     sys.exit(app.exec_())
