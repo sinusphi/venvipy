@@ -16,9 +16,9 @@ from PyQt5.QtWidgets import (
     QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,
     QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
 )
+import resources.venvipy_rc
 
 from organize import get_python_installs, get_venvs_default
-import venvipy_rc
 import settings
 import wizard
 import info
@@ -416,7 +416,7 @@ class Ui_MainWindow(QMainWindow):
             for info in get_python_installs():
                 self.modelTV1.insertRow(0)
 
-                for i, text in enumerate((info.version, info.path)):
+                for i, text in enumerate((info.py_version, info.py_path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
                 print(f"[PYTHON]: {info}")
@@ -431,7 +431,7 @@ class Ui_MainWindow(QMainWindow):
         for info in get_venvs_default():
             self.modelTV2.insertRow(0)
 
-            for i, text in enumerate((info.name, info.version)):
+            for i, text in enumerate((info.venv_name, info.venv_version)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
             print(f"[VENV]: {info}")
