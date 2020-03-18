@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Wizard for creating and setting up virtual environments."""
+"""
+This module contains the wizard for creating virtual environments.
+"""
 from functools import partial
 import shutil
 import sys
@@ -17,14 +19,15 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
 
 from organize import (get_package_infos, get_venvs_default, get_python_installs,
                       create_venv)
+
 from managepip import PipManager
 
-PIP = "pip"
 
 
 # pip commands and options
-cmd = ["install", "list", "show"]
-opt = ["--upgrade"]
+cmds = ["install", "uninstall", "list", "freeze ", "show ", "check ", "wheel"]
+opts = ["--upgrade", "--isolated"]
+
 
 
 #]===========================================================================[#
@@ -38,6 +41,7 @@ class ProgBarDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.initUI()
+
 
     def initUI(self):
         self.setFixedSize(350, 85)
@@ -63,6 +67,7 @@ class ProgBarDialog(QDialog):
         h_Layout.addLayout(v_Layout)
         self.setLayout(h_Layout)
 
+
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
@@ -71,18 +76,21 @@ class ProgBarDialog(QDialog):
         self.move(qr.topLeft())
 
 
+
 #]===========================================================================[#
 #] CONSOLE DIALOG [#=========================================================[#
 #]===========================================================================[#
 
 class ConsoleDialog(QDialog):
     """
-    Dialog box displaying the output inside a console-like widget during the
+    Dialog box printing the output to a console-like widget during the
     installation process.
     """
     def __init__(self):
         super().__init__()
+
         self.initUI()
+
 
     def initUI(self):
         self.setWindowTitle("Installing")
@@ -105,10 +113,11 @@ class ConsoleDialog(QDialog):
         self.consoleWindow = QTextEdit()
         self.consoleWindow.setReadOnly(True)
         self.consoleWindow.setFontFamily("Monospace")
-        self.consoleWindow.setFontPointSize(10)
+        self.consoleWindow.setFontPointSize(11)
 
         v_Layout = QVBoxLayout(self)
         v_Layout.addWidget(self.consoleWindow)
+
 
     def center(self):
         """Center window."""
@@ -117,16 +126,18 @@ class ConsoleDialog(QDialog):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+
     @pyqtSlot(str)
     def update_status(self, status):
         """
-        Set the content to be shown in the console dialog.
+        Print the output from stdin/ stderr to `consoleWindow`.
         """
         metrix = QFontMetrics(self.consoleWindow.font())
         clippedText = metrix.elidedText(
             status, Qt.ElideRight, self.consoleWindow.width()
         )
         self.consoleWindow.append(clippedText)
+
 
 
 #]===========================================================================[#
@@ -140,6 +151,7 @@ class CreationWorker(QObject):
     started = pyqtSignal()
     textChanged = pyqtSignal()
     finished = pyqtSignal()
+
 
     @pyqtSlot(tuple)
     def install_venv(self, args):
@@ -159,9 +171,10 @@ class CreationWorker(QObject):
 
         if with_pip:
             self.textChanged.emit()
-            self.manager.run_command(cmd[0], [opt[0], PIP])
+            self.manager.run_pip(self.cmds[0], [self.opts[0], "pip"])
 
         self.finished.emit()
+
 
 
 #]===========================================================================[#
@@ -170,7 +183,7 @@ class CreationWorker(QObject):
 
 class VenvWizard(QWizard):
     """
-    Wizard for creating and setting up a virtual environment.
+    Wizard for creating and setting up a virtual environments.
     """
     def __init__(self):
         super().__init__()
@@ -206,12 +219,14 @@ class VenvWizard(QWizard):
         self.installId = self.addPage(InstallPackages())
         self.summaryId = self.addPage(Summary())
 
+
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
@@ -221,6 +236,7 @@ class VenvWizard(QWizard):
         if self.basicSettings.withPipCBox.isChecked():
             return self.installId
         return self.summaryId
+
 
 
 class BasicSettings(QWizardPage):
@@ -236,7 +252,6 @@ class BasicSettings(QWizardPage):
         self.setSubTitle("This wizard will help you to create and set up "
                          "a virtual environment for Python. ")
 
-        self.progressBar = ProgBarDialog()
 
         #]===================================================================[#
         #] THREADS  [#=======================================================[#
@@ -244,6 +259,8 @@ class BasicSettings(QWizardPage):
 
         thread = QThread(self)
         thread.start()
+
+        self.progressBar = ProgBarDialog()
 
         self.m_install_venv_worker = CreationWorker()
         self.m_install_venv_worker.moveToThread(thread)
@@ -253,6 +270,7 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.show_finished_msg)
         self.m_install_venv_worker.finished.connect(self.re_enable_page)
+
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -283,6 +301,7 @@ class BasicSettings(QWizardPage):
             clicked=self.select_dir
         )
         self.selectDirToolButton.setFixedSize(26, 27)
+
 
         #]===================================================================[#
         # TODO: remove placeholder and add a spacer instead
@@ -337,9 +356,11 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
 
+
     def initializePage(self):
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.clicked.connect(self.execute_venv_create)
+
 
     def select_dir(self):
         """
@@ -347,6 +368,7 @@ class BasicSettings(QWizardPage):
         """
         folderName = QFileDialog.getExistingDirectory()
         self.venvLocationLineEdit.setText(folderName)
+
 
     def execute_venv_create(self):
         """
@@ -363,7 +385,7 @@ class BasicSettings(QWizardPage):
         self.launchVenv = self.field("launchVenv")
 
         if self.combobox and self.venvName and self.venvLocation:
-            # display which python version is used to create the virt. env
+            # display the python version used to create the virt. env
             self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
             self.progressBar.statusLabel.setText("Creating virtual environment...")
 
@@ -372,6 +394,7 @@ class BasicSettings(QWizardPage):
 
             # disable page during create process
             self.setEnabled(False)
+
 
     def create_process(self):
         """
@@ -389,11 +412,13 @@ class BasicSettings(QWizardPage):
         wrapper = partial(self.m_install_venv_worker.install_venv, args)
         QTimer.singleShot(0, wrapper)
 
+
     def set_progbar_label(self):
         """
         Set the text in status label to show that Pip is being updated.
         """
         self.progressBar.statusLabel.setText("Updating Pip...")
+
 
     def show_finished_msg(self):
         """
@@ -458,6 +483,7 @@ class BasicSettings(QWizardPage):
         self.setEnabled(True)
 
 
+
 class InstallPackages(QWizardPage):
     """
     Install packages via `pip` into the created virtual environment.
@@ -472,7 +498,6 @@ class InstallPackages(QWizardPage):
             "click next when finished."
         )
 
-        self.console = ConsoleDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -489,6 +514,7 @@ class InstallPackages(QWizardPage):
             "&Search",
             clicked=self.pop_results_table
         )
+
 
         #]===================================================================[#
         #] RESULTS TABLE VIEW [#=============================================[#
@@ -561,7 +587,7 @@ class InstallPackages(QWizardPage):
             self.resultsModel.insertRow(0)
 
             for i, text in enumerate(
-                (info.pkg_name, info.pkg_vers, info.pkg_sum)
+                (info.pkg_name, info.pkg_version, info.pkg_summary)
             ):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
@@ -590,17 +616,23 @@ class InstallPackages(QWizardPage):
         )
 
         if self.messageBoxConfirm == QMessageBox.Yes:
-            print(f"[VENVIPY]: Installing '{self.pkg}'")
-            self.manager = PipManager(self.venvLocation, self.venvName)
-            self.manager.textChanged.connect(self.console.update_status)
-            self.manager.started.connect(self.console.exec_)
-            self.manager.run_command(cmd[0], [opt[0], self.pkg])
-            #self.manager.finished.connect(self.console.close)
 
-            #]===============================================================[#
-            # TODO: don't autoclose the console window on finish,
-            #       add a button instead
-            #]===============================================================[#
+            self.manager = PipManager(self.venvLocation, self.venvName)
+            self.console = ConsoleDialog()
+
+            # open the console when recieving signal from manager
+            self.manager.started.connect(self.console.exec_)
+
+            # start installing the selected module
+            print(f"[PROCESS]: Start installing module '{self.pkg}'")
+            self.manager.run_pip(self.cmds[0], [self.opts[0], self.pkg])
+
+            # display the updated output
+            self.manager.textChanged.connect(self.console.update_status)
+
+            # clear the content on window close
+            if self.console.close:
+                self.console.consoleWindow.clear()
 
 
     def launch_terminal(self):
@@ -611,6 +643,7 @@ class InstallPackages(QWizardPage):
         # TODO: launch a terminal and activate the created virt. env
         #       (not yet sure if this is easy to realize)
         #]===================================================================[#
+
 
 
 class Summary(QWizardPage):
@@ -630,7 +663,7 @@ class Summary(QWizardPage):
         back_button = self.wizard().button(QWizard.BackButton)
         finish_button = self.wizard().button(QWizard.FinishButton)
 
-        # disable 'back' button to prevent returning back to previous pages
+        # disable 'back' button to block from returning back to previous pages
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         # reset wizard
