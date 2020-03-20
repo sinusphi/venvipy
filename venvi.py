@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 )
 import resources.venvipy_rc
 
-from organize import get_python_installs, get_venvs_default
+from get_data import get_python_installs, get_venvs_default
 import settings
 import wizard
 import info
