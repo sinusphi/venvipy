@@ -39,6 +39,7 @@ def get_python_installs():
     return py_info_list
 
 
+
 #]===========================================================================[#
 #] GET VENVS [#==============================================================[#
 #]===========================================================================[#
@@ -105,32 +106,6 @@ def get_venvs_default():
 
     return []
 
-
-#]===========================================================================[#
-#] CREATE A VIRTUAL ENVIRONMENT [#===========================================[#
-#]===========================================================================[#
-
-def create_venv(py_vers, env_dir, with_pip=False,
-                system_site_packages=False, symlinks=False):
-    """
-    Create a virtual environment in a directory.
-    """
-    pip = "" if with_pip else " --without-pip"
-    ssp = " --system-site-packages" if system_site_packages else ""
-    sym = " --symlinks" if symlinks else ""
-
-    script = f"{py_vers} -m venv {env_dir}{pip}{ssp}{sym};"
-
-    res = Popen(
-            ["bash", "-c", script],
-            stdout=PIPE,
-            text="utf-8"
-        )
-
-    out, _ = res.communicate()
-    output = out.strip()
-
-    return output
 
 
 #]===========================================================================[#
