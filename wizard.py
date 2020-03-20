@@ -9,7 +9,7 @@ import os
 
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread,
-                          QProcess)
+                          QProcess, QEvent)
 from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
                              QWizard, QWizardPage, QToolButton, QComboBox,
@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QAbstractItemView, QPushButton, QFrame, QTextEdit,
                              QMessageBox, QHeaderView, QDesktopWidget)
 
-from organize import (get_package_infos, get_venvs_default, get_python_installs,
+from organize import (get_module_infos, get_venvs_default, get_python_installs,
                       create_venv)
 
 from managepip import PipManager
@@ -156,6 +156,7 @@ class CreationWorker(QObject):
     @pyqtSlot(tuple)
     def install_venv(self, args):
         self.started.emit()
+        print("[PROCESS]: Creating virtual environment")
 
         py_vers, name, location, with_pip, site_packages, symlinks = args
 
@@ -216,7 +217,7 @@ class VenvWizard(QWizard):
         self.basicSettings = BasicSettings()
         self.basicSettingsId = self.addPage(self.basicSettings)
 
-        self.installId = self.addPage(InstallPackages())
+        self.installId = self.addPage(InstallModules())
         self.summaryId = self.addPage(Summary())
 
 
@@ -265,8 +266,13 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker = CreationWorker()
         self.m_install_venv_worker.moveToThread(thread)
 
+        # start
         self.m_install_venv_worker.started.connect(self.progressBar.exec_)
+
+        # update
         self.m_install_venv_worker.textChanged.connect(self.set_progbar_label)
+
+        # finish
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.show_finished_msg)
         self.m_install_venv_worker.finished.connect(self.re_enable_page)
@@ -425,8 +431,8 @@ class BasicSettings(QWizardPage):
         Show info message when the creation process has finished successfully.
         """
         print(
-            f"[VENVIPY]: Successfully created virtual environment "
-            f"'{self.venvName}' in '{self.venvLocation}'"
+            f"[PROCESS]: Successfully created new virtual environment: "
+            f"'{self.venvLocation}{self.venvName}'"
         )
 
         default_msg = (
@@ -435,11 +441,10 @@ class BasicSettings(QWizardPage):
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
 
-        withpip_msg = ("Installed pip, setuptools.\n")
+        with_pip_msg = ("Installed pip, setuptools.\n")
 
         if self.withPipCBox.isChecked():
-            #print("[INFO]: Installed pip, setuptools")
-            message_txt = default_msg + withpip_msg
+            message_txt = default_msg + with_pip_msg
         else:
             message_txt = default_msg
 
@@ -450,32 +455,6 @@ class BasicSettings(QWizardPage):
         next_button.clicked.connect(self.wizard().next)
 
 
-    def clean_venv_dir(self):
-        """
-        Remove unnecessarily created dirs from `lib` dir.
-        """
-        lib_dir = os.path.join(self.venvLocation, self.venvName, "lib")
-        valid_dir_name = f"python{self.pythonVers[7:10]}"
-
-        valid_dir = os.path.join(
-            self.venvLocation,
-            self.venvName,
-            "lib",
-            valid_dir_name
-        )
-
-        for fn in os.listdir(lib_dir):
-            fn = os.path.join(lib_dir, fn)
-
-            if os.path.islink(fn) or os.path.isfile(fn):
-                os.remove(fn)
-                print(f"[VENVIPY]: Removed file or directory: '{fn}'")
-
-            elif os.path.isdir(fn) and fn != valid_dir:
-                shutil.rmtree(fn)
-                print(f"[VENVIPY]: Removed file or directory: '{fn}'")
-
-
     def re_enable_page(self):
         """
         Re-enable wizard page when create process has finished.
@@ -484,18 +463,19 @@ class BasicSettings(QWizardPage):
 
 
 
-class InstallPackages(QWizardPage):
+class InstallModules(QWizardPage):
     """
-    Install packages via `pip` into the created virtual environment.
+    Install modules via Pip into the created virtual environment.
     """
     def __init__(self):
         super().__init__()
 
-        self.setTitle("Install Packages")
+        self.setTitle("Install Modules")
         self.setSubTitle(
-            "Specify the packages you want to install into the virtual "
-            "environment. Double-click the item you want to install and "
-            "click next when finished."
+            "Specify the modules you want to install into the virtual "
+            "environment. Double-click the item you want to install. "
+            "You can install as many modules as you need. When finished "
+            "click next."
         )
 
 
@@ -524,7 +504,7 @@ class InstallPackages(QWizardPage):
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
-            doubleClicked=self.install_package
+            doubleClicked=self.install_module
         )
         self.resultsTable.setSortingEnabled(True)
 
@@ -583,27 +563,28 @@ class InstallPackages(QWizardPage):
 
         self.resultsModel.setRowCount(0)
 
-        for info in get_package_infos(search_item):
+        for info in get_module_infos(search_item):
             self.resultsModel.insertRow(0)
 
             for i, text in enumerate(
-                (info.pkg_name, info.pkg_version, info.pkg_summary)
+                (info.mod_name, info.mod_version, info.mod_summary)
             ):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
-        if not get_package_infos(search_item):
+        if not get_module_infos(search_item):
             print(f"[PIP]: No matches for '{search_item}'")
+
             QMessageBox.information(self,
                 "No results",
-                f"No packages matching '{search_item}'.\n"
+                f"No result matching '{search_item}'.\n"
             )
 
 
-    def install_package(self):
+    def install_module(self):
         """
         Get the name of the double-clicked item from the results table
         view and ask user for confirmation before installing. If confirmed
-        install the selected package into the created virtual environment,
+        install the selected module into the created virtual environment,
         else abort.
         """
         indexes = self.selectionModel.selectedRows()
@@ -624,7 +605,7 @@ class InstallPackages(QWizardPage):
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected module
-            print(f"[PROCESS]: Start installing module '{self.pkg}'")
+            print(f"[PROCESS]: Installing module '{self.pkg}'")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
@@ -635,23 +616,13 @@ class InstallPackages(QWizardPage):
                 self.console.consoleWindow.clear()
 
 
-    def launch_terminal(self):
-        """
-        Launch a terminal with the created virtual environment activated.
-        """
-        #]===================================================================[#
-        # TODO: launch a terminal and activate the created virt. env
-        #       (not yet sure if this is easy to realize)
-        #]===================================================================[#
-
-
 
 class Summary(QWizardPage):
     def __init__(self):
         super().__init__()
 
-        self.setTitle("Summary")
-        self.setSubTitle("..........................."
+        self.setTitle("Completed")
+        self.setSubTitle("All Tasks has been completed successfully."
                          "...........................")
 
         #]===================================================================[#
@@ -661,10 +632,12 @@ class Summary(QWizardPage):
 
     def initializePage(self):
         back_button = self.wizard().button(QWizard.BackButton)
+        cancel_button = self.wizard().button(QWizard.CancelButton)
         finish_button = self.wizard().button(QWizard.FinishButton)
 
-        # disable 'back' button to block from returning back to previous pages
-        QTimer.singleShot(0, lambda: back_button.setEnabled(False))
+        # hide back and cancel buttons
+        QTimer.singleShot(0, lambda: back_button.hide())
+        QTimer.singleShot(0, lambda: cancel_button.hide())
 
         # reset wizard
         finish_button.clicked.connect(self.wizard().restart)
