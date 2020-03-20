@@ -98,7 +98,7 @@ class SelectDefaultDir(QDialog):
 
     def okButton_clicked(self):
         """
-        Store the absolute path to the selected dir as `str` in `def/default`.
+        Store the absolute path to the selected dir in `recources/default`.
         """
         current_dir = os.path.dirname(os.path.realpath(__file__))
         default_file = os.path.join(current_dir, "resources", "default")
