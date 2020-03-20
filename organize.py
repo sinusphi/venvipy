@@ -96,7 +96,7 @@ def get_venvs_default():
     Get the default venv directory string from file.
     """
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    default_file = os.path.join(current_dir, "def", "default")
+    default_file = os.path.join(current_dir, "resources", "default")
 
     if os.path.isfile(default_file):
         with open(default_file, "r") as f:
@@ -138,31 +138,31 @@ def create_venv(py_vers, env_dir, with_pip=False,
 #]===========================================================================[#
 
 @dataclass
-class PackageInfo:
+class ModuleInfo:
     """_"""
-    pkg_name: str
-    pkg_version: str
-    pkg_summary: str
+    mod_name: str
+    mod_version: str
+    mod_summary: str
 
 
-def get_package_infos(name):
+def get_module_infos(name):
     """
-    Get package name, version and description from https://pypi.org/pypi.
+    Get module name, version and description from https://pypi.org/pypi.
     """
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
     search_result = client.search({"name": name})
 
-    package_info_list = []
+    module_info_list = []
 
-    for i, pkg in enumerate(search_result):
-        pkg_name = pkg["name"]
-        pkg_version = pkg["version"]
-        pkg_summary = pkg["summary"]
+    for i, mod in enumerate(search_result):
+        mod_name = mod["name"]
+        mod_version = mod["version"]
+        mod_summary = mod["summary"]
 
-        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_summary)
-        package_info_list.append(pkg_info)
+        mod_info = ModuleInfo(mod_name, mod_version, mod_summary)
+        module_info_list.append(mod_info)
 
-    return package_info_list
+    return module_info_list
 
 
 
@@ -178,10 +178,10 @@ if __name__ == "__main__":
 
     #]=======================================================================[#
 
-    #test_pkg = "test"
+    #test_module = "test"
 
-    #for pkg in get_package_infos(test_pkg):
-        #print(pkg.pkg_name, pkg.pkg_version, pkg.pkg_summary)
+    #for item in get_module_infos(test_mod):
+        #print(item.mod_name, item.mod_version, item.mod_summary)
 
-    #if not get_package_infos(test_pkg):
-        #print("No packages found!")
+    #if not get_module_infos(test_module):
+        #print("No modules found!")
