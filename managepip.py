@@ -59,8 +59,7 @@ class PipManager(QObject):
 
     def run_pip(self, command="", options=None):
         """
-        Run the commands needed to activate the virtual environment and
-        install the selected packages.
+        Activate the virtual environment and run pip commands.
         """
         if has_bash():
             if options is None:
@@ -81,7 +80,8 @@ class PipManager(QObject):
         if state == QProcess.NotRunning:
             print("[PROCESS]: Stopped")
             self.textChanged.emit(
-                "Done.\n\nYou can close this window now."
+                "Done.\n\nYou can close the window now..."
+                #"Done.\n\nPress any key to continue..."
             )
         elif state == QProcess.Starting:
             print("[PROCESS]: Started")
@@ -117,6 +117,7 @@ class PipManager(QObject):
         print(f"[PIP]: {message}")
 
         self.textChanged.emit(message)
+
 
 
 if __name__ == "__main__":
