@@ -392,7 +392,7 @@ class BasicSettings(QWizardPage):
 
         if self.combobox and self.venvName and self.venvLocation:
             # display the python version used to create the virt. env
-            self.progressBar.setWindowTitle(f"Using {self.pythonVers[:12]}")
+            self.progressBar.setWindowTitle(f"Using {self.pythonVers[:10]}")
             self.progressBar.statusLabel.setText("Creating virtual environment...")
 
             # run the create process

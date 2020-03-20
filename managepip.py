@@ -80,8 +80,7 @@ class PipManager(QObject):
         if state == QProcess.NotRunning:
             print("[PROCESS]: Stopped")
             self.textChanged.emit(
-                "Done.\n\nYou can close the window now..."
-                #"Done.\n\nPress any key to continue..."
+                "\n\nPress [ESC] to continue..."
             )
         elif state == QProcess.Starting:
             print("[PROCESS]: Started")
