@@ -190,7 +190,8 @@ if __name__ == "__main__":
     manager = PipManager(current_dir, venv_name)
     manager.textChanged.connect(console.update_status)
     manager.started.connect(console.show)
-    manager.run_pip("install", ["--upgrade", "test"])
-    #manager.finished.connect(console.close)
+    manager.run_pip(
+        "freeze", [" > ", current_dir + "/requirements.txt"]
+    )
 
     sys.exit(app.exec_())
