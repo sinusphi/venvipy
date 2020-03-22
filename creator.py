@@ -33,6 +33,33 @@ def create_venv(py_vers, env_dir, with_pip=False,
     return output
 
 
+#]===========================================================================[#
+#] GENERATE A REQUIREMENTS [#================================================[#
+#]===========================================================================[#
+
+def create_requirements(venv_dir, venv_name):
+    """
+    Generate a requirements.txt file and save in the root directory
+    of the virtual environment.
+    """
+    script = (
+        f"source {venv_dir}/{venv_name}/bin/activate;" \
+        f"pip freeze > {venv_dir}/{venv_name}/requirements.txt;" \
+        "deactivate;"
+    )
+
+    res = Popen(
+            ["bash", "-c", script],
+            stdout=PIPE,
+            text="utf-8"
+        )
+
+    out, _ = res.communicate()
+    output = out.strip()
+
+    return output
+
+
 
 if __name__ == "__main__":
 
