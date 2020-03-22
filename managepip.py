@@ -100,7 +100,7 @@ class PipManager(QObject):
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[ERROR]: {message}")
+        print(f"[PROCESS]: {message}")
 
         self.finished.emit()
         self._process.kill()
@@ -121,77 +121,19 @@ class PipManager(QObject):
 
 if __name__ == "__main__":
     import sys
-
-    class ConsoleDialog(QDialog):
-        """
-        Dialog box displaying the output in a console-like widget during the
-        installation process.
-        """
-        def __init__(self):
-            super().__init__()
-            self.initUI()
-
-        def initUI(self):
-            self.resize(750, 400)
-            self.center()
-            self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-            self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
-
-            self.setStyleSheet(
-                """
-                QTextEdit {
-                    background-color: black;
-                    color: lightgrey;
-                    selection-background-color: rgb(50, 50, 60);
-                    selection-color: rgb(0, 255, 0)
-                }
-                """
-            )
-
-            self.consoleWindow = QTextEdit()
-            self.consoleWindow.setReadOnly(True)
-            self.consoleWindow.setFontFamily("Monospace")
-            self.consoleWindow.setFontPointSize(10)
-
-            self.progressBar = QProgressBar()
-            self.progressBar.setFixedHeight(25)
-            self.progressBar.setRange(0, 0)
-
-            v_Layout = QVBoxLayout(self)
-            v_Layout.addWidget(self.consoleWindow)
-            v_Layout.addWidget(self.progressBar)
-
-        def center(self):
-            """Center window."""
-            qr = self.frameGeometry()
-            cp = QDesktopWidget().availableGeometry().center()
-            qr.moveCenter(cp)
-            self.move(qr.topLeft())
-
-        @pyqtSlot(str)
-        def update_status(self, status):
-            """
-            Set the content to be shown in the console dialog.
-            """
-            metrix = QFontMetrics(self.consoleWindow.font())
-            clippedText = metrix.elidedText(
-                status, Qt.ElideRight, self.consoleWindow.width()
-            )
-            self.consoleWindow.append(clippedText)
-
+    from wizard import ConsoleDialog
 
     app = QApplication(sys.argv)
+    console = ConsoleDialog()
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
     venv_name = "testenv"  # need to have a virtual env in current_dir
-
-    console = ConsoleDialog()
 
     manager = PipManager(current_dir, venv_name)
     manager.textChanged.connect(console.update_status)
     manager.started.connect(console.show)
     manager.run_pip(
-        "freeze", [" > ", current_dir + "/requirements.txt"]
+        "freeze", [f" > {current_dir}/{venv_name}/requirements.txt"]
     )
 
     sys.exit(app.exec_())
