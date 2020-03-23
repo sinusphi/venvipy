@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QMessageBox, QHeaderView, QDesktopWidget)
 
 from get_data import (get_module_infos, get_venvs_default, get_python_installs)
-from managepip import PipManager
+from manage_pip import PipManager
 from creator import create_venv, create_requirements
 
 
