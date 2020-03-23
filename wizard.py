@@ -537,8 +537,19 @@ class InstallModules(QWizardPage):
 
 
     def initializePage(self):
+        # clear the search input line the results table
+        self.pkgNameLineEdit.clear()
+        self.resultsModel.clear()
+
+        # set header labels
+        self.resultsModel.setHorizontalHeaderLabels(
+            ["Name", "Version", "Description"]
+        )
+
+        # reconnect 'next' button to self.wizard().next()
         self.next_button = self.wizard().button(QWizard.NextButton)
-        back_button = self.wizard().button(QWizard.BackButton)
+        self.next_button.disconnect()
+        self.next_button.clicked.connect(self.wizard().next)
 
         # remove focus from 'next' button
         QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
@@ -547,21 +558,13 @@ class InstallModules(QWizardPage):
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
 
         # disable 'back' button
+        back_button = self.wizard().button(QWizard.BackButton)
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         self.pythonVers = self.field("pythonVers")
         self.pythonPath = self.field("pythonPath")
         self.venvName = self.field("venvName")
         self.venvLocation = self.field("venvLocation")
-
-        # clear the search input line
-        self.pkgNameLineEdit.clear()
-
-        # clear the results table
-        self.resultsModel.clear()
-        self.resultsModel.setHorizontalHeaderLabels(
-            ["Name", "Version", "Description"]
-        )
 
 
     def pop_results_table(self):
@@ -674,20 +677,21 @@ class SummaryPage(QWizardPage):
 
 
     def initializePage(self):
-        back_button = self.wizard().button(QWizard.BackButton)
-        cancel_button = self.wizard().button(QWizard.CancelButton)
-        finish_button = self.wizard().button(QWizard.FinishButton)
-
-        # hide back and cancel buttons
-        QTimer.singleShot(0, lambda: back_button.hide())
-        QTimer.singleShot(0, lambda: cancel_button.hide())
-
-        # finally reconnect 'next' button to self.wizard().next()
+        # reconnect 'next' button to self.wizard().next()
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.disconnect()
         next_button.clicked.connect(self.wizard().next)
 
+        # hide back button
+        back_button = self.wizard().button(QWizard.BackButton)
+        QTimer.singleShot(0, lambda: back_button.hide())
+
+        # hide cancel button
+        cancel_button = self.wizard().button(QWizard.CancelButton)
+        QTimer.singleShot(0, lambda: cancel_button.hide())
+
         # reset wizard
+        finish_button = self.wizard().button(QWizard.FinishButton)
         finish_button.clicked.connect(self.wizard().restart)
 
 
