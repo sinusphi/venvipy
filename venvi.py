@@ -11,10 +11,10 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QProgressBar, QFileDialog, QLabel,
-    QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QWizard,
-    QSizePolicy, QTableView, QAbstractItemView, QMenuBar, QMenu, QDialog,
-    QStatusBar, QMessageBox, QWizardPage, QCheckBox, QLineEdit, QGroupBox,
-    QHBoxLayout, QComboBox, QToolButton, QDesktopWidget
+    QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QDialog,
+    QSizePolicy, QTableView, QAbstractItemView, QMenuBar, QMenu, QStatusBar,
+    QMessageBox, QCheckBox, QLineEdit, QGroupBox, QDesktopWidget, QComboBox,
+    QHBoxLayout, QToolButton
 )
 import resources.venvipy_rc
 
@@ -85,7 +85,7 @@ class Ui_MainWindow(QMainWindow):
             """
         )
 
-        self.wizard = wizard.VenvWizard()
+        self.venv_wizard = wizard.VenvWizard()
         self.selectDefaultDir = settings.SelectDefaultDir()
         self.appInfo = info.AppInfo()
 
@@ -137,7 +137,7 @@ class Ui_MainWindow(QMainWindow):
         self.newVenvButton = QPushButton(
             "New Venv", centralwidget,
             statusTip="Create a new virtual environment",
-            clicked=self.wizard.exec_
+            clicked=self.venv_wizard.exec_
         )
 
         self.manageVenvButton = QPushButton(
@@ -298,7 +298,7 @@ class Ui_MainWindow(QMainWindow):
         self.actNewVenv = QAction(
             new_icon, "&New Venv", self,
             statusTip="Create a new virtual environment",
-            shortcut="Ctrl+N", triggered=self.wizard.exec_
+            shortcut="Ctrl+N", triggered=self.venv_wizard.exec_
         )
 
         self.actManageVenvs = QAction(
