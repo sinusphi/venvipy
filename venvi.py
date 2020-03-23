@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-The main menu of VenviPy.
+The main module of VenviPy.
 """
 from subprocess import Popen, PIPE
 import os
