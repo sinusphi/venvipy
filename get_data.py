@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module ...
+This module provides all the necessary data.
 """
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
