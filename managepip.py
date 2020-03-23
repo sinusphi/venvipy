@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Module that manages all pip processes."""
+"""
+This module manages all pip processes.
+"""
 import os
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess, Qt
