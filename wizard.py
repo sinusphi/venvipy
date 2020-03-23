@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
 
 from get_data import (get_module_infos, get_venvs_default, get_python_installs)
 from managepip import PipManager
-from creator import create_venv
+from creator import create_venv, create_requirements
 
 
 
@@ -216,16 +216,11 @@ class VenvWizard(QWizard):
         self.basicSettings = BasicSettings()
         self.basicSettingsId = self.addPage(self.basicSettings)
 
-        self.installId = self.addPage(InstallModules())
-        self.summaryId = self.addPage(Summary())
+        self.installModules = InstallModules()
+        self.installModulesId = self.addPage(self.installModules)
 
-
-    def center(self):
-        """Center window."""
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        self.summaryPage = SummaryPage()
+        self.summaryPageId = self.addPage(self.summaryPage)
 
 
     def nextId(self):
@@ -234,8 +229,17 @@ class VenvWizard(QWizard):
             return super().nextId()
 
         if self.basicSettings.withPipCBox.isChecked():
-            return self.installId
-        return self.summaryId
+            return self.installModulesId
+
+        return self.summaryPageId
+
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 
 
@@ -307,11 +311,7 @@ class BasicSettings(QWizardPage):
         )
         self.selectDirToolButton.setFixedSize(26, 27)
 
-
-        #]===================================================================[#
-        # TODO: remove placeholder and add a spacer instead
         placeHolder = QLabel()
-        #]===================================================================[#
 
         # options groupbox
         groupBox = QGroupBox("Options")
@@ -363,7 +363,9 @@ class BasicSettings(QWizardPage):
 
 
     def initializePage(self):
+        # connect 'next' button to self.execute_venv_create()
         next_button = self.wizard().button(QWizard.NextButton)
+        next_button.disconnect()
         next_button.clicked.connect(self.execute_venv_create)
 
 
@@ -392,7 +394,9 @@ class BasicSettings(QWizardPage):
         if self.combobox and self.venvName and self.venvLocation:
             # display the python version used to create the virt. env
             self.progressBar.setWindowTitle(f"Using {self.pythonVers[:10]}")
-            self.progressBar.statusLabel.setText("Creating virtual environment...")
+            self.progressBar.statusLabel.setText(
+                "Creating virtual environment..."
+            )
 
             # run the create process
             self.create_process()
@@ -440,7 +444,7 @@ class BasicSettings(QWizardPage):
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
 
-        with_pip_msg = ("Installed pip, setuptools.\n")
+        with_pip_msg = ("\nInstalled pip, setuptools.\n")
 
         if self.withPipCBox.isChecked():
             message_txt = default_msg + with_pip_msg
@@ -449,9 +453,7 @@ class BasicSettings(QWizardPage):
 
         QMessageBox.information(self, "Done", message_txt)
 
-        next_button = self.wizard().button(QWizard.NextButton)
-        next_button.disconnect()
-        next_button.clicked.connect(self.wizard().next)
+        self.wizard().next()
 
 
     def re_enable_page(self):
@@ -499,53 +501,55 @@ class InstallModules(QWizardPage):
         #] RESULTS TABLE VIEW [#=============================================[#
         #]===================================================================[#
 
-        self.resultsTable = QTableView(
+        resultsTable = QTableView(
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             doubleClicked=self.install_module
         )
-        self.resultsTable.setSortingEnabled(True)
+        resultsTable.setSortingEnabled(True)
 
         # adjust vertical headers
-        v_Header = self.resultsTable.verticalHeader()
+        v_Header = resultsTable.verticalHeader()
         v_Header.setDefaultSectionSize(28)
         v_Header.hide()
 
         # adjust horizontal headers
-        self.h_Header = self.resultsTable.horizontalHeader()
-        self.h_Header.setDefaultAlignment(Qt.AlignLeft)
-        self.h_Header.setDefaultSectionSize(120)
-        self.h_Header.setStretchLastSection(True)
-        self.h_Header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        h_Header = resultsTable.horizontalHeader()
+        h_Header.setDefaultAlignment(Qt.AlignLeft)
+        h_Header.setDefaultSectionSize(120)
+        h_Header.setStretchLastSection(True)
+        h_Header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # item model
         self.resultsModel = QStandardItemModel(0, 2, self)
         self.resultsModel.setHorizontalHeaderLabels(
             ["Name", "Version", "Description"]
         )
-        self.resultsTable.setModel(self.resultsModel)
+        resultsTable.setModel(self.resultsModel)
 
         # selection model
-        self.selectionModel = self.resultsTable.selectionModel()
+        self.selectionModel = resultsTable.selectionModel()
 
         gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
         gridLayout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
         gridLayout.addWidget(self.searchButton, 0, 2, 1, 1)
-        gridLayout.addWidget(self.resultsTable, 1, 0, 1, 3)
+        gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
 
         verticalLayout.addLayout(gridLayout)
 
 
     def initializePage(self):
-        next_button = self.wizard().button(QWizard.NextButton)
+        self.next_button = self.wizard().button(QWizard.NextButton)
+        back_button = self.wizard().button(QWizard.BackButton)
 
-        # disable focus on 'next' button and set 'search' button to default
-        QTimer.singleShot(0, lambda: next_button.setDefault(False))
+        # remove focus from 'next' button
+        QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
+
+        # set focus on 'search' button
         QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
 
-        # disable 'back' button to prevent returning back to first page
-        back_button = self.wizard().button(QWizard.BackButton)
+        # disable 'back' button
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         self.pythonVers = self.field("pythonVers")
@@ -590,12 +594,12 @@ class InstallModules(QWizardPage):
         for index in sorted(indexes):
             self.pkg = index.data()
 
-        self.messageBoxConfirm = QMessageBox.question(self,
+        messageBoxConfirm = QMessageBox.question(self,
             "Confirm", f"Are you sure you want to install '{self.pkg}'?",
             QMessageBox.Yes | QMessageBox.Cancel
         )
 
-        if self.messageBoxConfirm == QMessageBox.Yes:
+        if messageBoxConfirm == QMessageBox.Yes:
 
             self.manager = PipManager(self.venvLocation, self.venvName)
             self.console = ConsoleDialog()
@@ -614,14 +618,48 @@ class InstallModules(QWizardPage):
             if self.console.close:
                 self.console.consoleWindow.clear()
 
+                # ask for saving a requirements.txt file when clicking next
+                # connect 'next' button to self.save_requirements()
+                self.next_button.disconnect()
+                self.next_button.clicked.connect(self.save_requirements)
 
 
-class Summary(QWizardPage):
+    def save_requirements(self):
+        """
+        Save a requirements.txt in the created virtual environment.
+        """
+        messageBoxConfirm = QMessageBox.question(self,
+            "Confirm", "Do you want to generate a requirements.txt file?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if messageBoxConfirm == QMessageBox.Yes:
+
+            create_requirements(self.venvLocation, self.venvName)
+
+            print(
+                "[PROCESS]: Generating "
+                f"'{self.venvLocation}/{self.venvName}/requirements.txt'"
+            )
+
+            message_txt = (
+                f"Saved '{self.venvLocation}/{self.venvName}/requirements.txt'"
+            )
+            QMessageBox.information(self, "Done", message_txt)
+
+            self.wizard().next()
+
+        else:
+            self.wizard().next()
+
+
+
+class SummaryPage(QWizardPage):
     def __init__(self):
         super().__init__()
 
         self.setTitle("Completed")
-        self.setSubTitle("All Tasks has been completed successfully."
+        self.setSubTitle("All Tasks have been completed successfully."
                          "...........................")
 
         #]===================================================================[#
@@ -637,6 +675,11 @@ class Summary(QWizardPage):
         # hide back and cancel buttons
         QTimer.singleShot(0, lambda: back_button.hide())
         QTimer.singleShot(0, lambda: cancel_button.hide())
+
+        # finally reconnect 'next' button to self.wizard().next()
+        next_button = self.wizard().button(QWizard.NextButton)
+        next_button.disconnect()
+        next_button.clicked.connect(self.wizard().next)
 
         # reset wizard
         finish_button.clicked.connect(self.wizard().restart)
