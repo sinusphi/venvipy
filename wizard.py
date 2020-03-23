@@ -39,6 +39,7 @@ class ProgBarDialog(QDialog):
     """
     def __init__(self):
         super().__init__()
+
         self.initUI()
 
 
@@ -148,8 +149,8 @@ class CreationWorker(QObject):
     Worker informing about start and end of the create process.
     """
     started = pyqtSignal()
-    textChanged = pyqtSignal()
     finished = pyqtSignal()
+    updatePipMsg = pyqtSignal()
 
 
     @pyqtSlot(tuple)
@@ -167,13 +168,14 @@ class CreationWorker(QObject):
             symlinks=symlinks,
         )
 
-        self.manager = PipManager(location, name)
-
         if with_pip:
-            self.textChanged.emit()
+            self.manager = PipManager(location, name)
+            self.updatePipMsg.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
+            self.manager.finished.connect(self.finished.emit)
 
-        self.finished.emit()
+        else:
+            self.finished.emit()
 
 
 
@@ -269,16 +271,15 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker = CreationWorker()
         self.m_install_venv_worker.moveToThread(thread)
 
-        # start
+        # started
         self.m_install_venv_worker.started.connect(self.progressBar.exec_)
 
-        # update
-        self.m_install_venv_worker.textChanged.connect(self.set_progbar_label)
+        # updated
+        self.m_install_venv_worker.updatePipMsg.connect(self.update_pip_msg)
 
-        # finish
+        # finished
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.show_finished_msg)
-        self.m_install_venv_worker.finished.connect(self.re_enable_page)
 
 
         #]===================================================================[#
@@ -422,7 +423,7 @@ class BasicSettings(QWizardPage):
         QTimer.singleShot(0, wrapper)
 
 
-    def set_progbar_label(self):
+    def update_pip_msg(self):
         """
         Set the text in status label to show that Pip is being updated.
         """
@@ -433,33 +434,27 @@ class BasicSettings(QWizardPage):
         """
         Show info message when the creation process has finished successfully.
         """
-        print(
-            f"[PROCESS]: Successfully created new virtual environment: "
-            f"'{self.venvLocation}{self.venvName}'"
-        )
-
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
             f"New Python{self.pythonVers[7:10]} executable in \n"
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
+        with_pip_msg = ("Installed pip, setuptools.\n")
 
-        with_pip_msg = ("\nInstalled pip, setuptools.\n")
+        print(
+            f"[PROCESS]: Successfully created new virtual environment: "
+            f"'{self.venvLocation}{self.venvName}'"
+        )
 
         if self.withPipCBox.isChecked():
             message_txt = default_msg + with_pip_msg
+            print("[PROCESS]: Installed pip, setuptools.")
         else:
             message_txt = default_msg
 
         QMessageBox.information(self, "Done", message_txt)
 
         self.wizard().next()
-
-
-    def re_enable_page(self):
-        """
-        Re-enable wizard page when create process has finished.
-        """
         self.setEnabled(True)
 
 
@@ -637,20 +632,19 @@ class InstallModules(QWizardPage):
         """
         Save a requirements.txt in the created virtual environment.
         """
+        self.setEnabled(False)
+
         messageBoxConfirm = QMessageBox.question(self,
             "Confirm", "Do you want to generate a requirements.txt file?",
             QMessageBox.Yes | QMessageBox.No
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-
             create_requirements(self.venvLocation, self.venvName)
-
             print(
                 "[PROCESS]: Generating "
                 f"'{self.venvLocation}/{self.venvName}/requirements.txt'"
             )
-
             message_txt = (
                 f"Saved '{self.venvLocation}/{self.venvName}/requirements.txt'"
             )
@@ -660,6 +654,8 @@ class InstallModules(QWizardPage):
 
         else:
             self.wizard().next()
+
+        self.setEnabled(True)
 
 
 
