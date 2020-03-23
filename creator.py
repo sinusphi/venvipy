@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This module ...
+This module creates all the stuff requested.
 """
 from subprocess import Popen, PIPE
 
