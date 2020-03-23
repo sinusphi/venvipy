@@ -46,17 +46,26 @@ class PipManager(QObject):
         self._venv_name = venv_name
 
         self._process = QProcess(self)
-        self._process.readyReadStandardError.connect(
-            self.onReadyReadStandardError
-        )
+        self._process.setWorkingDirectory(venv_dir)
+
         self._process.readyReadStandardOutput.connect(
             self.onReadyReadStandardOutput
         )
-        self._process.stateChanged.connect(self.onStateChanged)
+        self._process.readyReadStandardError.connect(
+            self.onReadyReadStandardError
+        )
+
+        # started
         self._process.started.connect(self.started)
+
+        # updated
+        self._process.stateChanged.connect(self.onStateChanged)
+
+        # finished
         self._process.finished.connect(self.finished)
         self._process.finished.connect(self.onFinished)
-        self._process.setWorkingDirectory(venv_dir)
+
+
 
 
     def run_pip(self, command="", options=None):
@@ -97,19 +106,6 @@ class PipManager(QObject):
 
 
     @pyqtSlot()
-    def onReadyReadStandardError(self):
-        """
-        Read from `stderr`, then kill the process.
-        """
-        message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[PROCESS]: {message}")
-
-        self.finished.emit()
-        self._process.kill()
-        self.textChanged.emit(message)
-
-
-    @pyqtSlot()
     def onReadyReadStandardOutput(self):
         """
         Read from `stdout` and send the output to `update_status()`.
@@ -118,6 +114,19 @@ class PipManager(QObject):
         print(f"[PIP]: {message}")
 
         self.textChanged.emit(message)
+
+
+    @pyqtSlot()
+    def onReadyReadStandardError(self):
+        """
+        Read from `stderr`, then kill the process.
+        """
+        message = self._process.readAllStandardError().data().decode().strip()
+        print(f"[PROCESS]: {message}")
+
+        self.textChanged.emit(message)
+        self.finished.emit()
+        self._process.kill()
 
 
 
