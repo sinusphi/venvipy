@@ -487,7 +487,7 @@ class InstallModules(QWizardPage):
         verticalLayout = QVBoxLayout()
         gridLayout = QGridLayout(self)
 
-        pkgNameLabel = QLabel("Package:")
+        pkgNameLabel = QLabel("Module &name:")
         self.pkgNameLineEdit = QLineEdit()
         pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
@@ -523,9 +523,6 @@ class InstallModules(QWizardPage):
 
         # item model
         self.resultsModel = QStandardItemModel(0, 2, self)
-        self.resultsModel.setHorizontalHeaderLabels(
-            ["Name", "Version", "Description"]
-        )
         resultsTable.setModel(self.resultsModel)
 
         # selection model
@@ -557,6 +554,15 @@ class InstallModules(QWizardPage):
         self.venvName = self.field("venvName")
         self.venvLocation = self.field("venvLocation")
 
+        # clear the search input line
+        self.pkgNameLineEdit.clear()
+
+        # clear the results table
+        self.resultsModel.clear()
+        self.resultsModel.setHorizontalHeaderLabels(
+            ["Name", "Version", "Description"]
+        )
+
 
     def pop_results_table(self):
         """
@@ -578,7 +584,7 @@ class InstallModules(QWizardPage):
             print(f"[PIP]: No matches for '{search_item}'")
 
             QMessageBox.information(self,
-                "No results",
+                "No result",
                 f"No result matching '{search_item}'.\n"
             )
 
