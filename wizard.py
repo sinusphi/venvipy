@@ -7,15 +7,18 @@ import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread,
-                          QProcess, QEvent)
-from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
-                             QFileDialog, QHBoxLayout, QVBoxLayout, QDialog,
-                             QWizard, QWizardPage, QToolButton, QComboBox,
-                             QCheckBox, QLineEdit, QGroupBox, QTableView,
-                             QAbstractItemView, QPushButton, QFrame, QTextEdit,
-                             QMessageBox, QHeaderView, QDesktopWidget)
+from PyQt5.QtGui import (
+    QIcon, QStandardItemModel, QStandardItem, QFontMetrics, QPixmap
+)
+from PyQt5.QtCore import (
+    Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread, QProcess, QEvent
+)
+from PyQt5.QtWidgets import (
+    QApplication, QProgressBar, QGridLayout, QLabel, QFileDialog, QHBoxLayout,
+    QVBoxLayout, QDialog, QWizard, QWizardPage, QToolButton, QComboBox,
+    QCheckBox, QLineEdit, QGroupBox, QTableView, QAbstractItemView, QFrame,
+    QPushButton, QTextEdit, QMessageBox, QHeaderView, QDesktopWidget
+)
 import resources.venvipy_rc
 
 from get_data import (get_module_infos, get_venvs_default, get_python_installs)
@@ -675,6 +678,11 @@ class SummaryPage(QWizardPage):
         #]===================================================================[#
         # TODO: create the summary page
         #]===================================================================[#
+
+        self.logo = QLabel(self)
+        self.logo.setPixmap(QPixmap(":/img/pypower.png"))
+        self.logo.setAlignment(Qt.AlignVCenter)
+
 
 
     def initializePage(self):
