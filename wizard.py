@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (QApplication, QProgressBar, QGridLayout, QLabel,
                              QCheckBox, QLineEdit, QGroupBox, QTableView,
                              QAbstractItemView, QPushButton, QFrame, QTextEdit,
                              QMessageBox, QHeaderView, QDesktopWidget)
+import resources.venvipy_rc
 
 from get_data import (get_module_infos, get_venvs_default, get_python_installs)
 from manage_pip import PipManager
@@ -46,6 +47,7 @@ class ProgBarDialog(QDialog):
     def initUI(self):
         self.setFixedSize(350, 85)
         self.center()
+        self.setWindowIcon(QIcon(":/img/python.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -96,6 +98,7 @@ class ConsoleDialog(QDialog):
         self.setWindowTitle("Installing")
         self.resize(880, 510)
         self.center()
+        self.setWindowIcon(QIcon(":/img/python.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -194,6 +197,7 @@ class VenvWizard(QWizard):
         self.setWindowTitle("Venv Wizard")
         self.resize(680, 510)
         self.center()
+        self.setWindowIcon(QIcon(":/img/python.png"))
 
         self.setStyleSheet(
             """
