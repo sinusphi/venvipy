@@ -156,7 +156,7 @@ class CreationWorker(QObject):
     @pyqtSlot(tuple)
     def install_venv(self, args):
         self.started.emit()
-        print("[PROCESS]: Creating virtual environment")
+        print("[PROCESS]: Creating virtual environment...")
 
         py_vers, name, location, with_pip, site_packages, symlinks = args
 
@@ -169,6 +169,7 @@ class CreationWorker(QObject):
         )
 
         if with_pip:
+            # update pip to the latest version
             self.manager = PipManager(location, name)
             self.updatePipMsg.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
@@ -185,7 +186,7 @@ class CreationWorker(QObject):
 
 class VenvWizard(QWizard):
     """
-    Wizard for creating and setting up a virtual environments.
+    Wizard for creating and setting up a virtual environment.
     """
     def __init__(self):
         super().__init__()
@@ -326,9 +327,9 @@ class BasicSettings(QWizardPage):
         self.symlinksCBox = QCheckBox(
             "Attempt to &symlink rather than copy files into venv"
         )
-        self.launchVenvCBox = QCheckBox(
-            "Launch a &terminal with activated venv after installation"
-        )
+        #self.launchVenvCBox = QCheckBox(
+            #"Launch a &terminal with activated venv after installation"
+        #)
 
         # register fields
         self.registerField("interprComboBox*", self.interprComboBox)
@@ -339,7 +340,7 @@ class BasicSettings(QWizardPage):
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
-        self.registerField("launchVenv", self.launchVenvCBox)
+        #self.registerField("launchVenv", self.launchVenvCBox)
 
         # grid layout
         gridLayout = QGridLayout()
@@ -359,7 +360,7 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.withPipCBox)
         groupBoxLayout.addWidget(self.sitePackagesCBox)
         groupBoxLayout.addWidget(self.symlinksCBox)
-        groupBoxLayout.addWidget(self.launchVenvCBox)
+        #groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
 
 
@@ -390,7 +391,7 @@ class BasicSettings(QWizardPage):
         self.withPip = self.field("withPip")
         self.sitePackages = self.field("sitePackages")
         self.symlinks = self.field("symlinks")
-        self.launchVenv = self.field("launchVenv")
+        #self.launchVenv = self.field("launchVenv")
 
         if self.combobox and self.venvName and self.venvLocation:
             # display the python version used to create the virt. env
@@ -439,11 +440,11 @@ class BasicSettings(QWizardPage):
             f"New Python{self.pythonVers[7:10]} executable in \n"
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
-        with_pip_msg = ("Installed pip, setuptools.\n")
+        with_pip_msg = ("Installed Pip and Setuptools.\n")
 
         print(
-            f"[PROCESS]: Successfully created new virtual environment: "
-            f"'{self.venvLocation}{self.venvName}'"
+            "[PROCESS]: Successfully created new virtual environment: "
+            f"'{self.venvLocation}/{self.venvName}'"
         )
 
         if self.withPipCBox.isChecked():
@@ -612,7 +613,7 @@ class InstallModules(QWizardPage):
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected module
-            print(f"[PROCESS]: Installing module '{self.pkg}'")
+            print(f"[PROCESS]: Installing module '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
@@ -622,7 +623,6 @@ class InstallModules(QWizardPage):
             if self.console.close:
                 self.console.consoleWindow.clear()
 
-                # ask for saving a requirements.txt file when clicking next
                 # connect 'next' button to self.save_requirements()
                 self.next_button.disconnect()
                 self.next_button.clicked.connect(self.save_requirements)
@@ -630,7 +630,8 @@ class InstallModules(QWizardPage):
 
     def save_requirements(self):
         """
-        Save a requirements.txt in the created virtual environment.
+        Ask user for saving a requirements.txt in the
+        created virtual environment.
         """
         self.setEnabled(False)
 
@@ -643,10 +644,11 @@ class InstallModules(QWizardPage):
             create_requirements(self.venvLocation, self.venvName)
             print(
                 "[PROCESS]: Generating "
-                f"'{self.venvLocation}/{self.venvName}/requirements.txt'"
+                f"'{self.venvLocation}/{self.venvName}/requirements.txt'..."
             )
             message_txt = (
-                f"Saved '{self.venvLocation}/{self.venvName}/requirements.txt'"
+                "The requirements.txt file has been saved in:\n"
+                f"'{self.venvLocation}/{self.venvName}'"
             )
             QMessageBox.information(self, "Done", message_txt)
 
@@ -663,9 +665,8 @@ class SummaryPage(QWizardPage):
     def __init__(self):
         super().__init__()
 
-        self.setTitle("Completed")
-        self.setSubTitle("All Tasks have been completed successfully."
-                         "...........................")
+        self.setTitle("Finished")
+        self.setSubTitle("All Tasks have been completed successfully.")
 
         #]===================================================================[#
         # TODO: create the summary page
