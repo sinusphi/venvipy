@@ -1,4 +1,4 @@
-# _**V**envi**P**y_
+# _VenviPy_
 
 ### A GUI for managing multiple Python virtual environments
 
@@ -10,7 +10,7 @@
 
 ---
 
-### About _VenviPy_
+### About the project
 
 _VenviPy_ is a user friendly graphical user interface for creating virtual environments very quick and easy. 
 
