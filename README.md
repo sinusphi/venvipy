@@ -19,7 +19,9 @@ It has a wizard that provides a lot of features like selecting a specific Python
 
 ### Prerequisits
 
-To be able to use _VenviPy_ you'll need the `python3-pip` package to be present on your system. Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command in a terminal:
+To be able to use _VenviPy_ you'll need the `python3-pip` package to be present on your system. You can install it by using your operating system's package manager (for example `apt` if you're on a debian based distro).
+
+Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command in a terminal:
 ```
 $ python3 -m pip install PyQt5
 ```
@@ -28,6 +30,7 @@ Or create a virtual environment, activate it and install the `PyQt5` package int
 ```
 $ python3 -m venv [your_env_name]
 $ source [your_env_name]/bin/activate
+
 $ (your_env_name) pip install PyQt5
 ```
 
@@ -50,7 +53,7 @@ $ python3 venvi.py
 ```
 
 **NOTE** :
-If you want to run _VenviPy_ inside a virtual environment, don't forget to activate it by running:
+If you want to run _VenviPy_ inside a virtual environment, don't forget to activate the environment first by running:
 ```
 $ source [your_env_name]/bin/activate
 ```
