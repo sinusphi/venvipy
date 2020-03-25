@@ -1,10 +1,12 @@
+<!--
 <h1 align="center">
-<font face="FreeSerif" size="+6">
+<font face="Segoe Print" size="+4">
 <i>VenviPy</i>
 </font>
 </h1>
+-->
 
-<h2 align="center">A user friendly GUI for managing Python virtual environments</h2>
+<h2 align="center">Manage multiple Python virtual environments</h2>
 
 <p align="center">
 <a href="https://python.org"><img alt="Python version: 3.3-3.7" src="https://img.shields.io/badge/python-3.3%20--%203.9-blue"></a>
