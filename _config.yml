@@ -1,3 +1,5 @@
 theme: jekyll-theme-leap-day
 title: "VenviPy"
-site.github.owner_name: "Youssef Serestou"
+description: >- 
+  "VenviPy is a GUI for creating and managing multiple virtual environments in Python 3"
+stackoverflow: "https://stackoverflow.com/users/9110128/joey"
