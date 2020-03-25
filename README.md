@@ -1,12 +1,10 @@
-<h2 align="center">
+<h1 align="center">
 <font face="FreeSerif" size="+6">
 <i>VenviPy</i>
 </font>
-</h2>
+</h1>
 
 <h2 align="center">A user friendly GUI for managing Python virtual environments</h2>
-
----
 
 <p align="center">
 <a href="https://python.org"><img alt="Python version: 3.3-3.7" src="https://img.shields.io/badge/python-3.3%20--%203.9-blue"></a>
@@ -16,9 +14,7 @@
 <a href="https://github.com/sinusphi/venvipy/blob/master/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-darkviolet.svg"></a>
 </p>
 
-_VenvPy_ is a user friendly graphical user interface for creating virtual Python environments quick and easy.
-
-It has a wizard that allows selecting a specific Python version, customize the build process, download and install packages from the [Python Package Index (PyPI)](https://pypi.org/), generate requirements.txt files, and more. Other features are under development. 
+_VenvPy_ is a user friendly graphical user interface for creating virtual Python environments quick and easy. It has a wizard that allows selecting a specific Python version, customize the build process, download and install packages from the [Python Package Index (PyPI)](https://pypi.org/), generate requirements.txt files, and more. Other features are under development. 
 
 ### Contributing
 
