@@ -140,11 +140,11 @@ class Ui_MainWindow(QMainWindow):
             clicked=self.venv_wizard.exec_
         )
 
-        self.manageVenvButton = QPushButton(
-            "Manage Venvs", centralwidget,
-            statusTip="Manage virtual environments"
+        #self.manageVenvButton = QPushButton(
+            #"Manage Venvs", centralwidget,
+            #statusTip="Manage virtual environments"
             #clicked=self.openManager
-        )
+        #)
 
         self.exitButton = QPushButton(
             "Quit", centralwidget,
@@ -170,7 +170,7 @@ class Ui_MainWindow(QMainWindow):
         v_Layout2.addWidget(self.logo)
         v_Layout2.addWidget(self.addButton)
         v_Layout2.addWidget(self.newVenvButton)
-        v_Layout2.addWidget(self.manageVenvButton)
+        #v_Layout2.addWidget(self.manageVenvButton)
         v_Layout2.addItem(spacerItem1)
         v_Layout2.addWidget(self.exitButton)
 
@@ -301,11 +301,11 @@ class Ui_MainWindow(QMainWindow):
             shortcut="Ctrl+N", triggered=self.venv_wizard.exec_
         )
 
-        self.actManageVenvs = QAction(
-            manage_icon, "&Manage Venvs", self,
-            statusTip="Manage your virtual environments",
-            shortcut="Ctrl+M", #triggered=self.openManager
-        )
+        #self.actManageVenvs = QAction(
+            #manage_icon, "&Manage Venvs", self,
+            #statusTip="Manage your virtual environments",
+            #shortcut="Ctrl+M", #triggered=self.openManager
+        #)
 
         self.actSelectDefaultDir = QAction(
             settings_icon, "Set &default venv directory", self,
@@ -329,7 +329,7 @@ class Ui_MainWindow(QMainWindow):
         self.menuVenv.addAction(self.actAddInterpreter)
         self.menuVenv.addSeparator()
         self.menuVenv.addAction(self.actNewVenv)
-        self.menuVenv.addAction(self.actManageVenvs)
+        #self.menuVenv.addAction(self.actManageVenvs)
         self.menuVenv.addAction(self.actSelectDefaultDir)
         self.menuVenv.addSeparator()
         self.menuVenv.addAction(self.actExit)
