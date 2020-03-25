@@ -1,10 +1,24 @@
-# VenviPy
+<h2 align="center">
+<font face="FreeSerif" size="+6">
+<i>VenviPy</i>
+</font>
+</h2>
 
-[![Python version: 3.3-3.7](https://img.shields.io/badge/python-3.3%20--%203.9-blue)](https://python.org) [![PyQt: 5.13](https://img.shields.io/badge/pyqt-v5.13-blue.svg)](https://pypi.org/project/PyQt5) [![Platform: Linux](https://img.shields.io/badge/platform-linux-darkblue.svg)](https://www.linux.org/pages/download) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![License: MIT](https://img.shields.io/badge/license-MIT-darkviolet.svg)](https://github.com/sinusphi/venvipy/blob/master/LICENSE)
+<h2 align="center">A user friendly GUI for managing Python virtual environments</h2>
 
-#### *A lightweight GUI for managing virtual environments in Python. Built with Python and PyQt5.*
+---
 
-___
+<p align="center">
+<a href="https://python.org"><img alt="Python version: 3.3-3.7" src="https://img.shields.io/badge/python-3.3%20--%203.9-blue"></a>
+<a href="https://pypi.org/project/PyQt5"><img alt="PyQt: 5.13" src="https://img.shields.io/badge/pyqt-v5.13-blue.svg"></a>
+<a href="https://www.linux.org/pages/download"><img alt="Platform: Linux" src="https://img.shields.io/badge/platform-linux-darkblue.svg"></a>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://github.com/sinusphi/venvipy/blob/master/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-darkviolet.svg"></a>
+</p>
+
+_VenvPy_ is a user friendly graphical user interface for creating virtual Python environments quick and easy.
+
+It has a wizard that allows selecting a specific Python version, customize the build process, download and install packages from the [Python Package Index (PyPI)](https://pypi.org/), generate requirements.txt files, and more. Other features are under development. 
 
 ### Contributing
 
