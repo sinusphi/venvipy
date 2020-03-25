@@ -1,11 +1,4 @@
-<!--
-<h1 align="center">
-<font face="Segoe Print" size="+4">
-<i>VenviPy</i>
-</font>
-</h1>
--->
-# _VenviPy_
+# _**V**envi**P**y_
 
 ### A GUI for managing multiple Python virtual environments
 
@@ -17,7 +10,11 @@
 
 ---
 
-_VenviPy_ is a user friendly graphical user interface for creating virtual Python environments quick and easy. It has a wizard that provides a lot of features like selecting a specific Python version, customizing the build process, downloading and installing packages from the [Python Package Index (PyPI)](https://pypi.org/), generating requirements.txt files. More features are currently in development. 
+### About _VenviPy_
+
+_VenviPy_ is a user friendly graphical user interface for creating virtual environments very quick and easy. 
+
+It has a wizard that provides a lot of features like selecting a specific Python version, customizing the build process, downloading and installing packages from the [Python Package Index (PyPI)](https://pypi.org/), generating requirements.txt files and more. Other features are currently in development. 
 
 ### Contributing
 
