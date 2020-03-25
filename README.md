@@ -10,13 +10,32 @@
 
 ---
 
-### About the project
+### **Introduction**
 
 _VenviPy_ is a user friendly graphical user interface for creating virtual environments very quick and easy. 
 
 It has a wizard that provides a lot of features like selecting a specific Python version, customizing the build process, downloading and installing packages from the [Python Package Index (PyPI)](https://pypi.org/), generating requirements.txt files and more. Other features are currently in development. 
 
-### Contributing
+
+### **Installation**
+
+At the moment _VenviPy_ is not yet available from [PyPI](https://pypi.org/) and can only be obtained by cloning or downloading the source repository. 
+
+
+### **Usage**
+
+After cloned or downloaded the source repository open a terminal and cd into the directory:
+```
+$ cd venvipy/
+```
+
+Then run the _VenviPy_ main module:
+```
+$ python3 venvi.py
+```
+
+
+### **Contributing**
 
 Contributions are welcomed, as well as [Pull requests](https://github.com/sinusphi/venvipy/pulls), [bug reports](https://github.com/sinusphi/venvipy/issues), and [feature requests](https://github.com/sinusphi/venvipy/issues).
 
