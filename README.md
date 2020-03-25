@@ -5,7 +5,7 @@
 </font>
 </h1>
 -->
-<font face="Segoe Print" size="+4"><i>VenviPy</i></font>
+# VenviPy
 
 ## A GUI for managing multiple Python virtual environments
 
