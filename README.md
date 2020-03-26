@@ -17,7 +17,7 @@ _VenviPy_ is a user friendly graphical user interface for creating virtual envir
 It has a wizard that provides a lot of features like selecting a specific Python version, customizing the build process, downloading and installing packages from the [Python Package Index (PyPI)](https://pypi.org/), generating requirements.txt files and more. Other features are currently in development. 
 
 
-### Prerequisits
+### **Prerequisits**
 
 To be able to use _VenviPy_ you'll need the `python3-pip` package to be present on your system. You can install it by using your operating system's package manager (for example `apt` if you're on a debian based distro).
 
@@ -37,18 +37,9 @@ $ (your_env_name) pip install PyQt5
 
 ### **Installation**
 
-At the moment _VenviPy_ is not yet available from [PyPI](https://pypi.org/) and can only be obtained by cloning or downloading the source repository. 
-
-
-### **Usage**
-
-After cloned or downloaded the source repository open a terminal and cd into the directory:
+At the moment _VenviPy_ is not yet available from [PyPI](https://pypi.org/) and can only be obtained by cloning or downloading the source repository. After cloned or downloaded open a terminal and cd into the directory and run the _VenviPy_ main module:
 ```
 $ cd venvipy/
-```
-
-Then run the _VenviPy_ main module:
-```
 $ python3 venvi.py
 ```
 
