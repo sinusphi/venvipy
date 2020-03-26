@@ -28,19 +28,8 @@ from creator import create_venv, create_requirements
 
 
 # pip commands and options
-cmds = [
-    "install --no-cache-dir",
-    "uninstall",
-    "list",
-    "freeze ",
-    "show ",
-    "check ",
-    "wheel"
-]
-opts = [
-    "--upgrade",
-    "--isolated"
-]
+cmds = ["install --no-cache-dir"]
+opts = ["--upgrade"]
 
 
 
@@ -690,11 +679,6 @@ class SummaryPage(QWizardPage):
         # TODO: create the summary page
         #]===================================================================[#
 
-        self.logo = QLabel(self)
-        self.logo.setPixmap(QPixmap(":/img/pypower.png"))
-        self.logo.setAlignment(Qt.AlignVCenter)
-
-
 
     def initializePage(self):
         # reconnect 'next' button to self.wizard().next()
@@ -719,7 +703,7 @@ class SummaryPage(QWizardPage):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-    wiz = VenvWizard()
-    wiz.show()
+    wizard = VenvWizard()
+    wizard.show()
 
     sys.exit(app.exec_())
