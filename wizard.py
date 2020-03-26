@@ -28,8 +28,19 @@ from creator import create_venv, create_requirements
 
 
 # pip commands and options
-cmds = ["install", "uninstall", "list", "freeze ", "show ", "check ", "wheel"]
-opts = ["--upgrade", "--isolated"]
+cmds = [
+    "install --no-cache-dir",
+    "uninstall",
+    "list",
+    "freeze ",
+    "show ",
+    "check ",
+    "wheel"
+]
+opts = [
+    "--upgrade",
+    "--isolated"
+]
 
 
 
