@@ -25,14 +25,21 @@ def get_python_installs():
     """
     Get the available python versions installed.
     """
-    versions = ['3.9', '3.8', '3.7', '3.6', '3.5', '3.4', '3.3']
+    versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
 
     for i, version in enumerate(versions):
-        python_version = f"Python {version}"
         python_path = shutil.which(f"python{version}")
 
         if python_path is not None:
+            res = Popen(
+                    [python_path, "-V"],
+                    stdout=PIPE,
+                    text="utf-8"
+                )
+            out, _ = res.communicate()
+            python_version = out.strip()
+
             py_info = PythonInfo(python_version, python_path)
             py_info_list.append(py_info)
 
