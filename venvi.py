@@ -5,16 +5,15 @@ The main module of VenviPy.
 from subprocess import Popen, PIPE
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import (
-    QIcon, QFont, QPixmap, QStandardItemModel, QStandardItem
+    QIcon, QPixmap, QStandardItemModel, QStandardItem
 )
 from PyQt5.QtWidgets import (
-    QMainWindow, QApplication, QAction, QProgressBar, QFileDialog, QLabel,
+    QMainWindow, QApplication, QAction, QFileDialog, QLabel, QToolButton,
     QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QDialog,
-    QSizePolicy, QTableView, QAbstractItemView, QMenuBar, QMenu, QStatusBar,
-    QMessageBox, QCheckBox, QLineEdit, QGroupBox, QDesktopWidget, QComboBox,
-    QHBoxLayout, QToolButton
+    QSizePolicy, QTableView, QMenuBar, QMenu, QStatusBar, QAbstractItemView,
+    QMessageBox, QDesktopWidget, QHBoxLayout
 )
 import resources.venvipy_rc
 
