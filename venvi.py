@@ -400,10 +400,15 @@ class Ui_MainWindow(QMainWindow):
 
             path = file_name[0]
 
-            # fill cells
+            # populate the table
             self.modelTV1.insertRow(0)
             self.modelTV1.setItem(0, 0, QStandardItem(version))
             self.modelTV1.setItem(0, 1, QStandardItem(path))
+
+            # pass the selected interpreter to the wizard's QComboBox
+            self.venv_wizard.basicSettings.interprComboBox.addItem(
+                f"{version} -> {path}", path
+            )
 
 
     def popInterprTable(self):
