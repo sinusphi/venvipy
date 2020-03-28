@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Qt resource binary."""
+"""
+Qt resource binary file
+"""
 from PyQt5 import QtCore
 
 qt_resource_data = b"\
