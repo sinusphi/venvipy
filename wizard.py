@@ -7,23 +7,19 @@ import shutil
 import sys
 import os
 
-from PyQt5.QtGui import (
-    QIcon, QStandardItemModel, QStandardItem, QFontMetrics, QPixmap
-)
-from PyQt5.QtCore import (
-    Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread, QProcess, QEvent
-)
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
 from PyQt5.QtWidgets import (
     QApplication, QProgressBar, QGridLayout, QLabel, QFileDialog, QHBoxLayout,
     QVBoxLayout, QDialog, QWizard, QWizardPage, QToolButton, QComboBox,
-    QCheckBox, QLineEdit, QGroupBox, QTableView, QAbstractItemView, QFrame,
+    QCheckBox, QLineEdit, QGroupBox, QTableView, QAbstractItemView,
     QPushButton, QTextEdit, QMessageBox, QHeaderView, QDesktopWidget
 )
 import resources.venvipy_rc
 
-from get_data import (get_module_infos, get_venvs_default, get_python_installs)
-from manage_pip import PipManager
+from get_data import get_module_infos, get_venvs_default, get_python_installs
 from creator import create_venv, create_requirements
+from manage_pip import PipManager
 
 
 
