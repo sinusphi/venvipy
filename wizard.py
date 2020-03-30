@@ -615,6 +615,12 @@ class InstallModules(QWizardPage):
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
 
+            #]===============================================================[#
+            # TODO: provide some options here:
+            #       * let the user decide whether to install packages with
+            #         the "--upgrade" flag or not
+            #       * let user specify a particular version to install
+            #]===============================================================[#
             # start installing the selected module
             print(f"[PROCESS]: Installing module '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
