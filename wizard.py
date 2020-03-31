@@ -397,8 +397,13 @@ class BasicSettings(QWizardPage):
         #self.launchVenv = self.field("launchVenv")
 
         if self.combobox and self.venvName and self.venvLocation:
-            # display the python version used to create the virt. env
-            self.progressBar.setWindowTitle(f"Using {self.pythonVers[:10]}")
+            if self.pythonVers[12] == " ":
+                version = self.pythonVers[:12]  # stable releases
+            else:
+                version = self.pythonVers[:15]  # pre-releases
+
+            # show python version in window title
+            self.progressBar.setWindowTitle(f"Using {version}")
             self.progressBar.statusLabel.setText(
                 "Creating virtual environment..."
             )
@@ -440,7 +445,7 @@ class BasicSettings(QWizardPage):
         """
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
-            f"New Python{self.pythonVers[7:10]} executable in \n"
+            f"New Python {self.pythonVers[7:10]} executable in \n"
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
