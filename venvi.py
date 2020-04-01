@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 import shutil
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
 from PyQt5.QtGui import (
     QIcon, QPixmap, QStandardItemModel, QStandardItem, QCursor
 )
@@ -22,14 +22,6 @@ from get_data import get_python_installs, get_venvs_default
 import settings
 import wizard
 import info
-
-
-
-class InterpreterTable(QTableView):
-    """
-    The table that lists the installed Python versions.
-    """
-    pass
 
 
 
@@ -50,7 +42,9 @@ class VenvTable(QTableView):
         self.contextMenu.addAction(deleteAction)
         deleteAction.triggered.connect(lambda: self.delete_venv(event))
 
-        self.contextMenu.popup(QCursor.pos())
+        # pop up only if cicking on a row
+        if self.indexAt(event.pos()).isValid():
+            self.contextMenu.popup(QCursor.pos())
 
 
     def get_selected_item(self):
@@ -167,7 +161,6 @@ class Ui_MainWindow(QMainWindow):
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
         info_icon = QIcon.fromTheme("dialog-information")
-        delete_icon = QIcon.fromTheme("delete")
         new_icon = QIcon.fromTheme("list-add")
         settings_icon = QIcon.fromTheme("preferences-system")
         exit_icon = QIcon.fromTheme("exit")
@@ -186,7 +179,7 @@ class Ui_MainWindow(QMainWindow):
         h_Layout1 = QHBoxLayout()
 
         v_Layout1.setContentsMargins(12, 19, 5, -1)
-        v_Layout2.setContentsMargins(-1, 2, 6, -1)
+        v_Layout2.setContentsMargins(-1, 4, 6, -1)
 
         # python logo
         self.logo = QLabel(centralwidget)
@@ -261,7 +254,7 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # interpreter table
-        interprTable = InterpreterTable(
+        interprTable = QTableView(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
@@ -499,7 +492,6 @@ class Ui_MainWindow(QMainWindow):
                 print(f"[PYTHON]: {info}")
 
 
-    @pyqtSlot()
     def popVenvTable(self):
         """
         Populate the venv table view.
