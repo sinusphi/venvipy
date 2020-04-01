@@ -458,11 +458,12 @@ class Ui_MainWindow(QMainWindow):
             # get version info and path of the selected binary
             res = Popen(
                 [bin_file, "-V"],
-                stdout=PIPE, universal_newlines=True
+                stdout=PIPE,
+                text="utf-8"
             )
+
             out, _ = res.communicate()
             version = out.strip()
-
             path = file_name[0]
 
             # populate the table
@@ -472,7 +473,7 @@ class Ui_MainWindow(QMainWindow):
 
             # pass the selected interpreter to the wizard's QComboBox
             self.venv_wizard.basicSettings.interprComboBox.addItem(
-                f"{version} -> {path}", path
+                f"{version}  ->  {path}", path
             )
 
 
