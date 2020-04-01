@@ -3,11 +3,12 @@
 The main module of VenviPy.
 """
 from subprocess import Popen, PIPE
+import shutil
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
 from PyQt5.QtGui import (
-    QIcon, QPixmap, QStandardItemModel, QStandardItem
+    QIcon, QPixmap, QStandardItemModel, QStandardItem, QCursor
 )
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QFileDialog, QLabel, QToolButton,
@@ -21,6 +22,69 @@ from get_data import get_python_installs, get_venvs_default
 import settings
 import wizard
 import info
+
+
+
+class VenvTable(QTableView):
+    """
+    The table that lists the virtual environments
+    found in the specified default folder.
+    """
+    refresh = pyqtSignal()
+
+    def contextMenuEvent(self, event):
+        self.contextMenu = QMenu(self)
+
+        deleteAction = QAction(
+            QIcon.fromTheme("delete"), "&Delete", self,
+            statusTip="Delete venv"
+        )
+        self.contextMenu.addAction(deleteAction)
+        deleteAction.triggered.connect(lambda: self.delete_venv(event))
+
+        # pop up only if cicking on a row
+        if self.indexAt(event.pos()).isValid():
+            self.contextMenu.popup(QCursor.pos())
+
+
+    def get_selected_item(self):
+        """
+        Get the venv name of the selected row.
+        """
+        listed_venvs = self.selectionModel().selectedRows()
+        for index in listed_venvs:
+            selected_venv = index.data()
+            return selected_venv
+
+
+    def delete_venv(self, event):
+        """
+        Delete an existing virtual environment when selecting
+        delete from the context menu in venv table.
+        """
+        venv = self.get_selected_item()
+
+        if venv is not None:
+            messageBoxConfirm = QMessageBox.critical(self,
+                "Confirm", f"Are you sure you want to delete '{venv}'?",
+                QMessageBox.Yes | QMessageBox.Cancel
+            )
+
+            if messageBoxConfirm == QMessageBox.Yes:
+                current_dir = os.path.dirname(os.path.realpath(__file__))
+                default_file = os.path.join(
+                    current_dir, "resources", "default"
+                )
+
+                if os.path.isfile(default_file):
+                    with open(default_file, "r") as f:
+                        default_dir = f.read()
+
+                venv_to_delete = f"{default_dir}/{venv}"
+                shutil.rmtree(venv_to_delete)
+                print(f"[PROCESS]: Successfully deleted {default_dir}/{venv}")
+
+                self.refresh.emit()
 
 
 
@@ -96,10 +160,11 @@ class Ui_MainWindow(QMainWindow):
         refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
-        about_icon = QIcon.fromTheme("dialog-information")
+        info_icon = QIcon.fromTheme("dialog-information")
         new_icon = QIcon.fromTheme("list-add")
         settings_icon = QIcon.fromTheme("preferences-system")
         exit_icon = QIcon.fromTheme("exit")
+        delete_icon = QIcon.fromTheme("delete")
 
 
         #]===================================================================[#
@@ -114,7 +179,7 @@ class Ui_MainWindow(QMainWindow):
         h_Layout1 = QHBoxLayout()
 
         v_Layout1.setContentsMargins(12, 19, 5, -1)
-        v_Layout2.setContentsMargins(-1, 2, 6, -1)
+        v_Layout2.setContentsMargins(-1, 4, 6, -1)
 
         # python logo
         self.logo = QLabel(centralwidget)
@@ -228,11 +293,12 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # venv table
-        venvTable = QTableView(
+        venvTable = VenvTable(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
-            alternatingRowColors=True
+            alternatingRowColors=True,
+            refresh=self.popVenvTable  # signal
         )
 
         # adjust vertical headers
@@ -319,7 +385,7 @@ class Ui_MainWindow(QMainWindow):
         )
 
         self.actAbout = QAction(
-            about_icon, "&About", self,
+            info_icon, "&About", self,
             statusTip="About VenviPy",
             shortcut="Ctrl+B", triggered=self.appInfo.exec_
         )

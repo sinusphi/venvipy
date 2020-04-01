@@ -298,7 +298,7 @@ class BasicSettings(QWizardPage):
         self.interprComboBox.addItem("---")
         for info in get_python_installs():
             self.interprComboBox.addItem(
-                f"{info.py_version} -> {info.py_path}", info.py_path
+                f"{info.py_version}  ->  {info.py_path}", info.py_path
             )
 
         venvNameLabel = QLabel("Venv &name:")
@@ -397,8 +397,13 @@ class BasicSettings(QWizardPage):
         #self.launchVenv = self.field("launchVenv")
 
         if self.combobox and self.venvName and self.venvLocation:
-            # display the python version used to create the virt. env
-            self.progressBar.setWindowTitle(f"Using {self.pythonVers[:10]}")
+            if self.pythonVers[12] == " ":
+                version = self.pythonVers[:12]  # stable releases
+            else:
+                version = self.pythonVers[:16]  # pre-releases
+
+            # show python version in window title
+            self.progressBar.setWindowTitle(f"Using {version}")
             self.progressBar.statusLabel.setText(
                 "Creating virtual environment..."
             )
@@ -440,7 +445,7 @@ class BasicSettings(QWizardPage):
         """
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
-            f"New Python{self.pythonVers[7:10]} executable in \n"
+            f"New Python {self.pythonVers[7:10]} executable in \n"
             f"'{self.venvLocation}/{self.venvName}/bin'. \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
@@ -608,13 +613,18 @@ class InstallModules(QWizardPage):
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-
             self.manager = PipManager(self.venvLocation, self.venvName)
             self.console = ConsoleDialog()
 
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
 
+            #]===============================================================[#
+            # TODO: provide some options here:
+            #       * let the user decide whether to install packages with
+            #         the "--upgrade" flag or not
+            #       * let user specify a particular version to install
+            #]===============================================================[#
             # start installing the selected module
             print(f"[PROCESS]: Installing module '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
@@ -665,6 +675,9 @@ class InstallModules(QWizardPage):
 
 
 class SummaryPage(QWizardPage):
+    """
+    The last page.
+    """
     def __init__(self):
         super().__init__()
 
