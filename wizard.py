@@ -298,7 +298,7 @@ class BasicSettings(QWizardPage):
         self.interprComboBox.addItem("---")
         for info in get_python_installs():
             self.interprComboBox.addItem(
-                f"{info.py_version} -> {info.py_path}", info.py_path
+                f"{info.py_version}  ->  {info.py_path}", info.py_path
             )
 
         venvNameLabel = QLabel("Venv &name:")
@@ -400,7 +400,7 @@ class BasicSettings(QWizardPage):
             if self.pythonVers[12] == " ":
                 version = self.pythonVers[:12]  # stable releases
             else:
-                version = self.pythonVers[:15]  # pre-releases
+                version = self.pythonVers[:16]  # pre-releases
 
             # show python version in window title
             self.progressBar.setWindowTitle(f"Using {version}")
