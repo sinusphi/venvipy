@@ -613,7 +613,6 @@ class InstallModules(QWizardPage):
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-
             self.manager = PipManager(self.venvLocation, self.venvName)
             self.console = ConsoleDialog()
 
@@ -676,6 +675,9 @@ class InstallModules(QWizardPage):
 
 
 class SummaryPage(QWizardPage):
+    """
+    The last page.
+    """
     def __init__(self):
         super().__init__()
 
