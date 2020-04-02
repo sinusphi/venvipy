@@ -190,6 +190,8 @@ class VenvWizard(QWizard):
     """
     Wizard for creating and setting up a virtual environment.
     """
+    refresh = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -573,7 +575,7 @@ class InstallModules(QWizardPage):
 
     def pop_results_table(self):
         """
-        Populate the results table view.
+        Refresh the results table.
         """
         search_item = self.pkgNameLineEdit.text()
 
@@ -706,6 +708,8 @@ class SummaryPage(QWizardPage):
         # reset wizard
         finish_button = self.wizard().button(QWizard.FinishButton)
         finish_button.clicked.connect(self.wizard().restart)
+
+        self.wizard().refresh.emit()
 
 
 
