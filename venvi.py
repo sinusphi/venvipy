@@ -149,6 +149,7 @@ class Ui_MainWindow(QMainWindow):
         )
 
         self.venv_wizard = wizard.VenvWizard()
+        self.venv_wizard.refresh.connect(self.popVenvTable)
         self.selectDefaultDir = settings.SelectDefaultDir()
         self.appInfo = info.AppInfo()
 
