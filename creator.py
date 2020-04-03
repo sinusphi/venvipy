@@ -11,7 +11,7 @@ from manage_pip import PipManager
 
 
 # pip commands and options
-cmds = ["install --no-cache-dir"]
+cmds = ["install --no-cache-dir", "list", "freeze"]
 opts = ["--upgrade"]
 
 
