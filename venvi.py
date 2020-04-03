@@ -19,7 +19,9 @@ from PyQt5.QtWidgets import (
 import resources.venvipy_rc
 
 from get_data import get_python_installs, get_venvs_default, venvs_default_str
-from dialogs import AppInfoDialog, DefaultDirDialog
+from dialogs import AppInfoDialog, DefaultDirDialog, ConsoleDialog
+from manage_pip import PipManager
+from creator import cmds
 import wizard
 
 
@@ -34,8 +36,19 @@ class VenvTable(QTableView):
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
 
+        listModulesAction = QAction(
+            QIcon.fromTheme("dialog-information"),
+            "&List installed modules",
+            self,
+            statusTip="List installed modules"
+        )
+        self.contextMenu.addAction(listModulesAction)
+        listModulesAction.triggered.connect(lambda: self.list_modules(event))
+
         addModulesAction = QAction(
-            QIcon.fromTheme("add"), "&Install additional modules", self,
+            QIcon.fromTheme("add"),
+            "&Install additional modules",
+            self,
             statusTip="Install additional modules"
         )
         self.contextMenu.addAction(addModulesAction)
@@ -61,6 +74,28 @@ class VenvTable(QTableView):
         for index in listed_venvs:
             selected_venv = index.data()
             return selected_venv
+
+
+    def list_modules(self, event):
+        """
+        Open console dialog and list the installed modules.
+        """
+        default_dir = venvs_default_str()
+        venv = self.get_selected_item()
+
+        self.console = ConsoleDialog()
+
+        self.manager = PipManager(default_dir, venv)
+        self.manager.run_pip(cmds[1])
+        self.manager.started.connect(self.console.exec_)
+
+        # display the updated output
+        self.manager.textChanged.connect(self.console.update_status)
+
+        # clear the content on window close
+        if self.console.close:
+            self.console.consoleWindow.clear()
+
 
 
     def add_modules(self, event):
