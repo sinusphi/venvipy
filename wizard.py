@@ -19,15 +19,12 @@ from PyQt5.QtWidgets import (
 import resources.venvipy_rc
 
 from get_data import get_module_infos, get_venvs_default, get_python_installs
-from creator import CreationWorker, create_venv, create_requirements
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
+from creator import (
+    CreationWorker, create_venv, create_requirements, cmds, opts
+)
 
-
-
-# pip commands and options
-cmds = ["install --no-cache-dir"]
-opts = ["--upgrade"]
 
 
 #]===========================================================================[#
