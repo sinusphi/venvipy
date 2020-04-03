@@ -46,7 +46,6 @@ def get_python_installs():
     return py_info_list
 
 
-
 #]===========================================================================[#
 #] GET VENVS [#==============================================================[#
 #]===========================================================================[#
@@ -99,9 +98,9 @@ def get_python_vers(pyvenv_cfg):
     return f"Python {lines[2][10:]}".strip()
 
 
-def get_venvs_default():
+def venvs_default_str():
     """
-    Get the default venv directory string from file.
+    Get the default venv directory string from `resources/default` file.
     """
     current_dir = os.path.dirname(os.path.realpath(__file__))
     default_file = os.path.join(current_dir, "resources", "default")
@@ -109,10 +108,18 @@ def get_venvs_default():
     if os.path.isfile(default_file):
         with open(default_file, "r") as f:
             default_dir = f.read()
-            return get_venvs(default_dir)
+            return default_dir
 
     return []
 
+
+def get_venvs_default():
+    """
+    Get the default venv directory string from file and
+    pass it to `get_venvs()`.
+    """
+    default_dir = venvs_default_str()
+    return get_venvs(default_dir)
 
 
 #]===========================================================================[#
@@ -150,8 +157,8 @@ def get_module_infos(name):
 
 if __name__ == "__main__":
 
-    for python in get_python_installs():
-        print(python.py_version, python.py_path)
+    #for python in get_python_installs():
+        #print(python.py_version, python.py_path)
 
     #]=======================================================================[#
 
@@ -167,3 +174,5 @@ if __name__ == "__main__":
 
     #if not get_module_infos(test_module):
         #print("No modules found!")
+
+    print(get_venvs_default())
