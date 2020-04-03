@@ -123,7 +123,7 @@ class ConsoleDialog(QDialog):
         """
         metrix = QFontMetrics(self.consoleWindow.font())
         clippedText = metrix.elidedText(
-            status, Qt.ElideRight, self.consoleWindow.width()
+            status, Qt.ElideNone, self.consoleWindow.width()
         )
         self.consoleWindow.append(clippedText)
 
