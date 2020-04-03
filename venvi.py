@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 )
 import resources.venvipy_rc
 
-from get_data import get_python_installs, get_venvs_default
+from get_data import get_python_installs, get_venvs_default, venvs_default_str
 from dialogs import AppInfoDialog, DefaultDirDialog
 import wizard
 
@@ -84,14 +84,7 @@ class VenvTable(QTableView):
             )
 
             if messageBoxConfirm == QMessageBox.Yes:
-                current_dir = os.path.dirname(os.path.realpath(__file__))
-                default_file = os.path.join(
-                    current_dir, "resources", "default"
-                )
-
-                if os.path.isfile(default_file):
-                    with open(default_file, "r") as f:
-                        default_dir = f.read()
+                default_dir = venvs_default_str()
 
                 venv_to_delete = f"{default_dir}/{venv}"
                 shutil.rmtree(venv_to_delete)
