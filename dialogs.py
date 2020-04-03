@@ -374,8 +374,8 @@ class DefaultDirDialog(QDialog):
         gridLayout.addWidget(browseToolButton, 0, 2, 1, 1)
 
         h_Layout.addItem(spacerItem)
-        h_Layout.addWidget(okButton, 0, Qt.AlignBottom)
         h_Layout.addWidget(cancelButton, 0, Qt.AlignBottom)
+        h_Layout.addWidget(okButton, 0, Qt.AlignBottom)
 
         v_Layout.addLayout(gridLayout)
         v_Layout.addWidget(horizontalLine)
