@@ -66,8 +66,6 @@ class PipManager(QObject):
         self._process.finished.connect(self.onFinished)
 
 
-
-
     def run_pip(self, command="", options=None):
         """
         Activate the virtual environment and run pip commands.
