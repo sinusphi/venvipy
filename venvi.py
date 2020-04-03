@@ -19,9 +19,8 @@ from PyQt5.QtWidgets import (
 import resources.venvipy_rc
 
 from get_data import get_python_installs, get_venvs_default
-import settings
+from dialogs import AppInfoDialog, DefaultDirDialog
 import wizard
-import info
 
 
 
@@ -162,10 +161,12 @@ class Ui_MainWindow(QMainWindow):
             """
         )
 
+        self.appInfo = AppInfoDialog()
+        self.selectDefaultDir = DefaultDirDialog()
         self.venv_wizard = wizard.VenvWizard()
+
+        # refresh venv table when closing wizard
         self.venv_wizard.refresh.connect(self.popVenvTable)
-        self.selectDefaultDir = settings.SelectDefaultDir()
-        self.appInfo = info.AppInfo()
 
 
         #]===================================================================[#
