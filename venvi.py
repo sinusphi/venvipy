@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 import shutil
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import (
     QIcon, QPixmap, QStandardItemModel, QStandardItem, QCursor
 )
@@ -35,6 +35,13 @@ class VenvTable(QTableView):
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
 
+        addModulesAction = QAction(
+            QIcon.fromTheme("add"), "&Install additional modules", self,
+            statusTip="Install additional modules"
+        )
+        self.contextMenu.addAction(addModulesAction)
+        addModulesAction.triggered.connect(lambda: self.add_modules(event))
+
         deleteAction = QAction(
             QIcon.fromTheme("delete"), "&Delete", self,
             statusTip="Delete venv"
@@ -55,6 +62,13 @@ class VenvTable(QTableView):
         for index in listed_venvs:
             selected_venv = index.data()
             return selected_venv
+
+
+    def add_modules(self, event):
+        """
+        Install additional modules into the selected virtual environment.
+        """
+        pass
 
 
     def delete_venv(self, event):
