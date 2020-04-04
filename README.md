@@ -2,8 +2,8 @@
 
 ### A GUI for managing multiple Python virtual environments
 
-<a href="https://python.org"><img alt="Python version: 3.3-3.7" src="https://img.shields.io/badge/python-3.3+-blue"></a>
-<a href="https://pypi.org/project/PyQt5"><img alt="PyQt: 5.13" src="https://img.shields.io/badge/pyqt-5.13+-blue.svg"></a>
+<a href="https://python.org"><img alt="Python version: 3.3+" src="https://img.shields.io/badge/python-3.3+-blue"></a>
+<a href="https://pypi.org/project/PyQt5"><img alt="PyQt: 5.11+" src="https://img.shields.io/badge/pyqt-5.13+-blue.svg"></a>
 <a href="https://www.linux.org/pages/download"><img alt="Platform: Linux" src="https://img.shields.io/badge/platform-linux-darkblue.svg"></a>
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://github.com/sinusphi/venvipy/blob/master/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-darkviolet.svg"></a>
@@ -12,9 +12,13 @@
 
 ### **Introduction**
 
-_VenviPy_ is a user friendly graphical user interface for creating virtual environments very quick and easy. 
+_VenviPy_ is a user friendly graphical interface for creating customized virtual environments quick and easy. It provides a number of useful features like a wizard, that guides the user through the creation process, modify an existing environment in different ways nd much more. 
 
-It has a wizard that provides a lot of features like selecting a specific Python version, customizing the build process, downloading and installing packages from the [Python Package Index (PyPI)](https://pypi.org/), generating requirements.txt files and more. Other features are currently in development. 
+This is an overwiew:
+- Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
+- Install and update Pip with one click
+- Search, select and install packages from [Python Package Index (PyPI)](https://pypi.org/) or use a requirements.txt
+- Generate and/ or modifiy requirements.txt files
 
 
 ### **Prerequisits**
