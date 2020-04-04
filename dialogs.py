@@ -81,7 +81,6 @@ class ConsoleDialog(QDialog):
 
 
     def initUI(self):
-        self.setWindowTitle("Installing")
         self.resize(880, 510)
         self.center()
         self.setWindowIcon(QIcon(":/img/python.png"))

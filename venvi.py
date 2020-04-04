@@ -84,6 +84,7 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
+        self.console.setWindowTitle(f"Modules installed:  {venv}")
 
         self.manager = PipManager(default_dir, venv)
         self.manager.run_pip(cmds[1])

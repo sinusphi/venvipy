@@ -459,6 +459,7 @@ class InstallModules(QWizardPage):
         if messageBoxConfirm == QMessageBox.Yes:
             self.manager = PipManager(self.venvLocation, self.venvName)
             self.console = ConsoleDialog()
+            self.console.setWindowTitle("Installing")
 
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
