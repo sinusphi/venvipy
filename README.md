@@ -23,7 +23,7 @@ This is an overwiew:
 
 ### **Prerequisits**
 
-To be able to use _VenviPy_ you'll need the `python3-pip` package to be present on your system. You can install it by using your operating system's package manager (for example `apt` if you're on a debian based distro).
+To be able to run _VenviPy_ you'll need the `python3-pip` package to be present on your system. You can install it by using your operating system's package manager.
 
 Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command in a terminal:
 ```
@@ -41,19 +41,16 @@ $ (your_env_name) pip install PyQt5
 
 ### **Installation**
 
-At the moment _VenviPy_ is not yet available from [PyPI](https://pypi.org/) and can only be obtained by cloning or downloading the source repository. After cloned or downloaded open a terminal and cd into the directory and run the _VenviPy_ main module:
+At the moment _VenviPy_ can be obtained by cloning or downloading the source repository. After cloned or downloaded open a terminal and cd into the directory and run the _VenviPy_ main module:
 ```
 $ cd venvipy/
 $ python3 venvi.py
 ```
 
 **NOTE** :
-If you want to run _VenviPy_ inside a virtual environment, don't forget to activate the environment first by running:
+If you want to run _VenviPy_ inside a virtual environment, run:
 ```
 $ source [your_env_name]/bin/activate
-```
-and then simply do:
-```
 $ (your_env_name) python venvi.py
 ```
 
