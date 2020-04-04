@@ -98,7 +98,6 @@ class VenvTable(QTableView):
             self.console.consoleWindow.clear()
 
 
-
     def add_modules(self, event):
         """
         Install additional modules into the selected virtual environment.

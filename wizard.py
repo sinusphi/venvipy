@@ -477,9 +477,13 @@ class InstallModules(QWizardPage):
             # display the updated output
             self.manager.textChanged.connect(self.console.update_status)
 
-            # clear the content on window close
+            # clear the content when closing console
             if self.console.close:
                 self.console.consoleWindow.clear()
+
+                # clear search input line
+                self.pkgNameLineEdit.clear()
+                self.pkgNameLineEdit.setFocus(True)
 
                 # connect 'next' button to self.save_requirements()
                 self.next_button.disconnect()
