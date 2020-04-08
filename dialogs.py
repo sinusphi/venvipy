@@ -9,7 +9,8 @@ import os
 from PyQt5.QtWidgets import (
     QDialog, QHBoxLayout, QVBoxLayout, QLabel, QDesktopWidget, QTextEdit,
     QProgressBar, QPushButton, QSpacerItem, QApplication, QSizePolicy,
-    QFormLayout, QGridLayout, QFileDialog, QToolButton, QFrame, QLineEdit
+    QFormLayout, QGridLayout, QFileDialog, QToolButton, QFrame, QLineEdit,
+    QMessageBox
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
@@ -125,6 +126,18 @@ class ConsoleDialog(QDialog):
             status, Qt.ElideNone, self.consoleWindow.width()
         )
         self.consoleWindow.append(clippedText)
+
+
+    def finish_info(self):
+        """
+        Show info message when all modules installed successfully.
+        """
+        message_txt = (
+            "Environment cloned successfully.\n\n"
+            "All modules have been \ninstalled without errors.\n"
+        )
+        QMessageBox.information(self, "Done", message_txt)
+        print("[PROCESS]: Environment cloned successfully")
 
 
 #]===========================================================================[#
