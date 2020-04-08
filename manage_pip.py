@@ -101,6 +101,7 @@ class PipManager(QObject):
     def onFinished(self, exitCode):
         """Show exit code when finished."""
         print(f"[PROCESS]: Exit code: {exitCode}")
+        self._process.kill()
 
 
     @pyqtSlot()
@@ -110,7 +111,6 @@ class PipManager(QObject):
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
         print(f"[PIP]: {message}")
-
         self.textChanged.emit(message)
 
 
@@ -121,7 +121,6 @@ class PipManager(QObject):
         """
         message = self._process.readAllStandardError().data().decode().strip()
         print(f"[PROCESS]: {message}")
-
         self.textChanged.emit(message)
         self.finished.emit()
         self._process.kill()
