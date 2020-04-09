@@ -130,7 +130,7 @@ class BasicSettings(QWizardPage):
 
         # finished
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
-        self.m_install_venv_worker.finished.connect(self.show_finished_msg)
+        self.m_install_venv_worker.finished.connect(self.finish_info)
 
 
         #]===================================================================[#
@@ -163,13 +163,25 @@ class BasicSettings(QWizardPage):
         )
         self.selectDirToolButton.setFixedSize(26, 27)
 
+        requirementsLabel = QLabel("Requirements &fiile:")
+        self.requirementsLineEdit = QLineEdit()
+        requirementsLabel.setBuddy(self.requirementsLineEdit)
+
+        self.selectFileToolButton = QToolButton(
+            icon=folder_icon,
+            toolTip="Browse",
+            clicked=self.select_file
+        )
+        self.selectFileToolButton.setFixedSize(26, 27)
+
         placeHolder = QLabel()
 
         # options groupbox
         groupBox = QGroupBox("Options")
 
         self.withPipCBox = QCheckBox(
-            "Install and update &Pip"
+            "Install and update &Pip",
+            checked=True
         )
         self.sitePackagesCBox = QCheckBox(
             "&Make system (global) site-packages dir available to venv"
@@ -177,9 +189,6 @@ class BasicSettings(QWizardPage):
         self.symlinksCBox = QCheckBox(
             "Attempt to &symlink rather than copy files into venv"
         )
-        #self.launchVenvCBox = QCheckBox(
-            #"Launch a &terminal with activated venv after installation"
-        #)
 
         # register fields
         self.registerField("interprComboBox*", self.interprComboBox)
@@ -190,19 +199,26 @@ class BasicSettings(QWizardPage):
         self.registerField("withPip", self.withPipCBox)
         self.registerField("sitePackages", self.sitePackagesCBox)
         self.registerField("symlinks", self.symlinksCBox)
-        #self.registerField("launchVenv", self.launchVenvCBox)
+        self.registerField("requirements", self.requirementsLineEdit)
 
         # grid layout
         gridLayout = QGridLayout()
         gridLayout.addWidget(interpreterLabel, 0, 0, 1, 1)
         gridLayout.addWidget(self.interprComboBox, 0, 1, 1, 2)
+
         gridLayout.addWidget(venvNameLabel, 1, 0, 1, 1)
         gridLayout.addWidget(self.venvNameLineEdit, 1, 1, 1, 2)
+
         gridLayout.addWidget(venvLocationLabel, 2, 0, 1, 1)
         gridLayout.addWidget(self.venvLocationLineEdit, 2, 1, 1, 1)
         gridLayout.addWidget(self.selectDirToolButton, 2, 2, 1, 1)
-        gridLayout.addWidget(placeHolder, 3, 0, 1, 2)
-        gridLayout.addWidget(groupBox, 4, 0, 1, 3)
+
+        gridLayout.addWidget(requirementsLabel, 3, 0, 1, 1)
+        gridLayout.addWidget(self.requirementsLineEdit, 3, 1, 1, 1)
+        gridLayout.addWidget(self.selectFileToolButton, 3, 2, 1, 1)
+
+        gridLayout.addWidget(placeHolder, 4, 0, 1, 2)
+        gridLayout.addWidget(groupBox, 5, 0, 1, 3)
         self.setLayout(gridLayout)
 
         # options groupbox
@@ -210,7 +226,6 @@ class BasicSettings(QWizardPage):
         groupBoxLayout.addWidget(self.withPipCBox)
         groupBoxLayout.addWidget(self.sitePackagesCBox)
         groupBoxLayout.addWidget(self.symlinksCBox)
-        #groupBoxLayout.addWidget(self.launchVenvCBox)
         groupBox.setLayout(groupBoxLayout)
 
 
@@ -229,6 +244,15 @@ class BasicSettings(QWizardPage):
         self.venvLocationLineEdit.setText(folderName)
 
 
+    def select_file(self):
+        """
+        Specify the requirements file to use
+        to clone the virtual environment.
+        """
+        fileName = QFileDialog.getOpenFileName()
+        self.requirementsLineEdit.setText(fileName[0])
+
+
     def execute_venv_create(self):
         """
         Execute the creation process.
@@ -241,15 +265,16 @@ class BasicSettings(QWizardPage):
         self.withPip = self.field("withPip")
         self.sitePackages = self.field("sitePackages")
         self.symlinks = self.field("symlinks")
-        #self.launchVenv = self.field("launchVenv")
+        self.requirements = self.field("requirements")
 
         if self.combobox and self.venvName and self.venvLocation:
+            # format the text shown in progress bar window title
             if self.pythonVers[12] == " ":
                 version = self.pythonVers[:12]  # stable releases
             else:
                 version = self.pythonVers[:16]  # pre-releases
 
-            # show python version in window title
+            # show python version in progress bar window title
             self.progressBar.setWindowTitle(f"Using {version}")
             self.progressBar.statusLabel.setText(
                 "Creating virtual environment..."
@@ -286,7 +311,7 @@ class BasicSettings(QWizardPage):
         self.progressBar.statusLabel.setText("Updating Pip...")
 
 
-    def show_finished_msg(self):
+    def finish_info(self):
         """
         Show info message when the creation process has finished successfully.
         """
@@ -346,11 +371,7 @@ class InstallModules(QWizardPage):
             clicked=self.pop_results_table
         )
 
-
-        #]===================================================================[#
-        #] RESULTS TABLE VIEW [#=============================================[#
-        #]===================================================================[#
-
+        # results table
         resultsTable = QTableView(
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
@@ -385,11 +406,18 @@ class InstallModules(QWizardPage):
 
 
     def initializePage(self):
-        # clear the search input line and the results table
-        self.pkgNameLineEdit.clear()
-        self.resultsModel.clear()
+        self.pythonVers = self.field("pythonVers")
+        self.pythonPath = self.field("pythonPath")
+        self.venvName = self.field("venvName")
+        self.venvLocation = self.field("venvLocation")
+        self.requirements = self.field("requirements")
 
-        # set header labels
+        # clear all inputs and contents
+        self.resultsModel.clear()
+        self.pkgNameLineEdit.clear()
+        self.pkgNameLineEdit.setFocus(True)
+
+        # set text in column headers
         self.resultsModel.setHorizontalHeaderLabels(
             ["Name", "Version", "Description"]
         )
@@ -409,10 +437,51 @@ class InstallModules(QWizardPage):
         back_button = self.wizard().button(QWizard.BackButton)
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
-        self.pythonVers = self.field("pythonVers")
-        self.pythonPath = self.field("pythonPath")
-        self.venvName = self.field("venvName")
-        self.venvLocation = self.field("venvLocation")
+
+        #]===================================================================[#
+        # TODO: test if the selected file is a valid requirements.txt
+        #]===================================================================[#
+        # if self.requirements contains a string, then run the installer
+        if len(self.requirements) > 0:
+            self.install_requirements()
+
+
+    def install_requirements(self):
+        """
+        Install the modules from the specified requirements file.
+        """
+        self.setEnabled(False)
+
+        self.manager = PipManager(self.venvLocation, self.venvName)
+        self.console = ConsoleDialog()
+        self.basic_settings = BasicSettings()
+
+        self.console.setWindowTitle("Cloning environment")
+        print("[PROCESS]: Installing Modules from requirements...")
+
+        # open the console when recieving signal from manager
+        self.manager.started.connect(self.console.exec_)
+
+        # start installing modules from requirements file
+        print(f"[PROCESS]: Using file '{self.requirements}'")
+        self.manager.run_pip(cmds[0], [opts[1], self.requirements])
+
+        # display the updated output
+        self.manager.textChanged.connect(self.console.update_status)
+
+        # show info dialog
+        self.manager.finished.connect(self.console.finish_info)
+        self.manager.finished.connect(self.console.close)
+
+        # clear the contents when closing console
+        if self.console.close:
+            self.console.consoleWindow.clear()
+
+            # also clear the requirements input line,
+            # so that it'll empty on next session
+            self.basic_settings.requirementsLineEdit.clear()
+
+        self.setEnabled(True)
 
 
     def pop_results_table(self):
@@ -459,6 +528,7 @@ class InstallModules(QWizardPage):
         if messageBoxConfirm == QMessageBox.Yes:
             self.manager = PipManager(self.venvLocation, self.venvName)
             self.console = ConsoleDialog()
+
             self.console.setWindowTitle("Installing")
 
             # open the console when recieving signal from manager

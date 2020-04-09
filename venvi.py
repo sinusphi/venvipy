@@ -55,13 +55,15 @@ class VenvTable(QTableView):
         addModulesAction.triggered.connect(lambda: self.add_modules(event))
 
         deleteAction = QAction(
-            QIcon.fromTheme("delete"), "&Delete", self,
-            statusTip="Delete venv"
+            QIcon.fromTheme("delete"),
+            "&Delete environment",
+            self,
+            statusTip="Delete environment"
         )
         self.contextMenu.addAction(deleteAction)
         deleteAction.triggered.connect(lambda: self.delete_venv(event))
 
-        # pop up only if cicking on a row
+        # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
             self.contextMenu.popup(QCursor.pos())
 
@@ -107,7 +109,7 @@ class VenvTable(QTableView):
 
     def delete_venv(self, event):
         """
-        Delete an existing virtual environment when selecting
+        Delete the selected virtual environment by clicking
         delete from the context menu in venv table.
         """
         venv = self.get_selected_item()
