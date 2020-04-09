@@ -18,24 +18,23 @@ It provides a number of useful features like a wizard, that guides the user thro
 
 These are the main features:
 - Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
-- Clone the set of pre-installed packages from a requirements file
 - Install and update Pip with one click
+- Clone an environment from a requirements file
 - Search and install packages from [PyPI (Python Package Index)](https://pypi.org/)
-- Generate a requirements file from any existing virtual environment
-- List detailed information about an environment
+- Generate a requirements file from any existing environment
+- List detailed information about installed packages and dependencies
 
 
 ### **Prerequisits**
 
->Currently _VenviPy_ is designed to work on Linux OS only (maybe a port to `'win32'` could come somtime in the future)
+>Currently _VenviPy_ is designed to work on Linux OS only (maybe a Windows port could come somtime in the future)
 
-**Optional** : If you want to use your operating system's Python (3.3+) to create or modify evironments from within _VenviPy_ you'll need the `python3-pip` package to be installed on your system, because in this case the operating system's Pip will be used to perform commands inside a specific environment. 
+If you want to run _VenviPy_ using your operating system's Python (3.3+) make sure the packages `python3-venv` and `python3-pip` are installed, because in this case the operating system's venv and pip will be used to perform commands inside a specific environment.
 
-But this isn't really necessary, instead simply run _VenviPy_ itself in a virtual einvironment.
 
 ### Installation
 
-Create a virtual environment. From a terminal run:
+The recommended way is to run _VenviPy_ from a virtual environment. Open a terminal and run:
 ```
 $ python3 -m venv [your_env_name]
 ```
@@ -47,19 +46,19 @@ Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following co
 ```
 $ (your_env_name) pip install PyQt5
 ```
-Then clone or download the source repository and change to `venvipy` directory. Finally run:
+Then clone or download the source repository and cd into the venvipy folder. Finally run:
 ```
 $ (your_env_name) python venvi.py
 ```
 
-#### Known issues
 
-It might be possible that when launching _VenviPy_ the first time on a machine you would have to choose the interpreter (which created the environment in which you're running _VenviPy_ in) manually to be able to use it. 
+### Known issues
 
-For this just open the main menu and click on the `Add Interpreter` button in the upper right corner. Then select the correct python binary file (e.g. "/usr/local/bin/python3.x") and you'll be able to use the added interpreter to perform all tasks available in _VenviPy_.
+It might be possible that when launching _VenviPy_ the first time on a machine you would have to choose the interpreter (the one that created the environment in which you're running _VenviPy_ ) manually to be able to use it. 
+
+For this in the main menu click on the `Add Interpreter` button in the upper right corner. Then select the correct python binary file (e.g. "/usr/local/bin/python3.x") and you'll be able to use the added interpreter.
 
 
 ### **Contributing**
 
 Contributions are welcomed, as well as [Pull requests](https://github.com/sinusphi/venvipy/pulls), [bug reports](https://github.com/sinusphi/venvipy/issues), and [feature requests](https://github.com/sinusphi/venvipy/issues).
-
