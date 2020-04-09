@@ -12,47 +12,51 @@
 
 ### **Introduction**
 
-_VenviPy_ is a user friendly graphical interface for creating customized virtual environments quick and easy. It provides a number of useful features like a wizard, that guides the user through the creation process, modify an existing environment in different ways nd much more. 
+Basically _VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existiing Python environment (that supports `venv`) quick and easy. 
 
-This is an overwiew:
+It provides a number of useful features like a wizard, that guides the user through the creation process, an overview over all installed environments in a directory and a collection of context menu actions like listing detailed information about an environment and much more. 
+
+These are the main features:
 - Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
+- Clone the set of pre-installed packages from a requirements file
 - Install and update Pip with one click
-- Search, select and install packages from [Python Package Index (PyPI)](https://pypi.org/) or use a requirements.txt
-- Generate and/ or modifiy requirements.txt files
+- Search and install packages from [PyPI (Python Package Index)](https://pypi.org/)
+- Generate a requirements file from any existing virtual environment
+- List detailed information about an environment
 
 
 ### **Prerequisits**
 
-To be able to run _VenviPy_ you'll need the `python3-pip` package to be present on your system. You can install it by using your operating system's package manager.
+>Currently _VenviPy_ is designed to work on Linux OS only (maybe a port to `'win32'` could come somtime in the future)
 
-Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command in a terminal:
-```
-$ python3 -m pip install PyQt5
-```
+**Optional** : If you want to use your operating system's Python (3.3+) to create or modify evironments from within _VenviPy_ you'll need the `python3-pip` package to be installed on your system, because in this case the operating system's Pip will be used to perform commands inside a specific environment. 
 
-Or create a virtual environment, activate it and install the `PyQt5` package into it by running the following commands:
+But this isn't really necessary, instead simply run _VenviPy_ itself in a virtual einvironment.
+
+### Installation
+
+Create a virtual environment. From a terminal run:
 ```
 $ python3 -m venv [your_env_name]
-$ source [your_env_name]/bin/activate
-
+```
+Change to the created directory and run:
+```
+$ source bin/activate
+```
+Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command:
+```
 $ (your_env_name) pip install PyQt5
 ```
-
-
-### **Installation**
-
-At the moment _VenviPy_ can be obtained by cloning or downloading the source repository. After cloned or downloaded open a terminal and cd into the directory and run the _VenviPy_ main module:
+Then clone or download the source repository and change to `venvipy` directory. Finally run:
 ```
-$ cd venvipy/
-$ python3 venvi.py
-```
-
-**NOTE** :
-If you want to run _VenviPy_ inside a virtual environment, run:
-```
-$ source [your_env_name]/bin/activate
 $ (your_env_name) python venvi.py
 ```
+
+#### Known issues
+
+It might be possible that when launching _VenviPy_ the first time on a machine you would have to choose the interpreter (which created the environment in which you're running _VenviPy_ in) manually to be able to use it. 
+
+For this just open the main menu and click on the `Add Interpreter` button in the upper right corner. Then select the correct python binary file (e.g. "/usr/local/bin/python3.x") and you'll be able to use the added interpreter to perform all tasks available in _VenviPy_.
 
 
 ### **Contributing**
