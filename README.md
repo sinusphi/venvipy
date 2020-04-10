@@ -12,11 +12,12 @@
 
 ### **Introduction**
 
-Basically _VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existiing Python environment (that supports `venv`) quick and easy. 
+Basically _VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existing Python environment (that supports venv) quick and easy. 
 
-It provides a number of useful features like a wizard, that guides the user through the creation process, an overview over all installed environments in a directory and a collection of context menu actions like listing detailed information about an environment and much more. 
+It provides useful features like a wizard, that guides the user through the creation process, a table that shows an overview over installed environments in a specific directory and a collection of context menu actions like listing detailed information about an environment and much more. 
 
-These are the main features:
+### **Features**
+
 - Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
 - Install and update Pip with one click
 - Clone an environment from a requirements file
@@ -29,7 +30,7 @@ These are the main features:
 
 >Currently _VenviPy_ is designed to work on Linux OS only (maybe a Windows port could come somtime in the future)
 
-If you want to run _VenviPy_ using your operating system's Python (3.3+) make sure the packages `python3-venv` and `python3-pip` are installed, because in this case the operating system's venv and pip will be used to perform commands inside a specific environment.
+If you want to run _VenviPy_ using your operating system's Python (3.3+) make sure the packages `python3-venv` and `python3-pip` are installed, because in this case the operating system's venv and pip will be used to perform the commands.
 
 
 ### Installation
@@ -46,7 +47,7 @@ Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following co
 ```
 $ (your_env_name) pip install PyQt5
 ```
-Then clone or download the source repository and cd into the venvipy folder. Finally run:
+Now clone or download the source repository and cd into the venvipy folder. Finally run:
 ```
 $ (your_env_name) python venvi.py
 ```
