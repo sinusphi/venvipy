@@ -39,7 +39,7 @@ class CreationWorker(QObject):
 
         create_venv(
             py_vers,
-            os.path.join(location, name),
+            os.path.join(location, f"'{name}'"),
             with_pip=with_pip,
             system_site_packages=site_packages,
             symlinks=symlinks,
@@ -47,7 +47,7 @@ class CreationWorker(QObject):
 
         if with_pip:
             # update pip to the latest version
-            self.manager = PipManager(location, name)
+            self.manager = PipManager(location, f"'{name}'")
             self.updatePipMsg.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
             self.manager.finished.connect(self.finished.emit)

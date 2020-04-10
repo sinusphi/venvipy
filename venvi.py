@@ -88,7 +88,7 @@ class VenvTable(QTableView):
         self.console = ConsoleDialog()
         self.console.setWindowTitle(f"Modules installed:  {venv}")
 
-        self.manager = PipManager(default_dir, venv)
+        self.manager = PipManager(default_dir, f"'{venv}'")
         self.manager.run_pip(cmds[1])
         self.manager.started.connect(self.console.exec_)
 
@@ -123,9 +123,11 @@ class VenvTable(QTableView):
             if messageBoxConfirm == QMessageBox.Yes:
                 default_dir = venvs_default_str()
 
-                venv_to_delete = f"{default_dir}/{venv}"
+                venv_to_delete = os.path.join(default_dir, venv)
                 shutil.rmtree(venv_to_delete)
-                print(f"[PROCESS]: Successfully deleted {default_dir}/{venv}")
+                print(
+                    f"[PROCESS]: Successfully deleted '{default_dir}/{venv}'"
+                )
 
                 self.refresh.emit()
 
