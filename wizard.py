@@ -4,12 +4,15 @@ This module contains the wizard for creating
 and setting up virtual environments.
 """
 from functools import partial
+from random import randint
 import shutil
 import sys
 import os
 
-from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem, QFontMetrics
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
+from PyQt5.QtGui import (
+    QIcon, QStandardItemModel, QStandardItem, QFontMetrics, QPixmap, QFont
+)
 from PyQt5.QtWidgets import (
     QApplication, QProgressBar, QGridLayout, QLabel, QFileDialog, QHBoxLayout,
     QVBoxLayout, QDialog, QWizard, QWizardPage, QToolButton, QComboBox,
@@ -72,8 +75,8 @@ class VenvWizard(QWizard):
         self.installModules = InstallModules()
         self.installModulesId = self.addPage(self.installModules)
 
-        self.summaryPage = SummaryPage()
-        self.summaryPageId = self.addPage(self.summaryPage)
+        self.finalPage = FinalPage()
+        self.finalPageId = self.addPage(self.finalPage)
 
 
     def nextId(self):
@@ -84,7 +87,7 @@ class VenvWizard(QWizard):
         if self.basicSettings.withPipCBox.isChecked():
             return self.installModulesId
 
-        return self.summaryPageId
+        return self.finalPageId
 
 
     def center(self):
@@ -181,7 +184,8 @@ class BasicSettings(QWizardPage):
 
         self.withPipCBox = QCheckBox(
             "Install and update &Pip",
-            checked=True
+            checked=True,
+            stateChanged=self.with_pip
         )
         self.sitePackagesCBox = QCheckBox(
             "&Make system (global) site-packages dir available to venv"
@@ -251,6 +255,19 @@ class BasicSettings(QWizardPage):
         """
         fileName = QFileDialog.getOpenFileName()
         self.requirementsLineEdit.setText(fileName[0])
+
+
+    def with_pip(self, state):
+        """
+        Enable input line for specifying a requirements file
+        only if `self.withPipCBox` is checked, else disable it.
+        """
+        if self.withPipCBox.isChecked():
+            self.requirementsLineEdit.setEnabled(True)
+            self.selectFileToolButton.setEnabled(True)
+        else:
+            self.requirementsLineEdit.setEnabled(False)
+            self.selectFileToolButton.setEnabled(False)
 
 
     def execute_venv_create(self):
@@ -437,7 +454,6 @@ class InstallModules(QWizardPage):
         back_button = self.wizard().button(QWizard.BackButton)
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
-
         #]===================================================================[#
         # TODO: test if the selected file is a valid requirements.txt
         #]===================================================================[#
@@ -452,9 +468,8 @@ class InstallModules(QWizardPage):
         """
         self.setEnabled(False)
 
-        self.manager = PipManager(self.venvLocation, self.venvName)
+        self.manager = PipManager(self.venvLocation, f"'{self.venvName}'")
         self.console = ConsoleDialog()
-        self.basic_settings = BasicSettings()
 
         self.console.setWindowTitle("Cloning environment")
         print("[PROCESS]: Installing Modules from requirements...")
@@ -476,10 +491,6 @@ class InstallModules(QWizardPage):
         # clear the contents when closing console
         if self.console.close:
             self.console.consoleWindow.clear()
-
-            # also clear the requirements input line,
-            # so that it'll empty on next session
-            self.basic_settings.requirementsLineEdit.clear()
 
         self.setEnabled(True)
 
@@ -526,7 +537,7 @@ class InstallModules(QWizardPage):
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-            self.manager = PipManager(self.venvLocation, self.venvName)
+            self.manager = PipManager(self.venvLocation, f"'{self.venvName}'")
             self.console = ConsoleDialog()
 
             self.console.setWindowTitle("Installing")
@@ -573,7 +584,7 @@ class InstallModules(QWizardPage):
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-            create_requirements(self.venvLocation, self.venvName)
+            create_requirements(self.venvLocation, f"'{self.venvName}'")
             print(
                 "[PROCESS]: Generating "
                 f"'{self.venvLocation}/{self.venvName}/requirements.txt'..."
@@ -593,7 +604,7 @@ class InstallModules(QWizardPage):
 
 
 
-class SummaryPage(QWizardPage):
+class FinalPage(QWizardPage):
     """
     The last page.
     """
@@ -603,9 +614,55 @@ class SummaryPage(QWizardPage):
         self.setTitle("Finished")
         self.setSubTitle("All Tasks have been completed successfully.")
 
-        #]===================================================================[#
-        # TODO: create the summary page
-        #]===================================================================[#
+        h_layout = QHBoxLayout(self)
+        v_layout = QVBoxLayout()
+
+        logo = QLabel()
+        pixmap = QPixmap(":/img/python.png")
+        logo_scaled = pixmap.scaled(96, 96, Qt.KeepAspectRatio)
+        logo.setPixmap(logo_scaled)
+
+        this = [
+            "From the Zen of Python, by Tim Peters",
+            "\nBeautiful is better than ugly.",
+            "\nExplicit is better than implicit.",
+            "\nSimple is better than complex.",
+            "\nComplex is better than complicated.",
+            "\nFlat is better than nested.",
+            "\nSparse is better than dense.",
+            "\nReadability counts.",
+            "\nSpecial cases aren't special enough\nto break the rules.\nAlthough practicality beats purity.",
+            "\nErrors should never pass silently.\nUnless explicitly silenced.",
+            "\nIn the face of ambiguity,\nrefuse the temptation to guess.",
+            "\nThere should be one\n-- and preferably only one --\nobvious way to do it.",
+            "\nAlthough that way may not be obvious at first\nunless you're Dutch.",
+            "\nNow is better than never.\nAlthough never is often better\nthan *right* now.",
+            "\nIf the implementation is hard to explain,\nit's a bad idea.",
+            "\nIf the implementation is easy to explain,\nit may be a good idea.",
+            "\nNamespaces are one honking great idea\n---\nlet's do more of those!"
+        ]
+
+        zen_phrase = QLabel()
+        zen_phrase.setText(f"{this[randint(1, len(this) - 1)]}")
+        zen_phrase.setFont(QFont("FreeSerif", pointSize=20))
+        zen_phrase.setAlignment(Qt.AlignCenter)
+
+        zen_foot = QLabel()
+        zen_foot.setText(
+            "From the "
+            + "<a href='https://www.python.org/dev/peps/pep-0020/#the-zen-of-python'>Zen of Python</a>"
+            + ", by Tim Peters"
+        )
+        zen_foot.setFont(QFont("FreeSerif", pointSize=12, italic=True))
+        zen_foot.setOpenExternalLinks(True)
+
+        v_layout.setContentsMargins(0, 20, 0, 0)
+
+        v_layout.addWidget(logo, 1, Qt.AlignHCenter)
+        v_layout.addWidget(zen_phrase, 2, Qt.AlignHCenter)
+        v_layout.addWidget(zen_foot, 3, Qt.AlignBottom | Qt.AlignRight)
+
+        h_layout.addLayout(v_layout)
 
 
     def initializePage(self):
