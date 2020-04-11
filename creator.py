@@ -3,6 +3,7 @@
 This module creates all the stuff requested.
 """
 from subprocess import Popen, PIPE
+from random import randint
 import os
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -103,6 +104,36 @@ def create_requirements(venv_dir, venv_name):
     return output
 
 
+#]===========================================================================[#
+#] GENERATE A RANDOM LINE FROM THE ZEN OF PYTHON [#==========================[#
+#]===========================================================================[#
+
+def random_zen_line():
+    """
+    Return a random line from the Zen of Python.
+    """
+    this = [
+        "\nBeautiful is better than ugly.",
+        "\nExplicit is better than implicit.",
+        "\nSimple is better than complex.",
+        "\nComplex is better than complicated.",
+        "\nFlat is better than nested.",
+        "\nSparse is better than dense.",
+        "\nReadability counts.",
+        "\nSpecial cases aren't special enough\nto break the rules.\nAlthough practicality beats purity.",
+        "\nErrors should never pass silently.\nUnless explicitly silenced.",
+        "\nIn the face of ambiguity,\nrefuse the temptation to guess.",
+        "\nThere should be one\n-- and preferably only one --\nobvious way to do it.",
+        "\nAlthough that way may not be obvious at first\nunless you're Dutch.",
+        "\nNow is better than never.\nAlthough never is often better\nthan *right* now.",
+        "\nIf the implementation is hard to explain,\nit's a bad idea.",
+        "\nIf the implementation is easy to explain,\nit may be a good idea.",
+        "\nNamespaces are one honking great idea\n---\nlet's do more of those!"
+    ]
+
+    return this[randint(0, 15)]
+
+
 
 if __name__ == "__main__":
 
@@ -112,4 +143,4 @@ if __name__ == "__main__":
     with_sys_site_pkgs = None
     with_symlinks = None
 
-    create_venv(python_version, env_directory)
+    #create_venv(python_version, env_directory)
