@@ -14,12 +14,12 @@ from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QFileDialog, QLabel, QToolButton,
     QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QDialog,
     QSizePolicy, QTableView, QMenuBar, QMenu, QStatusBar, QAbstractItemView,
-    QMessageBox, QDesktopWidget, QHBoxLayout
+    QMessageBox, QDesktopWidget, QHBoxLayout, QLineEdit
 )
 import resources.venvipy_rc
 
 from get_data import get_python_installs, get_venvs_default, venvs_default_str
-from dialogs import AppInfoDialog, DefaultDirDialog, ConsoleDialog
+from dialogs import AppInfoDialog, ConsoleDialog
 from manage_pip import PipManager
 from creator import cmds, opts
 import wizard
@@ -35,6 +35,7 @@ class VenvTable(QTableView):
 
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
+        self.detailsSubMenu = QMenu("Det&ails", self)
 
         upgradePipAction = QAction(
             QIcon.fromTheme("upload"),
@@ -45,15 +46,6 @@ class VenvTable(QTableView):
         self.contextMenu.addAction(upgradePipAction)
         upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
 
-        listModulesAction = QAction(
-            QIcon.fromTheme("dialog-information"),
-            "&List installed modules",
-            self,
-            statusTip="List installed modules"
-        )
-        self.contextMenu.addAction(listModulesAction)
-        listModulesAction.triggered.connect(lambda: self.list_modules(event))
-
         addModulesAction = QAction(
             QIcon.fromTheme("add"),
             "&Install additional modules",
@@ -62,6 +54,26 @@ class VenvTable(QTableView):
         )
         self.contextMenu.addAction(addModulesAction)
         addModulesAction.triggered.connect(lambda: self.add_modules(event))
+
+        self.contextMenu.addMenu(self.detailsSubMenu)
+
+        listModulesAction = QAction(
+            QIcon.fromTheme("dialog-information"),
+            "&List installed modules",
+            self,
+            statusTip="List installed modules"
+        )
+        self.detailsSubMenu.addAction(listModulesAction)
+        listModulesAction.triggered.connect(lambda: self.list_modules(event, style=1))
+
+        freezeAction = QAction(
+            QIcon.fromTheme("dialog-information"),
+            "&Freeze output",
+            self,
+            statusTip="Show output in 'pip freeze' format"
+        )
+        self.detailsSubMenu.addAction(freezeAction)
+        freezeAction.triggered.connect(lambda: self.freeze_output(event, style=2))
 
         deleteAction = QAction(
             QIcon.fromTheme("delete"),
@@ -107,7 +119,14 @@ class VenvTable(QTableView):
             self.console.consoleWindow.clear()
 
 
-    def list_modules(self, event):
+    def add_modules(self, event):
+        """
+        Install additional modules into the selected environment.
+        """
+        pass
+
+
+    def list_modules(self, event, style):
         """
         Open console dialog and list the installed modules.
         """
@@ -115,11 +134,11 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
-        self.console.setWindowTitle(f"Modules installed:  {venv}")
+        self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
         print("[PROCESS]: Listing modules...")
         self.manager = PipManager(default_dir, f"'{venv}'")
-        self.manager.run_pip(cmds[1])
+        self.manager.run_pip(cmds[style])
         self.manager.started.connect(self.console.exec_)
 
         # display the updated output
@@ -130,11 +149,11 @@ class VenvTable(QTableView):
             self.console.consoleWindow.clear()
 
 
-    def add_modules(self, event):
+    def freeze_output(self, event, style):
         """
-        Install additional modules into the selected virtual environment.
+        Show `pip freeze` output in console window.
         """
-        pass
+        self.list_modules(event, style=2)
 
 
     def delete_venv(self, event):
@@ -224,10 +243,9 @@ class Ui_MainWindow(QMainWindow):
         )
 
         self.appInfo = AppInfoDialog()
-        self.selectDefaultDir = DefaultDirDialog()
         self.venv_wizard = wizard.VenvWizard()
 
-        # refresh venv table when closing wizard
+        # refresh venv table when wizard closed
         self.venv_wizard.refresh.connect(self.popVenvTable)
 
 
@@ -299,9 +317,11 @@ class Ui_MainWindow(QMainWindow):
             icon=folder_icon,
             toolTip="Switch directory",
             statusTip="Select another directory",
-            clicked=self.openSelectDefaultDir
+            clicked=self.select_folder
         )
         self.changeDirToolButton.setFixedSize(30, 30)
+
+        self.dirLineEdit = QLineEdit()
 
         #]===================================================================[#
         # spacer between manage button and exit button
@@ -452,9 +472,9 @@ class Ui_MainWindow(QMainWindow):
         #)
 
         self.actSelectDefaultDir = QAction(
-            settings_icon, "Set &default venv directory", self,
-            statusTip="Set default venv directory",
-            shortcut="Ctrl+D", triggered=self.openSelectDefaultDir
+            settings_icon, "Change active &directory", self,
+            statusTip="Change active directory",
+            shortcut="Ctrl+D", triggered=self.select_folder
         )
 
         self.actExit = QAction(
@@ -587,11 +607,24 @@ class Ui_MainWindow(QMainWindow):
             print(f"[VENV]: {info}")
 
 
-    def openSelectDefaultDir(self):
+    def select_folder(self):
         """
-        Open the select-default-directory window.
+        Select the active folder shown in venv table.
         """
-        if self.selectDefaultDir.exec_() == QDialog.Accepted:
+        directory = QFileDialog.getExistingDirectory()
+        self.dirLineEdit.setText(directory)
+
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        default_file = os.path.join(current_dir, "resources", "default")
+        active_folder = self.dirLineEdit.text()
+
+        if self.dirLineEdit.text() != "":
+            with open(default_file, "w") as f:
+                f.write(active_folder)
+                print(
+                    f"[INFO]: Setting active venv directory to '{active_folder}'"
+                )
+
             self.popVenvTable()
 
 
