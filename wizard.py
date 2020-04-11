@@ -471,12 +471,12 @@ class InstallModules(QWizardPage):
         self.console = ConsoleDialog()
 
         self.console.setWindowTitle("Cloning environment")
-        print("[PROCESS]: Installing Modules from requirements...")
 
         # open the console when recieving signal from manager
         self.manager.started.connect(self.console.exec_)
 
         # start installing modules from requirements file
+        print("[PROCESS]: Installing Modules from requirements...")
         print(f"[PROCESS]: Using file '{self.requirements}'")
         self.manager.run_pip(cmds[0], [opts[1], self.requirements])
 
@@ -484,8 +484,14 @@ class InstallModules(QWizardPage):
         self.manager.textChanged.connect(self.console.update_status)
 
         # show info dialog
-        self.manager.finished.connect(self.console.finish_info)
-        self.manager.finished.connect(self.console.close)
+        if self.manager.failed:
+            print("[ERROR]: Could not install from requirements")
+            self.manager.failed.connect(self.console.finish_fail)
+            self.manager.failed.connect(self.console.close)
+        else:
+            print("[PROCESS]: Environment cloned successfully")
+            self.manager.finished.connect(self.console.finish_success)
+            self.manager.finished.connect(self.console.close)
 
         # clear the contents when closing console
         if self.console.close:
