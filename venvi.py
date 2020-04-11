@@ -55,6 +55,7 @@ class VenvTable(QTableView):
         self.contextMenu.addAction(addModulesAction)
         addModulesAction.triggered.connect(lambda: self.add_modules(event))
 
+        self.contextMenu.addSeparator()
         self.contextMenu.addMenu(self.detailsSubMenu)
 
         listModulesAction = QAction(
@@ -64,7 +65,9 @@ class VenvTable(QTableView):
             statusTip="List installed modules"
         )
         self.detailsSubMenu.addAction(listModulesAction)
-        listModulesAction.triggered.connect(lambda: self.list_modules(event, style=1))
+        listModulesAction.triggered.connect(
+            lambda: self.list_modules(event, style=1)
+        )
 
         freezeAction = QAction(
             QIcon.fromTheme("dialog-information"),
@@ -73,7 +76,9 @@ class VenvTable(QTableView):
             statusTip="Show output in 'pip freeze' format"
         )
         self.detailsSubMenu.addAction(freezeAction)
-        freezeAction.triggered.connect(lambda: self.freeze_output(event, style=2))
+        freezeAction.triggered.connect(
+            lambda: self.freeze_output(event, style=2)
+        )
 
         deleteAction = QAction(
             QIcon.fromTheme("delete"),
@@ -106,7 +111,7 @@ class VenvTable(QTableView):
         self.console = ConsoleDialog()
         self.console.setWindowTitle("Updating Pip")
 
-        print("[PROCESS]: Updating Pip to the latest version...")
+        #print("[PROCESS]: Updating Pip to the latest version...")
         self.manager = PipManager(default_dir, venv)
         self.manager.run_pip(cmds[0], [opts[0], "pip"])
         self.manager.started.connect(self.console.exec_)
@@ -136,7 +141,7 @@ class VenvTable(QTableView):
         self.console = ConsoleDialog()
         self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
-        print("[PROCESS]: Listing modules...")
+        #print("[PROCESS]: Listing modules...")
         self.manager = PipManager(default_dir, f"'{venv}'")
         self.manager.run_pip(cmds[style])
         self.manager.started.connect(self.console.exec_)
@@ -174,9 +179,9 @@ class VenvTable(QTableView):
 
                 venv_to_delete = os.path.join(default_dir, venv)
                 shutil.rmtree(venv_to_delete)
-                print(
-                    f"[PROCESS]: Successfully deleted '{default_dir}/{venv}'"
-                )
+                #print(
+                    #f"[PROCESS]: Successfully deleted '{default_dir}/{venv}'"
+                #)
 
                 self.refresh.emit()
 
@@ -523,7 +528,7 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
         if not get_python_installs():
-            print("[WARNING]: No suitable Python installation found!")
+            #print("[WARNING]: No suitable Python installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
@@ -589,7 +594,7 @@ class Ui_MainWindow(QMainWindow):
                 for i, text in enumerate((info.py_version, info.py_path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                print(f"[PYTHON]: {info}")
+                #print(f"[PYTHON]: {info}")
 
 
     def popVenvTable(self):
@@ -604,7 +609,7 @@ class Ui_MainWindow(QMainWindow):
             for i, text in enumerate((info.venv_name, info.venv_version)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
-            print(f"[VENV]: {info}")
+            #print(f"[VENV]: {info}")
 
 
     def select_folder(self):
@@ -621,9 +626,9 @@ class Ui_MainWindow(QMainWindow):
         if self.dirLineEdit.text() != "":
             with open(default_file, "w") as f:
                 f.write(active_folder)
-                print(
-                    f"[INFO]: Setting active venv directory to '{active_folder}'"
-                )
+                #print(
+                    #f"[INFO]: Setting active venv directory to '{active_folder}'"
+                #)
 
             self.popVenvTable()
 

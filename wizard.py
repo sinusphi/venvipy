@@ -338,14 +338,14 @@ class BasicSettings(QWizardPage):
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
 
-        print(
-            "[PROCESS]: Successfully created new virtual environment: "
-            f"'{self.venvLocation}/{self.venvName}'"
-        )
+        #print(
+            #"[PROCESS]: Successfully created new virtual environment: "
+            #f"'{self.venvLocation}/{self.venvName}'"
+        #)
 
         if self.withPipCBox.isChecked():
             message_txt = default_msg + with_pip_msg
-            print("[PROCESS]: Installed pip, setuptools.")
+            #print("[PROCESS]: Installed pip, setuptools.")
         else:
             message_txt = default_msg
 
@@ -476,8 +476,8 @@ class InstallModules(QWizardPage):
         self.manager.started.connect(self.console.exec_)
 
         # start installing modules from requirements file
-        print("[PROCESS]: Installing Modules from requirements...")
-        print(f"[PROCESS]: Using file '{self.requirements}'")
+        #print("[PROCESS]: Installing Modules from requirements...")
+        #print(f"[PROCESS]: Using file '{self.requirements}'")
         self.manager.run_pip(cmds[0], [opts[1], self.requirements])
 
         # display the updated output
@@ -485,11 +485,11 @@ class InstallModules(QWizardPage):
 
         # show info dialog
         if self.manager.failed:
-            print("[ERROR]: Could not install from requirements")
+            #print("[ERROR]: Could not install from requirements")
             self.manager.failed.connect(self.console.finish_fail)
             self.manager.failed.connect(self.console.close)
         else:
-            print("[PROCESS]: Environment cloned successfully")
+            #print("[PROCESS]: Environment cloned successfully")
             self.manager.finished.connect(self.console.finish_success)
             self.manager.finished.connect(self.console.close)
 
@@ -517,7 +517,7 @@ class InstallModules(QWizardPage):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
         if not get_module_infos(search_item):
-            print(f"[PIP]: No matches for '{search_item}'")
+            #print(f"[PIP]: No matches for '{search_item}'")
 
             QMessageBox.information(self,
                 "No result",
@@ -557,7 +557,7 @@ class InstallModules(QWizardPage):
             #       * let user specify a particular version to install
             #]===============================================================[#
             # start installing the selected module
-            print(f"[PROCESS]: Installing module '{self.pkg}'...")
+            #print(f"[PROCESS]: Installing module '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
@@ -590,10 +590,10 @@ class InstallModules(QWizardPage):
 
         if messageBoxConfirm == QMessageBox.Yes:
             create_requirements(self.venvLocation, f"'{self.venvName}'")
-            print(
-                "[PROCESS]: Generating "
-                f"'{self.venvLocation}/{self.venvName}/requirements.txt'..."
-            )
+            #print(
+                #"[PROCESS]: Generating "
+                #f"'{self.venvLocation}/{self.venvName}/requirements.txt'..."
+            #)
             message_txt = (
                 "The requirements.txt file has been saved in:\n"
                 f"'{self.venvLocation}/{self.venvName}'"

@@ -88,20 +88,22 @@ class PipManager(QObject):
     def onStateChanged(self, state):
         """Show the current process status."""
         if state == QProcess.NotRunning:
-            print("[PROCESS]: Stopped")
+            #print("[PROCESS]: Stopped")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
             )
         elif state == QProcess.Starting:
-            print("[PROCESS]: Started")
+            pass
+            #print("[PROCESS]: Started")
         elif state == QProcess.Running:
-            print("[PROCESS]: Running")
+            pass
+            #print("[PROCESS]: Running")
 
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def onFinished(self, exitCode):
         """Show exit code when finished."""
-        print(f"[PROCESS]: Exit code: {exitCode}")
+        #print(f"[PROCESS]: Exit code: {exitCode}")
         self._process.kill()
 
 
@@ -111,7 +113,7 @@ class PipManager(QObject):
         Read from `stdout` and send the output to `update_status()`.
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
-        print(f"[PIP]: {message}")
+        #print(f"[PIP]: {message}")
         self.textChanged.emit(message)
 
 
@@ -121,7 +123,7 @@ class PipManager(QObject):
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[PROCESS]: {message}")
+        #print(f"[PROCESS]: {message}")
         self.textChanged.emit(message)
         #self.finished.emit()
         self.failed.emit()

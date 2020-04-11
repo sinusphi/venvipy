@@ -156,6 +156,7 @@ def get_module_infos(name):
 
 
 if __name__ == "__main__":
+    pass
 
     #for python in get_python_installs():
         #print(python.py_version, python.py_path)
@@ -175,4 +176,4 @@ if __name__ == "__main__":
     #if not get_module_infos(test_module):
         #print("No modules found!")
 
-    print(get_venvs_default())
+    #print(get_venvs_default())
