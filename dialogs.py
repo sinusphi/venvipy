@@ -128,7 +128,7 @@ class ConsoleDialog(QDialog):
         self.consoleWindow.append(clippedText)
 
 
-    def finish_info(self):
+    def finish_success(self):
         """
         Show info message when all modules installed successfully.
         """
@@ -137,7 +137,18 @@ class ConsoleDialog(QDialog):
             "All modules have been \ninstalled without errors.\n"
         )
         QMessageBox.information(self, "Done", message_txt)
-        print("[PROCESS]: Environment cloned successfully")
+
+
+    def finish_fail(self):
+        """
+        Show info message when the installation process failed.
+        """
+        message_txt = (
+            "Could not install from requirements.\n\n"
+            "File not found.\n"
+        )
+        QMessageBox.critical(self, "Error", message_txt)
+
 
 
 #]===========================================================================[#
