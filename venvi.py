@@ -21,7 +21,7 @@ import resources.venvipy_rc
 from get_data import get_python_installs, get_venvs_default, venvs_default_str
 from dialogs import AppInfoDialog, DefaultDirDialog, ConsoleDialog
 from manage_pip import PipManager
-from creator import cmds
+from creator import cmds, opts
 import wizard
 
 
@@ -35,6 +35,15 @@ class VenvTable(QTableView):
 
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
+
+        upgradePipAction = QAction(
+            QIcon.fromTheme("upload"),
+            "Upgrade Pip to latest",
+            self,
+            statusTip="&Upgrade Pip to latest"
+        )
+        self.contextMenu.addAction(upgradePipAction)
+        upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
 
         listModulesAction = QAction(
             QIcon.fromTheme("dialog-information"),
@@ -78,6 +87,26 @@ class VenvTable(QTableView):
             return selected_venv
 
 
+    def upgrade_pip(self, event):
+        default_dir = venvs_default_str()
+        venv = self.get_selected_item()
+
+        self.console = ConsoleDialog()
+        self.console.setWindowTitle("Updating Pip")
+
+        print("[PROCESS]: Updating Pip to the latest version...")
+        self.manager = PipManager(default_dir, venv)
+        self.manager.run_pip(cmds[0], [opts[0], "pip"])
+        self.manager.started.connect(self.console.exec_)
+
+        # display the updated output
+        self.manager.textChanged.connect(self.console.update_status)
+
+        # clear the content on window close
+        if self.console.close:
+            self.console.consoleWindow.clear()
+
+
     def list_modules(self, event):
         """
         Open console dialog and list the installed modules.
@@ -88,6 +117,7 @@ class VenvTable(QTableView):
         self.console = ConsoleDialog()
         self.console.setWindowTitle(f"Modules installed:  {venv}")
 
+        print("[PROCESS]: Listing modules...")
         self.manager = PipManager(default_dir, f"'{venv}'")
         self.manager.run_pip(cmds[1])
         self.manager.started.connect(self.console.exec_)
