@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
 )
 import resources.venvipy_rc
 
-from get_data import get_python_installs, get_venvs_default, venvs_default_str
+from get_data import get_python_installs, get_active_dir, get_active_dir_str
 from dialogs import AppInfoDialog, ConsoleDialog
 from manage_pip import PipManager
 from creator import cmds, opts
@@ -105,7 +105,7 @@ class VenvTable(QTableView):
 
 
     def upgrade_pip(self, event):
-        default_dir = venvs_default_str()
+        default_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
@@ -135,7 +135,7 @@ class VenvTable(QTableView):
         """
         Open console dialog and list the installed modules.
         """
-        default_dir = venvs_default_str()
+        default_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
@@ -175,7 +175,7 @@ class VenvTable(QTableView):
             )
 
             if messageBoxConfirm == QMessageBox.Yes:
-                default_dir = venvs_default_str()
+                default_dir = get_active_dir_str()
 
                 venv_to_delete = os.path.join(default_dir, venv)
                 shutil.rmtree(venv_to_delete)
@@ -603,7 +603,7 @@ class Ui_MainWindow(QMainWindow):
         """
         self.modelTV2.setRowCount(0)
 
-        for info in get_venvs_default():
+        for info in get_active_dir():
             self.modelTV2.insertRow(0)
 
             for i, text in enumerate((info.venv_name, info.venv_version)):

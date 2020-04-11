@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
 )
 import resources.venvipy_rc
 
-from get_data import get_module_infos, get_venvs_default, get_python_installs
+from get_data import get_module_infos, get_active_dir, get_python_installs
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from creator import (
