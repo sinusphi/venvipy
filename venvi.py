@@ -213,6 +213,7 @@ class Ui_MainWindow(QMainWindow):
         settings_icon = QIcon.fromTheme("preferences-system")
         exit_icon = QIcon.fromTheme("exit")
         delete_icon = QIcon.fromTheme("delete")
+        folder_icon = QIcon.fromTheme("folder")
 
 
         #]===================================================================[#
@@ -264,13 +265,13 @@ class Ui_MainWindow(QMainWindow):
             clicked=self.close
         )
 
-        self.refreshButton = QToolButton(
-            icon=refresh_icon,
-            toolTip="Refresh list",
-            statusTip="Refresh venv table view",
-            clicked=self.popVenvTable
+        self.changeDirToolButton = QToolButton(
+            icon=folder_icon,
+            toolTip="Switch directory",
+            statusTip="Select another directory",
+            clicked=self.openSelectDefaultDir
         )
-        self.refreshButton.setFixedSize(20, 20)
+        self.changeDirToolButton.setFixedSize(30, 30)
 
         #]===================================================================[#
         # spacer between manage button and exit button
@@ -373,7 +374,7 @@ class Ui_MainWindow(QMainWindow):
         v_Layout1.addItem(spacerItem2)
         v_Layout1.addLayout(h_Layout1)
         h_Layout1.addWidget(venvTableLabel)
-        h_Layout1.addWidget(self.refreshButton)
+        h_Layout1.addWidget(self.changeDirToolButton)
         v_Layout1.addWidget(venvTable)
 
         gridLayout.addLayout(v_Layout1, 0, 0, 1, 1)
