@@ -136,8 +136,8 @@ def random_zen_line():
 
 if __name__ == "__main__":
 
-    python_version = "/usr/local/bin/python3.8"
-    env_directory = "/mnt/SQ-Core/coding/.virtualenvs/DEV/"
+    python_version = "[your_python_version]"
+    env_directory = "[your_test_env_dir]"
     with_pip_opt = None
     with_sys_site_pkgs = None
     with_symlinks = None
