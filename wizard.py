@@ -4,7 +4,6 @@ This module contains the wizard for creating
 and setting up virtual environments.
 """
 from functools import partial
-from random import randint
 import shutil
 import sys
 import os
@@ -25,7 +24,7 @@ from get_data import get_module_infos, get_venvs_default, get_python_installs
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from creator import (
-    CreationWorker, create_venv, create_requirements, cmds, opts
+    CreationWorker, create_venv, create_requirements, random_zen_line, cmds, opts
 )
 
 
@@ -622,47 +621,33 @@ class FinalPage(QWizardPage):
         logo_scaled = pixmap.scaled(96, 96, Qt.KeepAspectRatio)
         logo.setPixmap(logo_scaled)
 
-        this = [
-            "From the Zen of Python, by Tim Peters",
-            "\nBeautiful is better than ugly.",
-            "\nExplicit is better than implicit.",
-            "\nSimple is better than complex.",
-            "\nComplex is better than complicated.",
-            "\nFlat is better than nested.",
-            "\nSparse is better than dense.",
-            "\nReadability counts.",
-            "\nSpecial cases aren't special enough\nto break the rules.\nAlthough practicality beats purity.",
-            "\nErrors should never pass silently.\nUnless explicitly silenced.",
-            "\nIn the face of ambiguity,\nrefuse the temptation to guess.",
-            "\nThere should be one\n-- and preferably only one --\nobvious way to do it.",
-            "\nAlthough that way may not be obvious at first\nunless you're Dutch.",
-            "\nNow is better than never.\nAlthough never is often better\nthan *right* now.",
-            "\nIf the implementation is hard to explain,\nit's a bad idea.",
-            "\nIf the implementation is easy to explain,\nit may be a good idea.",
-            "\nNamespaces are one honking great idea\n---\nlet's do more of those!"
-        ]
+        self.zen_line = QLabel()
+        self.zen_line.setFont(QFont("FreeSerif", pointSize=20))
+        self.zen_line.setAlignment(Qt.AlignCenter)
 
-        zen_phrase = QLabel()
-        zen_phrase.setText(f"{this[randint(1, len(this) - 1)]}")
-        zen_phrase.setFont(QFont("FreeSerif", pointSize=20))
-        zen_phrase.setAlignment(Qt.AlignCenter)
-
-        zen_foot = QLabel()
-        zen_foot.setText(
+        zen_author = QLabel()
+        zen_author.setText(
             "From the "
             + "<a href='https://www.python.org/dev/peps/pep-0020/#the-zen-of-python'>Zen of Python</a>"
             + ", by Tim Peters"
         )
-        zen_foot.setFont(QFont("FreeSerif", pointSize=12, italic=True))
-        zen_foot.setOpenExternalLinks(True)
+        zen_author.setFont(QFont("FreeSerif", pointSize=12, italic=True))
+        zen_author.setOpenExternalLinks(True)
 
         v_layout.setContentsMargins(0, 20, 0, 0)
 
         v_layout.addWidget(logo, 1, Qt.AlignHCenter)
-        v_layout.addWidget(zen_phrase, 2, Qt.AlignHCenter)
-        v_layout.addWidget(zen_foot, 3, Qt.AlignBottom | Qt.AlignRight)
+        v_layout.addWidget(self.zen_line, 2, Qt.AlignHCenter)
+        v_layout.addWidget(zen_author, 3, Qt.AlignRight | Qt.AlignBottom)
 
         h_layout.addLayout(v_layout)
+
+
+    def update_zen_line(self):
+        """
+        Set lebel text with a random line from the Zen of Python.
+        """
+        self.zen_line.setText(random_zen_line())
 
 
     def initializePage(self):
@@ -683,7 +668,11 @@ class FinalPage(QWizardPage):
         finish_button = self.wizard().button(QWizard.FinishButton)
         finish_button.clicked.connect(self.wizard().restart)
 
+        # call update_zen_line to get a different line every new session
+        self.wizard().refresh.connect(self.update_zen_line)
+
         self.wizard().refresh.emit()
+
 
 
 
