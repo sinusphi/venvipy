@@ -37,6 +37,7 @@ class PipManager(QObject):
     started = pyqtSignal()
     finished = pyqtSignal()
     textChanged = pyqtSignal(str)
+    failed = pyqtSignal()
 
 
     def __init__(self, venv_dir, venv_name, parent=None):
@@ -122,7 +123,8 @@ class PipManager(QObject):
         message = self._process.readAllStandardError().data().decode().strip()
         print(f"[PROCESS]: {message}")
         self.textChanged.emit(message)
-        self.finished.emit()
+        #self.finished.emit()
+        self.failed.emit()
         self._process.kill()
 
 
