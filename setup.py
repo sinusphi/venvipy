@@ -12,6 +12,7 @@ setup(
   keywords = ["python", "python3", "venv", "virtualenvironment", "pyqt", "pyqt5", "pyqt5-desktop-application", "gui"],
   install_requires=[            # I get to this in a second
           'PyQt5',
+          'PyQt5-sip',
       ],
   classifiers=[
     'Development Status :: 4 - Beta',
