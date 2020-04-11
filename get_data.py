@@ -98,7 +98,7 @@ def get_python_vers(pyvenv_cfg):
     return f"Python {lines[2][10:]}".strip()
 
 
-def venvs_default_str():
+def get_active_dir_str():
     """
     Get the default venv directory string from `resources/default` file.
     """
@@ -107,19 +107,23 @@ def venvs_default_str():
 
     if os.path.isfile(default_file):
         with open(default_file, "r") as f:
-            default_dir = f.read()
-            return default_dir
+            active_dir = f.read()
+            return active_dir
+    else:
+        with open(default_file, "w") as f:
+            active_dir = f.write("")
+            return active_dir
 
     return []
 
 
-def get_venvs_default():
+def get_active_dir():
     """
-    Get the default venv directory string from file and
+    Get the active venv directory string from file and
     pass it to `get_venvs()`.
     """
-    default_dir = venvs_default_str()
-    return get_venvs(default_dir)
+    active_dir = get_active_dir_str()
+    return get_venvs(active_dir)
 
 
 #]===========================================================================[#
@@ -163,7 +167,7 @@ if __name__ == "__main__":
 
     #]=======================================================================[#
 
-    # venv in get_venvs_default():
+    # venv in get_active_dir():
         #print(venv.name, venv.version)
 
     #]=======================================================================[#
@@ -176,4 +180,4 @@ if __name__ == "__main__":
     #if not get_module_infos(test_module):
         #print("No modules found!")
 
-    #print(get_venvs_default())
+    #print(get_active_dir())
