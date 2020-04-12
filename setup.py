@@ -3,19 +3,20 @@ setup(
   name = 'venvipy',
   packages = ['venvipy'],
   version = '1.0',
-  license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
+  license='MIT',
   description = 'A GUI for managing Python virtual environments. Built with PyQt5.',
   author = 'Youssef Serestou',
   author_email = 'youssef.serestou.83@gmail.com',
   url = 'https://github.com/sinusphi/venvipy',
   download_url = 'https://github.com/sinusphi/venvipy/archive/v_1.tar.gz',
   keywords = ["python", "python3", "venv", "virtualenvironment", "pyqt", "pyqt5", "pyqt5-desktop-application", "gui"],
-  install_requires=[            # I get to this in a second
+  install_requires=[
           'PyQt5',
           'PyQt5-sip',
       ],
   classifiers=[
-    'Development Status :: 4 - Beta',
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Users',
     'Intended Audience :: Developers',
     'Topic :: Software Development :: Build Tools',
     'License :: OSI Approved :: MIT License',
