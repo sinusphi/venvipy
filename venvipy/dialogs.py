@@ -20,10 +20,14 @@ from PyQt5.QtCore import Qt, QSize, pyqtSlot
 
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
-with open("./venvipy/venvi.py", "rb") as f:
-    version = str(ast.literal_eval(_version_re.search(
-        f.read().decode("utf-8")).group(1)))
+with open(os.path.join(current_dir, "venvi.py"), "rb") as f:
+    version = str(
+        ast.literal_eval(
+            _version_re.search(f.read().decode("utf-8")).group(1)
+        )
+    )
 
 
 #]===========================================================================[#
