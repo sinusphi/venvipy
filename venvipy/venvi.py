@@ -549,7 +549,7 @@ class Ui_MainWindow(QMainWindow):
 
     def on_close(self):
         """
-        Stop thread and close the application.
+        Stop the thread, then close the application.
         """
         self.venv_wizard.basicSettings.thread.exit()
         self.close()
@@ -650,6 +650,9 @@ if __name__ == "__main__":
     import sys
 
     app = QApplication(sys.argv)
+
+    # suppress 'BadWindow' messages when running from terminal
+    #os.system("export QT_LOGGING_RULES='*.debug=false;qt.qpa.*=false'")
 
     mainUI = Ui_MainWindow()
     mainUI.popInterprTable()
