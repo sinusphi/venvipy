@@ -116,13 +116,13 @@ class BasicSettings(QWizardPage):
         #] THREADS  [#=======================================================[#
         #]===================================================================[#
 
-        thread = QThread(self)
-        thread.start()
+        self.thread = QThread(self)
+        self.thread.start()
 
         self.progressBar = ProgBarDialog()
 
         self.m_install_venv_worker = CreationWorker()
-        self.m_install_venv_worker.moveToThread(thread)
+        self.m_install_venv_worker.moveToThread(self.thread)
 
         # started
         self.m_install_venv_worker.started.connect(self.progressBar.exec_)
@@ -133,7 +133,6 @@ class BasicSettings(QWizardPage):
         # finished
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.finish_info)
-        self.m_install_venv_worker.finished.connect(thread.exit)
 
 
         #]===================================================================[#

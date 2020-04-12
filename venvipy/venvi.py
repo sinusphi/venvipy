@@ -193,6 +193,8 @@ class Ui_MainWindow(QMainWindow):
     """
     The main window.
     """
+    exitThread = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -317,7 +319,7 @@ class Ui_MainWindow(QMainWindow):
         self.exitButton = QPushButton(
             "Quit", centralwidget,
             statusTip="Quit Application",
-            clicked=self.close
+            clicked=self.on_close
         )
 
         self.changeDirToolButton = QToolButton(
@@ -543,6 +545,14 @@ class Ui_MainWindow(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+
+    def on_close(self):
+        """
+        Stop thread and close the application.
+        """
+        self.venv_wizard.basicSettings.thread.exit()
+        self.close()
 
 
     def selectInterpreter(self):
