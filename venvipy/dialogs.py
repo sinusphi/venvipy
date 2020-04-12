@@ -5,6 +5,8 @@ This module contains some dialogs.
 from platform import system, release
 import sys
 import os
+import ast
+import re
 
 from PyQt5.QtWidgets import (
     QDialog, QHBoxLayout, QVBoxLayout, QLabel, QDesktopWidget, QTextEdit,
@@ -15,6 +17,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
 
+
+
+_version_re = re.compile(r"__version__\s+=\s+(.*)")
+
+with open("./venvipy/venvi.py", "rb") as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode("utf-8")).group(1)))
 
 
 #]===========================================================================[#
@@ -250,7 +259,7 @@ class AppInfoDialog(QDialog):
         # version
         labelVersion = QLabel("<b>Version:</b>")
         fieldVersion = QLabel()
-        fieldVersion.setText("1.0")
+        fieldVersion.setText(version)
 
         # OS
         labelOS = QLabel("<b>OS:</b>")
