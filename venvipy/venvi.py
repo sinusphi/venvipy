@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QSizePolicy, QTableView, QMenuBar, QMenu, QStatusBar, QAbstractItemView,
     QMessageBox, QDesktopWidget, QHBoxLayout, QLineEdit
 )
-import resources.venvipy_rc
+from resources import venvipy_rc
 
 from get_data import get_python_installs, get_active_dir, get_active_dir_str
 from dialogs import AppInfoDialog, ConsoleDialog

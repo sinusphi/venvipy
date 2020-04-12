@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QCheckBox, QLineEdit, QGroupBox, QTableView, QAbstractItemView,
     QPushButton, QTextEdit, QMessageBox, QHeaderView, QDesktopWidget
 )
-import resources.venvipy_rc
+from resources import venvipy_rc
 
 from get_data import get_module_infos, get_active_dir, get_python_installs
 from dialogs import ProgBarDialog, ConsoleDialog
