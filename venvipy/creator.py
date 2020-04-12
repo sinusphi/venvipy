@@ -130,7 +130,7 @@ def random_zen_line():
         "\nNamespaces are one honking great idea\n---\nlet's do more of those!"
     ]
 
-    return this[randint(0, 15)]
+    return this[randint(0, 14)]
 
 
 
