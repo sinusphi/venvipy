@@ -133,6 +133,7 @@ class BasicSettings(QWizardPage):
         # finished
         self.m_install_venv_worker.finished.connect(self.progressBar.close)
         self.m_install_venv_worker.finished.connect(self.finish_info)
+        self.m_install_venv_worker.finished.connect(thread.exit)
 
 
         #]===================================================================[#
