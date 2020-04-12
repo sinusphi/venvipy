@@ -9,14 +9,13 @@ with open("venvipy/venvi.py", "rb") as f:
     version = str(ast.literal_eval(_version_re.search(
         f.read().decode("utf-8")).group(1)))
 
-with open("README.md") as f:
-    long_desc = f.read()
+#with open("README.md", "r") as f:
+    #long_desc = f.read()
 
 install_requires = [
     "PyQt5",
     "PyQt5-sip",
 ]
-
 
 setup(
     name="venvipy",
@@ -24,7 +23,7 @@ setup(
     version=version,
     license="MIT",
     description="A GUI for managing Python virtual environments.",
-    long_description=long_desc,
+    #long_description=long_desc,
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
