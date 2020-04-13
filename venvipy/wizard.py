@@ -478,7 +478,7 @@ class InstallModules(QWizardPage):
         # start installing modules from requirements file
         #print("[PROCESS]: Installing Modules from requirements...")
         #print(f"[PROCESS]: Using file '{self.requirements}'")
-        self.manager.run_pip(cmds[0], [opts[1], self.requirements])
+        self.manager.run_pip(cmds[0], [opts[1], f"'{self.requirements}'"])
 
         # display the updated output
         self.manager.textChanged.connect(self.console.update_status)
