@@ -9,6 +9,8 @@ import shutil
 import sys
 import os
 
+__version__ = '0.11.7'
+
 
 
 #]===========================================================================[#
@@ -34,10 +36,10 @@ def get_python_installs():
 
         if python_path is not None:
             res = Popen(
-                    [python_path, "-V"],
-                    stdout=PIPE,
-                    text="utf-8"
-                )
+                [python_path, "-V"],
+                stdout=PIPE,
+                text="utf-8"
+            )
             out, _ = res.communicate()
             python_version = out.strip()
 
