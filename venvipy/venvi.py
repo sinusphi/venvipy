@@ -36,10 +36,14 @@ class VenvTable(QTableView):
 
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
-        self.detailsSubMenu = QMenu("Det&ails", self)
+        self.detailsSubMenu = QMenu(
+            "Det&ails",
+            self,
+            icon=QIcon.fromTheme("info")
+        )
 
         upgradePipAction = QAction(
-            QIcon.fromTheme("upload"),
+            QIcon.fromTheme("system-software-update"),
             "Upgrade Pip to latest",
             self,
             statusTip="&Upgrade Pip to latest"
@@ -48,7 +52,7 @@ class VenvTable(QTableView):
         upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
 
         addModulesAction = QAction(
-            QIcon.fromTheme("add"),
+            QIcon.fromTheme("software-install"),
             "&Install additional modules",
             self,
             statusTip="Install additional modules"
@@ -72,9 +76,9 @@ class VenvTable(QTableView):
 
         freezeAction = QAction(
             QIcon.fromTheme("dialog-information"),
-            "&Freeze output",
+            "Show &freeze output",
             self,
-            statusTip="Show output in 'pip freeze' format"
+            statusTip="List installed modules in 'pip freeze' format"
         )
         self.detailsSubMenu.addAction(freezeAction)
         freezeAction.triggered.connect(
