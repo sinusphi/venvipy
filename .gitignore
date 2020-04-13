@@ -2,4 +2,4 @@
 __pycache__/
 testenv/
 dist/
-MANIFEST
+venvipy/active
