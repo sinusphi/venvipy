@@ -392,9 +392,9 @@ class InstallModules(QWizardPage):
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
+            sortingEnabled=True,
             doubleClicked=self.install_module
         )
-        resultsTable.setSortingEnabled(True)
 
         # adjust vertical headers
         v_Header = resultsTable.verticalHeader()

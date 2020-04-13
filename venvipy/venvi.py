@@ -408,6 +408,7 @@ class Ui_MainWindow(QMainWindow):
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
+            sortingEnabled=True,
             refresh=self.popVenvTable  # signal
         )
 
