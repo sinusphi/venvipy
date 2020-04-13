@@ -26,8 +26,6 @@ from creator import cmds, opts
 import wizard
 
 
-__version__ = '0.11.7'
-
 
 class VenvTable(QTableView):
     """
