@@ -4,6 +4,7 @@ The main module of VenviPy.
 """
 from subprocess import Popen, PIPE
 import shutil
+import sys
 import os
 
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
@@ -632,7 +633,7 @@ class Ui_MainWindow(QMainWindow):
         directory = QFileDialog.getExistingDirectory()
         self.dirLineEdit.setText(directory)
 
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        current_dir = os.path.dirname(sys.argv[0])
         active_file = os.path.join(current_dir, "active")
         active_dir = self.dirLineEdit.text()
 
@@ -648,12 +649,8 @@ class Ui_MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys
 
     app = QApplication(sys.argv)
-
-    # suppress 'BadWindow' messages when running from terminal
-    #os.system("export QT_LOGGING_RULES='*.debug=false;qt.qpa.*=false'")
 
     mainUI = Ui_MainWindow()
     mainUI.popInterprTable()

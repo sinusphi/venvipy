@@ -6,6 +6,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
 import shutil
+import sys
 import os
 
 
@@ -100,12 +101,12 @@ def get_python_vers(pyvenv_cfg):
 
 def get_active_dir_str():
     """
-    Get the default venv directory string from `resources/default` file.
+    Get the default venv directory string from `active` file.
     """
-    current_dir = os.path.dirname(os.path.realpath(__file__))
+    current_dir = os.path.dirname(sys.argv[0])
     active_file = os.path.join(current_dir, "active")
 
-    if os.path.isfile(active_file):
+    if os.path.exists(active_file):
         with open(active_file, "r") as f:
             active_dir = f.read()
             return active_dir
@@ -119,8 +120,8 @@ def get_active_dir_str():
 
 def get_active_dir():
     """
-    Get the active venv directory string from file and
-    pass it to `get_venvs()`.
+    Get the active venv directory path string from `active`
+    file and pass it to `get_venvs()`.
     """
     active_dir = get_active_dir_str()
     return get_venvs(active_dir)
