@@ -192,8 +192,6 @@ class Ui_MainWindow(QMainWindow):
     """
     The main window.
     """
-    exitThread = pyqtSignal()
-
     def __init__(self):
         super().__init__()
 
@@ -489,7 +487,7 @@ class Ui_MainWindow(QMainWindow):
         self.actExit = QAction(
             exit_icon, "&Quit", self,
             statusTip="Quit application",
-            shortcut="Ctrl+Q", triggered=self.close
+            shortcut="Ctrl+Q", triggered=self.on_close
         )
 
         self.actAbout = QAction(
