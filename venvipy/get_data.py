@@ -158,7 +158,7 @@ def get_module_infos(name):
         mod_info = ModuleInfo(mod_name, mod_version, mod_summary)
         module_info_list.append(mod_info)
 
-    return module_info_list
+    return module_info_list[::-1]
 
 
 
