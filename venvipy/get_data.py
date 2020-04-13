@@ -103,14 +103,14 @@ def get_active_dir_str():
     Get the default venv directory string from `resources/default` file.
     """
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    default_file = os.path.join(current_dir, "resources", "default")
+    active_file = os.path.join(current_dir, "active")
 
-    if os.path.isfile(default_file):
-        with open(default_file, "r") as f:
+    if os.path.isfile(active_file):
+        with open(active_file, "r") as f:
             active_dir = f.read()
             return active_dir
     else:
-        with open(default_file, "w") as f:
+        with open(active_file, "w") as f:
             active_dir = f.write("")
             return active_dir
 

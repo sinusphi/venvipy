@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QSizePolicy, QTableView, QMenuBar, QMenu, QStatusBar, QAbstractItemView,
     QMessageBox, QDesktopWidget, QHBoxLayout, QLineEdit
 )
-from resources import venvipy_rc
+import venvipy_rc
 
 from get_data import get_python_installs, get_active_dir, get_active_dir_str
 from dialogs import AppInfoDialog, ConsoleDialog
@@ -330,6 +330,7 @@ class Ui_MainWindow(QMainWindow):
         )
         self.changeDirToolButton.setFixedSize(30, 30)
 
+        # use line edit to store the str
         self.dirLineEdit = QLineEdit()
 
         #]===================================================================[#
@@ -632,12 +633,12 @@ class Ui_MainWindow(QMainWindow):
         self.dirLineEdit.setText(directory)
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        default_file = os.path.join(current_dir, "resources", "default")
-        active_folder = self.dirLineEdit.text()
+        active_file = os.path.join(current_dir, "active")
+        active_dir = self.dirLineEdit.text()
 
         if self.dirLineEdit.text() != "":
-            with open(default_file, "w") as f:
-                f.write(active_folder)
+            with open(active_file, "w") as f:
+                f.write(active_dir)
                 #print(
                     #f"[INFO]: Setting active venv directory to '{active_folder}'"
                 #)
