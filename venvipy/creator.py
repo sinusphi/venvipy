@@ -104,6 +104,28 @@ def create_requirements(venv_dir, venv_name):
     return output
 
 
+def fix_requirements(require_file):
+    """
+    Check the selected requirements file. If it contains
+    a `pkg-resources==0.0.0` entry, then comment this line
+    to prevent pip from crashing.
+    """
+    with open(require_file, "r+") as f:
+        content = f.read()
+
+        if "#pkg-resources==0.0.0" in content:
+            pass  # skip if line is already commented
+
+        elif "pkg-resources==0.0.0" in content:
+
+            content = content.replace(
+                "pkg-resources==0.0.0", "#pkg-resources==0.0.0"
+            )
+            f.seek(0)
+            f.write(content)
+
+
+
 #]===========================================================================[#
 #] GENERATE A RANDOM LINE FROM THE ZEN OF PYTHON [#==========================[#
 #]===========================================================================[#
