@@ -113,7 +113,7 @@ def get_active_dir_str():
             active_dir = f.read()
             return active_dir
     else:
-        with open(active_file, "w") as f:
+        with open(active_file, "w+") as f:
             active_dir = f.write("")
             return active_dir
 

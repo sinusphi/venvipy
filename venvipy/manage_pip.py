@@ -125,7 +125,6 @@ class PipManager(QObject):
         message = self._process.readAllStandardError().data().decode().strip()
         #print(f"[PROCESS]: {message}")
         self.textChanged.emit(message)
-        #self.finished.emit()
         self.failed.emit()
         self._process.kill()
 

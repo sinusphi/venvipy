@@ -24,7 +24,8 @@ from get_data import get_module_infos, get_active_dir, get_python_installs
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from creator import (
-    CreationWorker, create_venv, create_requirements, random_zen_line, cmds, opts
+    CreationWorker, create_venv, create_requirements, fix_requirements,
+    random_zen_line, cmds, opts
 )
 
 
@@ -453,11 +454,12 @@ class InstallModules(QWizardPage):
         back_button = self.wizard().button(QWizard.BackButton)
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
-        #]===================================================================[#
-        # TODO: test if the selected file is a valid requirements.txt
-        #]===================================================================[#
-        # if self.requirements contains a string, then run the installer
+        # run the installer if self.requirements holds a str
         if len(self.requirements) > 0:
+            try:
+                fix_requirements(self.requirements)
+            except FileNotFoundError:
+                pass  # the gui will show an error message
             self.install_requirements()
 
 
@@ -484,14 +486,13 @@ class InstallModules(QWizardPage):
         self.manager.textChanged.connect(self.console.update_status)
 
         # show info dialog
-        if self.manager.failed:
-            #print("[ERROR]: Could not install from requirements")
-            self.manager.failed.connect(self.console.finish_fail)
-            self.manager.failed.connect(self.console.close)
-        else:
-            #print("[PROCESS]: Environment cloned successfully")
-            self.manager.finished.connect(self.console.finish_success)
-            self.manager.finished.connect(self.console.close)
+        #print("[ERROR]: Could not install from requirements")
+        self.manager.failed.connect(self.console.finish_fail)
+        self.manager.failed.connect(self.console.close)
+
+        #print("[PROCESS]: Environment cloned successfully")
+        #self.manager.success.connect(self.console.finish_success)
+        #self.manager.success.connect(self.console.close)
 
         # clear the contents when closing console
         if self.console.close:
