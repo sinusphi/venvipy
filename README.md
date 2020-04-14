@@ -36,9 +36,9 @@ If you want to run _VenviPy_ using your operating system's Python (3.3+) make su
 
 ### Installation
 
-You can download a [ready-to-use-standalone](https://github.com/sinusphi/venvipy/blob/master/venvipy.tar.xz) from the repository. Just unpack the archive and run the _VenviPy_ executable.
+You can download a [ready-to-use-standalone](https://github.com/sinusphi/venvipy/blob/master/venvipy.tar.xz) from the repository. Just unpack the archive, open the unpacked folder and run the `VenviPy` executable.
 
-Or open a terminal, navigate to the download location and run:
+Or open a terminal, navigate to your download location and run:
 ```
 $ tar -xvf venvipy.tar.xz
 ```
