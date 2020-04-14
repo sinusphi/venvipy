@@ -12,7 +12,7 @@
 
 ### **Introduction**
 
-Basically _VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existing Python environment (that supports venv) quick and easy. 
+_VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existing Python environment (that supports venv) quick and easy. 
 
 It provides useful features like a wizard, that guides the user through the creation process, a table that shows an overview over installed environments in a specific directory and a collection of context menu actions like listing detailed information about an environment and much more. 
 
@@ -21,9 +21,10 @@ It provides useful features like a wizard, that guides the user through the crea
 - Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
 - Install and update Pip with one click
 - Clone an environment from a requirements file
+- Modify any environment by adding or removing packages
 - Search and install packages from [PyPI (Python Package Index)](https://pypi.org/)
-- Generate a requirements file from any existing environment
-- List detailed information about installed packages and dependencies
+- Generate requirements from any existing environment
+- List detailed information about installed packages
 
 
 ### **Prerequisits**
@@ -35,19 +36,37 @@ If you want to run _VenviPy_ using your operating system's Python (3.3+) make su
 
 ### Installation
 
-The recommended way is to run _VenviPy_ from a virtual environment. Open a terminal and run:
+You can download a [ready-to-use-standalone](https://github.com/sinusphi/venvipy/blob/master/venvipy.tar.xz) from the repository. Just unpack the archive and run the _VenviPy_ executable.
+
+Or open a terminal, navigate to the download location and run:
 ```
-$ python3 -m venv [your_env_name]
+$ tar -xvf venvipy.tar.xz
+```
+Then cd into the unpacked `VenviPy` folder and run:
+```
+./VenviPy
+```
+
+
+### Running from source
+
+If running _VenviPy_ from source the recommended way is to use a virtual environment. First clone or download the source repository. Then open a terminal and run:
+```
+$ python3.x -m venv [your_env_name]
 ```
 Change to the created directory and run:
 ```
 $ source bin/activate
 ```
-Then install [PyQt5](https://pypi.org/project/PyQt5) by running the following command:
+The easiest to install the required packages is to use the [requirements.txt](https://github.com/sinusphi/venvipy/blob/master/requirements.txt) from the repository. Navigate to the downloaded repo and run:
 ```
-$ (your_env_name) pip install PyQt5
+$ (your_env_name) pip install --requirement requirements.txt
 ```
-Now clone or download the source repository and cd into the venvipy folder. Finally run:
+Or install the [PyQt5](https://pypi.org/project/PyQt5) package by running the following command:
+```
+$ (your_env_name) pip install PyQt5 PyQt5-sip
+```
+Finally inside the repo cd into the `venvipy/` folder and run:
 ```
 $ (your_env_name) python venvi.py
 ```
