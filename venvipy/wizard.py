@@ -368,7 +368,7 @@ class InstallModules(QWizardPage):
         self.setTitle("Install Modules")
         self.setSubTitle(
             "Specify the modules you want to install into the virtual "
-            "environment. Double-click the item you want to install. "
+            "environment. Right-click on the item you want to install. "
             "You can install as many modules as you need. When finished "
             "click next."
         )
@@ -620,7 +620,10 @@ class FinalPage(QWizardPage):
         super().__init__()
 
         self.setTitle("Finished")
-        self.setSubTitle("All Tasks have been completed successfully.")
+        self.setSubTitle(
+            "All Tasks have been completed successfully. Click Finish "
+            "to close the wizard and return back to the main menu."
+        )
 
         h_layout = QHBoxLayout(self)
         v_layout = QVBoxLayout()
