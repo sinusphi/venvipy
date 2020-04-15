@@ -143,7 +143,8 @@ class ModuleInfo:
 
 def get_module_infos(name):
     """
-    Get module name, version and description from https://pypi.org/pypi.
+    Get module name, version and description
+    from [PyPI](https://pypi.org/pypi).
     """
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
     search_result = client.search({"name": name})
