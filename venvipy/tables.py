@@ -33,6 +33,12 @@ class VenvTable(QTableView):
             icon=QIcon.fromTheme("info")
         )
 
+        self.installSubMenu = QMenu(
+            "&Install",
+            self,
+            icon=QIcon.fromTheme("software-install")
+        )
+
         upgradePipAction = QAction(
             QIcon.fromTheme("system-software-update"),
             "Upgrade Pip to latest",
@@ -42,27 +48,29 @@ class VenvTable(QTableView):
         self.contextMenu.addAction(upgradePipAction)
         upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
 
+        self.contextMenu.addMenu(self.installSubMenu)
+
         addModulesAction = QAction(
-            QIcon.fromTheme("software-install"),
+            QIcon.fromTheme("list-add"),
             "&Install additional modules",
             self,
             statusTip="Install additional modules"
         )
-        self.contextMenu.addAction(addModulesAction)
+        self.installSubMenu.addAction(addModulesAction)
         addModulesAction.triggered.connect(lambda: self.add_modules(event))
 
-        isntallRequireAction = QAction(
-            QIcon.fromTheme("system-software-update"),
+        installRequireAction = QAction(
+            QIcon.fromTheme("list-add"),
             "Install from &requirements",
             self,
             statusTip="Install additional modules from requirements"
         )
-        self.contextMenu.addAction(isntallRequireAction)
-        isntallRequireAction.triggered.connect(
+        self.installSubMenu.addAction(installRequireAction)
+        installRequireAction.triggered.connect(
             lambda: self.install_require(event)
         )
 
-        self.contextMenu.addSeparator()
+        #self.contextMenu.addSeparator()
         self.contextMenu.addMenu(self.detailsSubMenu)
 
         listModulesAction = QAction(
@@ -147,22 +155,23 @@ class VenvTable(QTableView):
         default_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
-        fix_requirements(file_name[0])
+        if file_name[0] != "":
+            fix_requirements(file_name[0])
 
-        self.console = ConsoleDialog()
-        self.console.setWindowTitle("Installing from requirements")
+            self.console = ConsoleDialog()
+            self.console.setWindowTitle("Installing from requirements")
 
-        #print("[PROCESS]: Installing from requirements...")
-        self.manager = PipManager(default_dir, venv)
-        self.manager.run_pip(cmds[0], [opts[1], f"'{file_name[0]}'"])
-        self.manager.started.connect(self.console.exec_)
+            #print("[PROCESS]: Installing from requirements...")
+            self.manager = PipManager(default_dir, venv)
+            self.manager.run_pip(cmds[0], [opts[1], f"'{file_name[0]}'"])
+            self.manager.started.connect(self.console.exec_)
 
-        # display the updated output
-        self.manager.textChanged.connect(self.console.update_status)
+            # display the updated output
+            self.manager.textChanged.connect(self.console.update_status)
 
-        # clear the content on window close
-        if self.console.close:
-            self.console.consoleWindow.clear()
+            # clear the content on window close
+            if self.console.close:
+                self.console.consoleWindow.clear()
 
 
     def list_modules(self, event, style):
