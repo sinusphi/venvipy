@@ -5,14 +5,16 @@ This module contains the implementation of QTableView.
 import shutil
 import os
 
-from PyQt5.QtWidgets import QAction, QTableView, QMenu, QMessageBox
+from PyQt5.QtWidgets import (
+    QAction, QTableView, QMenu, QMessageBox, QFileDialog, QLineEdit
+)
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal
 
 from get_data import get_active_dir_str
 from dialogs import ConsoleDialog
 from manage_pip import PipManager
-from creator import cmds, opts
+from creator import fix_requirements, cmds, opts
 
 
 
@@ -48,6 +50,17 @@ class VenvTable(QTableView):
         )
         self.contextMenu.addAction(addModulesAction)
         addModulesAction.triggered.connect(lambda: self.add_modules(event))
+
+        isntallRequireAction = QAction(
+            QIcon.fromTheme("system-software-update"),
+            "Install from &requirements",
+            self,
+            statusTip="Install additional modules from requirements"
+        )
+        self.contextMenu.addAction(isntallRequireAction)
+        isntallRequireAction.triggered.connect(
+            lambda: self.install_require(event)
+        )
 
         self.contextMenu.addSeparator()
         self.contextMenu.addMenu(self.detailsSubMenu)
@@ -123,6 +136,33 @@ class VenvTable(QTableView):
         Install additional modules into the selected environment.
         """
         pass
+
+
+    def install_require(self, event):
+        """
+        Install modules from a requirements file into the
+        selected environment.
+        """
+        file_name = QFileDialog.getOpenFileName()
+        default_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+
+        fix_requirements(file_name[0])
+
+        self.console = ConsoleDialog()
+        self.console.setWindowTitle("Installing from requirements")
+
+        #print("[PROCESS]: Installing from requirements...")
+        self.manager = PipManager(default_dir, venv)
+        self.manager.run_pip(cmds[0], [opts[1], f"'{file_name[0]}'"])
+        self.manager.started.connect(self.console.exec_)
+
+        # display the updated output
+        self.manager.textChanged.connect(self.console.update_status)
+
+        # clear the content on window close
+        if self.console.close:
+            self.console.consoleWindow.clear()
 
 
     def list_modules(self, event, style):
