@@ -20,13 +20,14 @@ from PyQt5.QtWidgets import (
 )
 import venvipy_rc
 
-from get_data import get_module_infos, get_active_dir, get_python_installs
-from dialogs import ProgBarDialog, ConsoleDialog
-from manage_pip import PipManager
 from creator import (
     CreationWorker, create_venv, create_requirements, fix_requirements,
     random_zen_line, cmds, opts
 )
+from get_data import get_module_infos, get_active_dir, get_python_installs
+from dialogs import ProgBarDialog, ConsoleDialog
+from manage_pip import PipManager
+from tables import ResultsTable
 
 
 
@@ -389,12 +390,13 @@ class InstallModules(QWizardPage):
         )
 
         # results table
-        resultsTable = QTableView(
+        resultsTable = ResultsTable(
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            doubleClicked=self.install_module
+            doubleClicked=self.install_module,
+            contextTriggered=self.install_module  # signal
         )
 
         # adjust vertical headers

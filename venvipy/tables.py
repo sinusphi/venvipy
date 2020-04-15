@@ -21,12 +21,14 @@ from creator import fix_requirements, cmds, opts
 class VenvTable(QTableView):
     """
     The table that lists the virtual environments
-    found in the specified default folder.
+    found in the specified folder.
     """
     refresh = pyqtSignal()
 
     def contextMenuEvent(self, event):
         self.contextMenu = QMenu(self)
+
+        # sub menus
         self.detailsSubMenu = QMenu(
             "Det&ails",
             self,
@@ -39,6 +41,7 @@ class VenvTable(QTableView):
             icon=QIcon.fromTheme("software-install")
         )
 
+        # actions
         upgradePipAction = QAction(
             QIcon.fromTheme("system-software-update"),
             "Upgrade Pip to latest",
@@ -67,7 +70,7 @@ class VenvTable(QTableView):
         )
         self.installSubMenu.addAction(installRequireAction)
         installRequireAction.triggered.connect(
-            lambda: self.install_require(event)
+            lambda: self.install_requires(event)
         )
 
         #self.contextMenu.addSeparator()
@@ -146,7 +149,7 @@ class VenvTable(QTableView):
         pass
 
 
-    def install_require(self, event):
+    def install_requires(self, event):
         """
         Install modules from a requirements file into the
         selected environment.
@@ -227,3 +230,29 @@ class VenvTable(QTableView):
                 #)
 
                 self.refresh.emit()
+
+
+
+class ResultsTable(QTableView):
+    """
+    The table that lists the [PyPI](https://pypi.org/pypi) results on
+    the wizard's `Install Modules` page.
+    """
+    contextTriggered = pyqtSignal()
+
+    def contextMenuEvent(self, event):
+        self.contextMenu = QMenu(self)
+
+        # actions
+        installAction = QAction(
+            QIcon.fromTheme("software-install"),
+            "Install module",
+            self,
+            statusTip="&Install module"
+        )
+        self.contextMenu.addAction(installAction)
+        installAction.triggered.connect(lambda: self.contextTriggered.emit())
+
+        # pop up only if clicking on a row
+        if self.indexAt(event.pos()).isValid():
+            self.contextMenu.popup(QCursor.pos())
