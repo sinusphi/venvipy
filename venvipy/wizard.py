@@ -80,7 +80,7 @@ class VenvWizard(QWizard):
         self.finalPageId = self.addPage(self.finalPage)
 
         self.cancel_button = self.button(self.CancelButton)
-        self.cancel_button.clicked.connect(self.abort)
+        self.cancel_button.clicked.connect(self.force_exit)
 
 
     def nextId(self):
@@ -102,12 +102,12 @@ class VenvWizard(QWizard):
         self.move(qr.topLeft())
 
 
-    def abort(self):
+    def force_exit(self):
         """
         Stop the thread, then close the wizard.
         """
-        self.basicSettings.thread.exit()
-        self.close()
+        if self.basicSettings.thread.isRunning():
+            self.basicSettings.thread.exit()
 
 
 
@@ -691,11 +691,13 @@ class FinalPage(QWizardPage):
         finish_button = self.wizard().button(QWizard.FinishButton)
         finish_button.clicked.connect(self.wizard().restart)
 
+        if __name__ == "__main__":
+            finish_button.clicked.connect(self.wizard().force_exit)
+
         # call update_zen_line to get a different line every new session
         self.wizard().refresh.connect(self.update_zen_line)
 
         self.wizard().refresh.emit()
-
 
 
 
