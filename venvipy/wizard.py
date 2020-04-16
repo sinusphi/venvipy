@@ -79,6 +79,9 @@ class VenvWizard(QWizard):
         self.finalPage = FinalPage()
         self.finalPageId = self.addPage(self.finalPage)
 
+        self.cancel_button = self.button(self.CancelButton)
+        self.cancel_button.clicked.connect(self.abort)
+
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
@@ -97,6 +100,14 @@ class VenvWizard(QWizard):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+
+    def abort(self):
+        """
+        Stop the thread, then close the wizard.
+        """
+        self.basicSettings.thread.exit()
+        self.close()
 
 
 
