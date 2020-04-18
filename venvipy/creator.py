@@ -62,7 +62,11 @@ class CreationWorker(QObject):
 #]===========================================================================[#
 
 def create_venv(
-    py_vers, env_dir, with_pip=False, system_site_packages=False, symlinks=False
+    py_vers,
+    env_dir,
+    with_pip=False,
+    system_site_packages=False,
+    symlinks=False
 ):
     """
     Create a virtual environment in a directory.
@@ -82,27 +86,8 @@ def create_venv(
 
 
 #]===========================================================================[#
-#] GENERATE A REQUIREMENTS [#================================================[#
+#] REQUIREMENTS [#===========================================================[#
 #]===========================================================================[#
-
-def create_requirements(venv_dir, venv_name):
-    """
-    Generate a requirements.txt file and save in the root directory
-    of the virtual environment.
-    """
-    script = (
-        f"source {venv_dir}/{venv_name}/bin/activate;"
-        f"pip freeze > {venv_dir}/{venv_name}/requirements.txt;"
-        "deactivate;"
-    )
-
-    res = Popen(["bash", "-c", script], stdout=PIPE, text="utf-8")
-
-    out, _ = res.communicate()
-    output = out.strip()
-
-    return output
-
 
 def fix_requirements(require_file):
     """
@@ -123,7 +108,6 @@ def fix_requirements(require_file):
             )
             f.seek(0)
             f.write(content)
-
 
 
 #]===========================================================================[#
