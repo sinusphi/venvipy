@@ -5,16 +5,24 @@ This module contains the implementation of QTableView.
 import shutil
 import os
 
-from PyQt5.QtWidgets import (
-    QAction, QTableView, QMenu, QMessageBox, QFileDialog, QLineEdit
-)
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import (
+    QAction,
+    QTableView,
+    QMenu,
+    QMessageBox,
+    QFileDialog
+)
 
 from get_data import get_active_dir_str
 from dialogs import ConsoleDialog
 from manage_pip import PipManager
-from creator import fix_requirements, cmds, opts
+from creator import (
+    fix_requirements,
+    cmds,
+    opts
+)
 
 
 
@@ -44,9 +52,9 @@ class VenvTable(QTableView):
         # actions
         upgradePipAction = QAction(
             QIcon.fromTheme("system-software-update"),
-            "Upgrade Pip to latest",
+            "&Upgrade Pip to latest",
             self,
-            statusTip="&Upgrade Pip to latest"
+            statusTip="Upgrade Pip to the latest version"
         )
         self.contextMenu.addAction(upgradePipAction)
         upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
@@ -66,11 +74,22 @@ class VenvTable(QTableView):
             QIcon.fromTheme("list-add"),
             "Install from &requirements",
             self,
-            statusTip="Install additional modules from requirements"
+            statusTip="Install modules from requirements"
         )
         self.installSubMenu.addAction(installRequireAction)
         installRequireAction.triggered.connect(
             lambda: self.install_requires(event)
+        )
+
+        saveRequireAction = QAction(
+            QIcon.fromTheme("document-save"),
+            "Save &requirements",
+            self,
+            statusTip="Write requirements to file"
+        )
+        self.contextMenu.addAction(saveRequireAction)
+        saveRequireAction.triggered.connect(
+            lambda: self.save_requires(event)
         )
 
         #self.contextMenu.addSeparator()
@@ -91,7 +110,7 @@ class VenvTable(QTableView):
             QIcon.fromTheme("dialog-information"),
             "Show &freeze output",
             self,
-            statusTip="List installed modules in 'pip freeze' format"
+            statusTip="List the output of 'pip freeze'"
         )
         self.detailsSubMenu.addAction(freezeAction)
         freezeAction.triggered.connect(
@@ -123,14 +142,14 @@ class VenvTable(QTableView):
 
 
     def upgrade_pip(self, event):
-        default_dir = get_active_dir_str()
+        active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
         self.console.setWindowTitle("Updating Pip")
 
         #print("[PROCESS]: Updating Pip to the latest version...")
-        self.manager = PipManager(default_dir, venv)
+        self.manager = PipManager(active_dir, venv)
         self.manager.run_pip(cmds[0], [opts[0], "pip"])
         self.manager.started.connect(self.console.exec_)
 
@@ -154,19 +173,20 @@ class VenvTable(QTableView):
         Install modules from a requirements file into the
         selected environment.
         """
-        file_name = QFileDialog.getOpenFileName()
-        default_dir = get_active_dir_str()
+        file_name = QFileDialog.getOpenFileName(self, "Select a requirements")
+        file_path = file_name[0]
+        active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
-        if file_name[0] != "":
-            fix_requirements(file_name[0])
+        if file_path != "":
+            fix_requirements(file_path)
 
             self.console = ConsoleDialog()
             self.console.setWindowTitle("Installing from requirements")
 
             #print("[PROCESS]: Installing from requirements...")
-            self.manager = PipManager(default_dir, venv)
-            self.manager.run_pip(cmds[0], [opts[1], f"'{file_name[0]}'"])
+            self.manager = PipManager(active_dir, venv)
+            self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -177,18 +197,37 @@ class VenvTable(QTableView):
                 self.console.consoleWindow.clear()
 
 
+    def save_requires(self, event):
+        """
+        Write the requirements of the selected environment to file.
+        """
+        save_file = QFileDialog.getSaveFileName(self, "Save requirements")
+        save_path = save_file[0]
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+
+        if save_path != "":
+            # write 'pip freeze' output to selected file
+            self.manager = PipManager(active_dir, venv)
+            self.manager.run_pip(cmds[2], [">", save_path])
+
+            # show an info message
+            message_txt = (f"Saved requirements in: \n{save_path}")
+            QMessageBox.information(self, "Saved", message_txt)
+
+
     def list_modules(self, event, style):
         """
         Open console dialog and list the installed modules.
         """
-        default_dir = get_active_dir_str()
+        active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
         self.console = ConsoleDialog()
         self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
         #print("[PROCESS]: Listing modules...")
-        self.manager = PipManager(default_dir, f"'{venv}'")
+        self.manager = PipManager(active_dir, f"'{venv}'")
         self.manager.run_pip(cmds[style])
         self.manager.started.connect(self.console.exec_)
 
@@ -221,12 +260,12 @@ class VenvTable(QTableView):
             )
 
             if messageBoxConfirm == QMessageBox.Yes:
-                default_dir = get_active_dir_str()
+                active_dir = get_active_dir_str()
 
-                venv_to_delete = os.path.join(default_dir, venv)
+                venv_to_delete = os.path.join(active_dir, venv)
                 shutil.rmtree(venv_to_delete)
                 #print(
-                    #f"[PROCESS]: Successfully deleted '{default_dir}/{venv}'"
+                    #f"[PROCESS]: Successfully deleted '{active_dir}/{venv}'"
                 #)
 
                 self.refresh.emit()
