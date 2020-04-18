@@ -20,16 +20,24 @@ from PyQt5.QtWidgets import (
 )
 import venvipy_rc
 
-from creator import (
-    CreationWorker, create_venv, create_requirements, fix_requirements,
-    random_zen_line, cmds, opts
-)
-from get_data import get_module_infos, get_active_dir, get_python_installs
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from tables import ResultsTable
-
-
+from get_data import (
+    get_module_infos,
+    get_active_dir,
+    get_active_dir_str,
+    get_python_installs
+)
+from creator import (
+    CreationWorker,
+    create_venv,
+    create_requirements,
+    fix_requirements,
+    random_zen_line,
+    cmds,
+    opts
+)
 
 #]===========================================================================[#
 #] WIZARD [#=================================================================[#
@@ -592,34 +600,34 @@ class InstallModules(QWizardPage):
 
     def save_requirements(self):
         """
-        Ask user for saving a requirements.txt in the
+        Ask if they want to save the requirements of the
         created virtual environment.
         """
         self.setEnabled(False)
 
-        messageBoxConfirm = QMessageBox.question(self,
-            "Confirm", "Do you want to generate a requirements.txt file?",
+        messageBoxConfirm = QMessageBox.question(
+            self,
+            "Save requirements",
+            "Do you want to generate a requirements?",
             QMessageBox.Yes | QMessageBox.No
         )
 
         if messageBoxConfirm == QMessageBox.Yes:
-            create_requirements(self.venvLocation, f"'{self.venvName}'")
-            #print(
-                #"[PROCESS]: Generating "
-                #f"'{self.venvLocation}/{self.venvName}/requirements.txt'..."
-            #)
-            message_txt = (
-                "The requirements.txt file has been saved in:\n"
-                f"'{self.venvLocation}/{self.venvName}'"
-            )
-            QMessageBox.information(self, "Done", message_txt)
+            active_dir = get_active_dir_str()
+            save_file = QFileDialog.getSaveFileName(self, "Save requirements")
+            save_path = save_file[0]
 
-            self.wizard().next()
+            if save_path != "":
+                #print(f"[PROCESS]: Generating '{save_path}'...")
+                manager = PipManager(active_dir, self.venvName)
+                manager.run_pip(cmds[2], [">", save_path])
 
-        else:
-            self.wizard().next()
-
-        self.setEnabled(True)
+                message_txt = (f"Saved requirements in: \n{save_path}")
+                QMessageBox.information(self, "Saved", message_txt)
+                self.wizard().next()
+            else:
+                self.wizard().next()
+            self.setEnabled(True)
 
 
 
