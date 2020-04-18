@@ -465,9 +465,12 @@ class Ui_MainWindow(QMainWindow):
 
     def select_folder(self):
         """
-        Select the active folder shown in venv table.
+        Select the active directory of which the content
+        should be shown in venv table.
         """
-        directory = QFileDialog.getExistingDirectory()
+        directory = QFileDialog.getExistingDirectory(
+            self, "Open directory containing virtual environments"
+        )
         self.dirLineEdit.setText(directory)
 
         current_dir = os.path.dirname(sys.argv[0])
