@@ -625,9 +625,9 @@ class InstallModules(QWizardPage):
                 message_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
                 self.wizard().next()
-            else:
-                self.wizard().next()
-            self.setEnabled(True)
+        else:
+            self.wizard().next()
+        self.setEnabled(True)
 
 
 
