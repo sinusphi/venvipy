@@ -4,10 +4,8 @@ This module manages all pip processes.
 """
 import os
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess, Qt
-from PyQt5.QtGui import QFontMetrics
-from PyQt5.QtWidgets import (QApplication, QDialog, QProgressBar, QTextEdit,
-                             QVBoxLayout, QDesktopWidget)
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
+from PyQt5.QtWidgets import QApplication
 
 
 
@@ -138,13 +136,13 @@ if __name__ == "__main__":
     console = ConsoleDialog()
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    venv_name = "testenv"  # need to have a virtual env in current_dir
+    _venv_name = "testenv"  # need to have a virtual env in current_dir
 
-    manager = PipManager(current_dir, venv_name)
+    manager = PipManager(current_dir, _venv_name)
     manager.textChanged.connect(console.update_status)
     manager.started.connect(console.show)
     manager.run_pip(
-        "freeze", [f" > {current_dir}/{venv_name}/requirements.txt"]
+        "freeze", [f" > {current_dir}/{_venv_name}/requirements.txt"]
     )
 
     sys.exit(app.exec_())

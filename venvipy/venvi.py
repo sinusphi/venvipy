@@ -3,26 +3,43 @@
 The main module of VenviPy.
 """
 from subprocess import Popen, PIPE
-import shutil
 import sys
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import (
-    QIcon, QPixmap, QStandardItemModel, QStandardItem, QCursor
+    QIcon,
+    QPixmap,
+    QStandardItemModel,
+    QStandardItem
 )
 from PyQt5.QtWidgets import (
-    QMainWindow, QApplication, QAction, QFileDialog, QLabel, QToolButton,
-    QWidget, QGridLayout, QVBoxLayout, QPushButton, QSpacerItem, QDialog,
-    QSizePolicy, QTableView, QMenuBar, QMenu, QStatusBar, QAbstractItemView,
-    QMessageBox, QDesktopWidget, QHBoxLayout, QLineEdit
+    QMainWindow,
+    QApplication,
+    QAction,
+    QFileDialog,
+    QLabel,
+    QToolButton,
+    QWidget,
+    QGridLayout,
+    QVBoxLayout,
+    QPushButton,
+    QSpacerItem,
+    QSizePolicy,
+    QTableView,
+    QMenuBar,
+    QMenu,
+    QStatusBar,
+    QAbstractItemView,
+    QMessageBox,
+    QDesktopWidget,
+    QHBoxLayout,
+    QLineEdit
 )
-import venvipy_rc
+import venvipy_rc  # pylint: disable=unused-import
 
-from get_data import get_python_installs, get_active_dir, get_active_dir_str
-from dialogs import AppInfoDialog, ConsoleDialog
-from manage_pip import PipManager
-from creator import cmds, opts
+from get_data import get_python_installs, get_active_dir
+from dialogs import AppInfoDialog
 from tables import VenvTable
 import wizard
 
@@ -477,13 +494,13 @@ class Ui_MainWindow(QMainWindow):
         active_file = os.path.join(current_dir, "active")
         active_dir = self.dirLineEdit.text()
 
-        if self.dirLineEdit.text() != "":
+        if active_dir != "":
             with open(active_file, "w") as f:
                 f.write(active_dir)
                 #print(
-                    #f"[INFO]: Setting active venv directory to '{active_folder}'"
+                    #"[INFO]: Setting active dir to "
+                    #f"'{active_dir}'"
                 #)
-
             self.popVenvTable()
 
 

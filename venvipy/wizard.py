@@ -4,40 +4,55 @@ This module contains the wizard for creating
 and setting up virtual environments.
 """
 from functools import partial
-import shutil
 import sys
-import os
 
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QObject, QTimer, QThread
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QThread
 from PyQt5.QtGui import (
-    QIcon, QStandardItemModel, QStandardItem, QFontMetrics, QPixmap, QFont
+    QIcon,
+    QStandardItemModel,
+    QStandardItem,
+    QPixmap,
+    QFont
 )
 from PyQt5.QtWidgets import (
-    QApplication, QProgressBar, QGridLayout, QLabel, QFileDialog, QHBoxLayout,
-    QVBoxLayout, QDialog, QWizard, QWizardPage, QToolButton, QComboBox,
-    QCheckBox, QLineEdit, QGroupBox, QTableView, QAbstractItemView,
-    QPushButton, QTextEdit, QMessageBox, QHeaderView, QDesktopWidget
+    QApplication,
+    QGridLayout,
+    QLabel,
+    QFileDialog,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWizard,
+    QWizardPage,
+    QToolButton,
+    QComboBox,
+    QCheckBox,
+    QLineEdit,
+    QGroupBox,
+    QAbstractItemView,
+    QPushButton,
+    QMessageBox,
+    QHeaderView,
+    QDesktopWidget
 )
-import venvipy_rc
+import venvipy_rc  # pylint: disable=unused-import
 
 from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from tables import ResultsTable
 from get_data import (
     get_module_infos,
-    get_active_dir,
     get_active_dir_str,
     get_python_installs
 )
 from creator import (
     CreationWorker,
-    create_venv,
-    create_requirements,
     fix_requirements,
     random_zen_line,
     cmds,
     opts
 )
+
+
 
 #]===========================================================================[#
 #] WIZARD [#=================================================================[#
@@ -78,14 +93,14 @@ class VenvWizard(QWizard):
             """
         )
 
-        self.basicSettings = BasicSettings()
-        self.basicSettingsId = self.addPage(self.basicSettings)
+        self.basic_settings = BasicSettings()
+        self.basic_settings_id = self.addPage(self.basic_settings)
 
-        self.installModules = InstallModules()
-        self.installModulesId = self.addPage(self.installModules)
+        self.install_modules = InstallModules()
+        self.install_modules_id = self.addPage(self.install_modules)
 
-        self.finalPage = FinalPage()
-        self.finalPageId = self.addPage(self.finalPage)
+        self.final_page = FinalPage()
+        self.final_page_id = self.addPage(self.final_page)
 
         self.cancel_button = self.button(self.CancelButton)
         self.cancel_button.clicked.connect(self.force_exit)
@@ -93,13 +108,13 @@ class VenvWizard(QWizard):
 
     def nextId(self):
         # process the flow only if the current page is BasicSettings()
-        if self.currentId() != self.basicSettingsId:
+        if self.currentId() != self.basic_settings_id:
             return super().nextId()
 
-        if self.basicSettings.withPipCBox.isChecked():
-            return self.installModulesId
+        if self.basic_settings.withPipCBox.isChecked():
+            return self.install_modules_id
 
-        return self.finalPageId
+        return self.final_page_id
 
 
     def center(self):
@@ -114,8 +129,8 @@ class VenvWizard(QWizard):
         """
         Stop the thread, then close the wizard.
         """
-        if self.basicSettings.thread.isRunning():
-            self.basicSettings.thread.exit()
+        if self.basic_settings.thread.isRunning():
+            self.basic_settings.thread.exit()
 
 
 
@@ -712,6 +727,7 @@ class FinalPage(QWizardPage):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
+
     wizard = VenvWizard()
     wizard.show()
 

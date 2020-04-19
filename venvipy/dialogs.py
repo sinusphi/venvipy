@@ -4,12 +4,21 @@ This module contains some dialogs.
 """
 from platform import system, release
 import sys
-import os
 
 from PyQt5.QtWidgets import (
-    QDialog, QHBoxLayout, QVBoxLayout, QLabel, QDesktopWidget, QTextEdit,
-    QProgressBar, QPushButton, QSpacerItem, QApplication, QSizePolicy,
-    QFormLayout, QGridLayout, QFileDialog, QToolButton, QFrame, QLineEdit,
+    QDialog,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QDesktopWidget,
+    QTextEdit,
+    QProgressBar,
+    QPushButton,
+    QSpacerItem,
+    QApplication,
+    QSizePolicy,
+    QFormLayout,
+    QGridLayout,
     QMessageBox
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
@@ -329,4 +338,16 @@ class AppInfoDialog(QDialog):
 
 
 if __name__ == "__main__":
-    pass
+
+    app = QApplication(sys.argv)
+
+    progress_dialog = ProgBarDialog()
+    #progress_dialog.exec()
+
+    console_dialog = ConsoleDialog()
+    #console_dialog.exec()
+
+    info_dialog = AppInfoDialog()
+    info_dialog.exec()
+
+    sys.exit(app.exec_())
