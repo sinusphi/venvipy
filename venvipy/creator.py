@@ -37,10 +37,11 @@ class CreationWorker(QObject):
         #print("[PROCESS]: Creating virtual environment...")
 
         py_vers, name, location, with_pip, site_packages, symlinks = args
+        env_dir = os.path.join(location, f"'{name}'")
 
         create_venv(
             py_vers,
-            os.path.join(location, f"'{name}'"),
+            env_dir,
             with_pip=with_pip,
             system_site_packages=site_packages,
             symlinks=symlinks,

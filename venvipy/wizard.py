@@ -155,19 +155,19 @@ class BasicSettings(QWizardPage):
         self.thread = QThread(self)
         self.thread.start()
 
-        self.progressBar = ProgBarDialog()
+        self.progress_bar = ProgBarDialog()
 
         self.m_install_venv_worker = CreationWorker()
         self.m_install_venv_worker.moveToThread(self.thread)
 
         # started
-        self.m_install_venv_worker.started.connect(self.progressBar.exec_)
+        self.m_install_venv_worker.started.connect(self.progress_bar.exec_)
 
         # updated
         self.m_install_venv_worker.updatePipMsg.connect(self.update_pip_msg)
 
         # finished
-        self.m_install_venv_worker.finished.connect(self.progressBar.close)
+        self.m_install_venv_worker.finished.connect(self.progress_bar.close)
         self.m_install_venv_worker.finished.connect(self.finish_info)
 
 
@@ -327,8 +327,8 @@ class BasicSettings(QWizardPage):
                 version = self.pythonVers[:16]  # pre-releases
 
             # show python version in progress bar window title
-            self.progressBar.setWindowTitle(f"Using {version}")
-            self.progressBar.statusLabel.setText(
+            self.progress_bar.setWindowTitle(f"Using {version}")
+            self.progress_bar.status_label.setText(
                 "Creating virtual environment..."
             )
 
@@ -360,7 +360,7 @@ class BasicSettings(QWizardPage):
         """
         Set the text in status label to show that Pip is being updated.
         """
-        self.progressBar.statusLabel.setText("Updating Pip...")
+        self.progress_bar.status_label.setText("Updating Pip...")
 
 
     def finish_info(self):
@@ -418,7 +418,7 @@ class InstallModules(QWizardPage):
         self.pkgNameLineEdit = QLineEdit()
         pkgNameLabel.setBuddy(self.pkgNameLineEdit)
 
-        self.searchButton = QPushButton(
+        self.search_button = QPushButton(
             "&Search",
             clicked=self.pop_results_table
         )
@@ -430,7 +430,7 @@ class InstallModules(QWizardPage):
             alternatingRowColors=True,
             sortingEnabled=True,
             doubleClicked=self.install_module,
-            contextTriggered=self.install_module  # signal
+            context_triggered=self.install_module  # signal
         )
 
         # adjust vertical headers
@@ -454,7 +454,7 @@ class InstallModules(QWizardPage):
 
         gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
         gridLayout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
-        gridLayout.addWidget(self.searchButton, 0, 2, 1, 1)
+        gridLayout.addWidget(self.search_button, 0, 2, 1, 1)
         gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
 
 
@@ -484,7 +484,7 @@ class InstallModules(QWizardPage):
         QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
 
         # set focus on 'search' button
-        QTimer.singleShot(0, lambda: self.searchButton.setDefault(True))
+        QTimer.singleShot(0, lambda: self.search_button.setDefault(True))
 
         # disable 'back' button
         back_button = self.wizard().button(QWizard.BackButton)
@@ -532,7 +532,7 @@ class InstallModules(QWizardPage):
 
         # clear the contents when closing console
         if self.console.close:
-            self.console.consoleWindow.clear()
+            self.console.console_window.clear()
 
         self.setEnabled(True)
 
@@ -602,7 +602,7 @@ class InstallModules(QWizardPage):
 
             # clear the content when closing console
             if self.console.close:
-                self.console.consoleWindow.clear()
+                self.console.console_window.clear()
 
                 # clear search input line
                 self.pkgNameLineEdit.clear()

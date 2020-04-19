@@ -30,7 +30,7 @@ def has_bash():
 
 class PipManager(QObject):
     """
-    Manage the installation process.
+    Manage `pip` processes.
     """
     started = pyqtSignal()
     finished = pyqtSignal()

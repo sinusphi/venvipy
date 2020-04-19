@@ -407,7 +407,7 @@ class Ui_MainWindow(QMainWindow):
         """
         Stop the thread, then close the application.
         """
-        self.venv_wizard.basicSettings.thread.exit()
+        self.venv_wizard.basic_settings.thread.exit()
         self.close()
 
 

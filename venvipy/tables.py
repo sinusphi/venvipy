@@ -34,7 +34,7 @@ class VenvTable(QTableView):
     refresh = pyqtSignal()
 
     def contextMenuEvent(self, event):
-        self.contextMenu = QMenu(self)
+        self.context_menu = QMenu(self)
 
         # sub menus
         self.detailsSubMenu = QMenu(
@@ -50,85 +50,96 @@ class VenvTable(QTableView):
         )
 
         # actions
-        upgradePipAction = QAction(
+        upgrade_pip_action = QAction(
             QIcon.fromTheme("system-software-update"),
             "&Upgrade Pip to latest",
             self,
             statusTip="Upgrade Pip to the latest version"
         )
-        self.contextMenu.addAction(upgradePipAction)
-        upgradePipAction.triggered.connect(lambda: self.upgrade_pip(event))
+        self.context_menu.addAction(upgrade_pip_action)
+        upgrade_pip_action.triggered.connect(lambda: self.upgrade_pip(event))
 
-        self.contextMenu.addMenu(self.installSubMenu)
+        self.context_menu.addMenu(self.installSubMenu)
 
-        addModulesAction = QAction(
+        add_modules_action = QAction(
             QIcon.fromTheme("list-add"),
             "&Install additional modules",
             self,
             statusTip="Install additional modules"
         )
-        self.installSubMenu.addAction(addModulesAction)
-        addModulesAction.triggered.connect(lambda: self.add_modules(event))
+        self.installSubMenu.addAction(add_modules_action)
+        add_modules_action.triggered.connect(lambda: self.add_modules(event))
 
-        installRequireAction = QAction(
+        install_requires_action = QAction(
             QIcon.fromTheme("list-add"),
             "Install from &requirements",
             self,
             statusTip="Install modules from requirements"
         )
-        self.installSubMenu.addAction(installRequireAction)
-        installRequireAction.triggered.connect(
+        self.installSubMenu.addAction(install_requires_action)
+        install_requires_action.triggered.connect(
             lambda: self.install_requires(event)
         )
 
-        saveRequireAction = QAction(
+        save_requires_action = QAction(
             QIcon.fromTheme("document-save"),
             "Save &requirements",
             self,
             statusTip="Write requirements to file"
         )
-        self.contextMenu.addAction(saveRequireAction)
-        saveRequireAction.triggered.connect(
+        self.context_menu.addAction(save_requires_action)
+        save_requires_action.triggered.connect(
             lambda: self.save_requires(event)
         )
 
-        #self.contextMenu.addSeparator()
-        self.contextMenu.addMenu(self.detailsSubMenu)
+        #self.context_menu.addSeparator()
+        self.context_menu.addMenu(self.detailsSubMenu)
 
-        listModulesAction = QAction(
+        list_modules_action = QAction(
             QIcon.fromTheme("dialog-information"),
             "&List installed modules",
             self,
             statusTip="List installed modules"
         )
-        self.detailsSubMenu.addAction(listModulesAction)
-        listModulesAction.triggered.connect(
+        self.detailsSubMenu.addAction(list_modules_action)
+        list_modules_action.triggered.connect(
             lambda: self.list_modules(event, style=1)
         )
 
-        freezeAction = QAction(
+        freeze_action = QAction(
             QIcon.fromTheme("dialog-information"),
             "Show &freeze output",
             self,
             statusTip="List the output of 'pip freeze'"
         )
-        self.detailsSubMenu.addAction(freezeAction)
-        freezeAction.triggered.connect(
+        self.detailsSubMenu.addAction(freeze_action)
+        freeze_action.triggered.connect(
             lambda: self.freeze_output(event, style=2)
         )
 
-        deleteAction = QAction(
+        dep_tree_action = QAction(
+            QIcon.fromTheme("dialog-information"),
+            "Show &freeze output",
+            self,
+            statusTip="List the output of 'pip freeze'"
+        )
+        self.detailsSubMenu.addAction(dep_tree_action)
+        dep_tree_action.triggered.connect(
+            lambda: self.dep_tree_output(event, style=3)
+        )
+
+        delete_venv_action = QAction(
             QIcon.fromTheme("delete"),
             "&Delete environment",
             self,
             statusTip="Delete environment"
         )
-        self.contextMenu.addAction(deleteAction)
-        deleteAction.triggered.connect(lambda: self.delete_venv(event))
+        self.context_menu.addAction(delete_venv_action)
+        delete_venv_action.triggered.connect(lambda: self.delete_venv(event))
 
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
-            self.contextMenu.popup(QCursor.pos())
+            self.context_menu.popup(QCursor.pos())
 
 
     def get_selected_item(self):
@@ -158,7 +169,7 @@ class VenvTable(QTableView):
 
         # clear the content on window close
         if self.console.close:
-            self.console.consoleWindow.clear()
+            self.console.console_window.clear()
 
 
     def add_modules(self, event):
@@ -194,7 +205,7 @@ class VenvTable(QTableView):
 
             # clear the content on window close
             if self.console.close:
-                self.console.consoleWindow.clear()
+                self.console.console_window.clear()
 
 
     def save_requires(self, event):
@@ -236,7 +247,7 @@ class VenvTable(QTableView):
 
         # clear the content on window close
         if self.console.close:
-            self.console.consoleWindow.clear()
+            self.console.console_window.clear()
 
 
     def freeze_output(self, event, style):
@@ -254,12 +265,12 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
 
         if venv is not None:
-            messageBoxConfirm = QMessageBox.critical(self,
+            msg_box_critical = QMessageBox.critical(self,
                 "Confirm", f"Are you sure you want to delete '{venv}'?",
                 QMessageBox.Yes | QMessageBox.Cancel
             )
 
-            if messageBoxConfirm == QMessageBox.Yes:
+            if msg_box_critical == QMessageBox.Yes:
                 active_dir = get_active_dir_str()
 
                 venv_to_delete = os.path.join(active_dir, venv)
@@ -277,21 +288,21 @@ class ResultsTable(QTableView):
     The table that lists the [PyPI](https://pypi.org/pypi) results on
     the wizard's `Install Modules` page.
     """
-    contextTriggered = pyqtSignal()
+    context_triggered = pyqtSignal()
 
     def contextMenuEvent(self, event):
-        self.contextMenu = QMenu(self)
+        self.context_menu = QMenu(self)
 
         # actions
-        installAction = QAction(
+        install_action = QAction(
             QIcon.fromTheme("software-install"),
             "Install module",
             self,
             statusTip="&Install module"
         )
-        self.contextMenu.addAction(installAction)
-        installAction.triggered.connect(lambda: self.contextTriggered.emit())
+        self.context_menu.addAction(install_action)
+        install_action.triggered.connect(lambda: self.context_triggered.emit())
 
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
-            self.contextMenu.popup(QCursor.pos())
+            self.context_menu.popup(QCursor.pos())

@@ -49,23 +49,23 @@ class ProgBarDialog(QDialog):
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
-        h_Layout = QHBoxLayout(self)
-        v_Layout = QVBoxLayout()
-        h_Layout.setContentsMargins(0, 15, 0, 0)
+        self.status_label = QLabel(self)
+        self.place_holder = QLabel(self)
 
-        self.statusLabel = QLabel(self)
-        self.placeHolder = QLabel(self)
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setFixedSize(325, 23)
+        self.progress_bar.setRange(0, 0)
 
-        self.progressBar = QProgressBar(self)
-        self.progressBar.setFixedSize(325, 23)
-        self.progressBar.setRange(0, 0)
+        v_layout = QVBoxLayout()
+        v_layout.addWidget(self.status_label)
+        v_layout.addWidget(self.progress_bar)
+        v_layout.addWidget(self.place_holder)
 
-        v_Layout.addWidget(self.statusLabel)
-        v_Layout.addWidget(self.progressBar)
-        v_Layout.addWidget(self.placeHolder)
+        h_layout = QHBoxLayout(self)
+        h_layout.setContentsMargins(0, 15, 0, 0)
+        h_layout.addLayout(v_layout)
 
-        h_Layout.addLayout(v_Layout)
-        self.setLayout(h_Layout)
+        self.setLayout(h_layout)
 
 
     def center(self):
@@ -110,13 +110,13 @@ class ConsoleDialog(QDialog):
             """
         )
 
-        self.consoleWindow = QTextEdit()
-        self.consoleWindow.setReadOnly(True)
-        self.consoleWindow.setFontFamily("Monospace")
-        self.consoleWindow.setFontPointSize(11)
+        self.console_window = QTextEdit()
+        self.console_window.setReadOnly(True)
+        self.console_window.setFontFamily("Monospace")
+        self.console_window.setFontPointSize(11)
 
-        v_Layout = QVBoxLayout(self)
-        v_Layout.addWidget(self.consoleWindow)
+        v_layout = QVBoxLayout(self)
+        v_layout.addWidget(self.console_window)
 
 
     def center(self):
@@ -130,13 +130,13 @@ class ConsoleDialog(QDialog):
     @pyqtSlot(str)
     def update_status(self, status):
         """
-        Print the output from stdin/ stderr to `consoleWindow`.
+        Print the output from stdin/ stderr to `console_window`.
         """
-        metrix = QFontMetrics(self.consoleWindow.font())
-        clippedText = metrix.elidedText(
-            status, Qt.ElideNone, self.consoleWindow.width()
+        metrix = QFontMetrics(self.console_window.font())
+        formatted_text = metrix.elidedText(
+            status, Qt.ElideNone, self.console_window.width()
         )
-        self.consoleWindow.append(clippedText)
+        self.console_window.append(formatted_text)
 
 
     def finish_success(self):
