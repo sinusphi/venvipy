@@ -245,7 +245,7 @@ class VenvTable(QTableView):
         Write the requirements of the selected environment to file.
         """
         active_dir = get_active_dir_str()
-        venv = self.get_selected_item()    
+        venv = self.get_selected_item() 
 
         if self.has_pip(active_dir, venv):
             save_file = QFileDialog.getSaveFileName(self, "Save requirements")
