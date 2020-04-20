@@ -147,6 +147,24 @@ class VenvTable(QTableView):
             self.context_menu.popup(QCursor.pos())
 
 
+    def has_pip(self, venv_dir, venv_name):
+        """
+        Test if `pip` is installed.
+        """
+        pip_binary = os.path.join(venv_dir, venv_name, "bin", "pip")
+        has_pip = os.path.exists(pip_binary)
+
+        if has_pip:
+            return True
+
+        QMessageBox.information(
+            self,
+            "Info",
+            "This environment has been created without pip."
+        )
+        return False
+
+
     def get_selected_item(self):
         """
         Get the venv name of the selected row.
@@ -158,23 +176,27 @@ class VenvTable(QTableView):
 
 
     def upgrade_pip(self, event):
+        """
+        Run `pip install --upgrade pip` command.
+        """
         active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
-        self.console = ConsoleDialog()
-        self.console.setWindowTitle("Updating Pip")
+        if self.has_pip(active_dir, venv):
+            self.console = ConsoleDialog()
+            self.console.setWindowTitle("Updating Pip")
 
-        #print("[PROCESS]: Updating Pip to the latest version...")
-        self.manager = PipManager(active_dir, venv)
-        self.manager.run_pip(cmds[0], [opts[0], "pip"])
-        self.manager.started.connect(self.console.exec_)
+            #print("[PROCESS]: Updating Pip to the latest version...")
+            self.manager = PipManager(active_dir, venv)
+            self.manager.run_pip(cmds[0], [opts[0], "pip"])
+            self.manager.started.connect(self.console.exec_)
 
-        # display the updated output
-        self.manager.textChanged.connect(self.console.update_status)
+            # display the updated output
+            self.manager.textChanged.connect(self.console.update_status)
 
-        # clear the content on window close
-        if self.console.close:
-            self.console.console_window.clear()
+            # clear the content on window close
+            if self.console.close:
+                self.console.console_window.clear()
 
 
     def add_modules(self, event):
@@ -189,20 +211,70 @@ class VenvTable(QTableView):
         Install modules from a requirements file into the
         selected environment.
         """
-        file_name = QFileDialog.getOpenFileName(self, "Select a requirements")
-        file_path = file_name[0]
         active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
-        if file_path != "":
-            fix_requirements(file_path)
+        if self.has_pip(active_dir, venv):
+            file_name = QFileDialog.getOpenFileName(
+                self,
+                "Select a requirements"
+            )
+            file_path = file_name[0]
 
+            if file_path != "":
+                fix_requirements(file_path)
+
+                self.console = ConsoleDialog()
+                self.console.setWindowTitle("Installing from requirements")
+
+                #print("[PROCESS]: Installing from requirements...")
+                self.manager = PipManager(active_dir, venv)
+                self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
+                self.manager.started.connect(self.console.exec_)
+
+                # display the updated output
+                self.manager.textChanged.connect(self.console.update_status)
+
+                # clear the content on window close
+                if self.console.close:
+                    self.console.console_window.clear()
+
+
+    def save_requires(self, event):
+        """
+        Write the requirements of the selected environment to file.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()    
+
+        if self.has_pip(active_dir, venv):
+            save_file = QFileDialog.getSaveFileName(self, "Save requirements")
+            save_path = save_file[0]
+
+            if save_path != "":
+                # write 'pip freeze' output to selected file
+                self.manager = PipManager(active_dir, venv)
+                self.manager.run_pip(cmds[2], [">", save_path])
+
+                # show an info message
+                message_txt = (f"Saved requirements in: \n{save_path}")
+                QMessageBox.information(self, "Saved", message_txt)
+
+
+    def list_modules(self, event, style):
+        """
+        Open console dialog and list the installed modules.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+
+        if self.has_pip(active_dir, venv):
             self.console = ConsoleDialog()
-            self.console.setWindowTitle("Installing from requirements")
+            self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
-            #print("[PROCESS]: Installing from requirements...")
-            self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
+            #print("[PROCESS]: Listing modules...")
+            self.manager = PipManager(active_dir, f"'{venv}'")
+            self.manager.run_pip(cmds[style])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -213,51 +285,9 @@ class VenvTable(QTableView):
                 self.console.console_window.clear()
 
 
-    def save_requires(self, event):
-        """
-        Write the requirements of the selected environment to file.
-        """
-        save_file = QFileDialog.getSaveFileName(self, "Save requirements")
-        save_path = save_file[0]
-        active_dir = get_active_dir_str()
-        venv = self.get_selected_item()
-
-        if save_path != "":
-            # write 'pip freeze' output to selected file
-            self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(cmds[2], [">", save_path])
-
-            # show an info message
-            message_txt = (f"Saved requirements in: \n{save_path}")
-            QMessageBox.information(self, "Saved", message_txt)
-
-
-    def list_modules(self, event, style):
-        """
-        Open console dialog and list the installed modules.
-        """
-        active_dir = get_active_dir_str()
-        venv = self.get_selected_item()
-
-        self.console = ConsoleDialog()
-        self.console.setWindowTitle(f"Modules installed in:  {venv}")
-
-        #print("[PROCESS]: Listing modules...")
-        self.manager = PipManager(active_dir, f"'{venv}'")
-        self.manager.run_pip(cmds[style])
-        self.manager.started.connect(self.console.exec_)
-
-        # display the updated output
-        self.manager.textChanged.connect(self.console.update_status)
-
-        # clear the content on window close
-        if self.console.close:
-            self.console.console_window.clear()
-
-
     def freeze_output(self, event, style):
         """
-        Show `pip freeze` output in console window.
+        Print `pip freeze` output to console window.
         """
         self.list_modules(event, style)
 
@@ -267,38 +297,38 @@ class VenvTable(QTableView):
         Test if `pipdeptree` is installed and ask user wether to
         install it if it's not. Then call `self.list_modules()`
         """
-        active_dir = get_active_dir_str()
-        venv = self.get_selected_item()
         message_txt = (
             "This requires the pipdeptree package\nto be installed.\n\n"
             "Do you want to install it?\n"
         )
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
         pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
         has_pipdeptree = os.path.exists(pipdeptree_binary)
 
-        if not has_pipdeptree:
-            msg_box_confirm = QMessageBox.question(
-                self,
-                "Confirm",
-                message_txt,
-                QMessageBox.Yes | QMessageBox.Cancel
-            )
-
-            if msg_box_confirm == QMessageBox.Yes:
-                self.progress_bar = ProgBarDialog()
-                self.progress_bar.setWindowTitle("Installing")
-                self.progress_bar.status_label.setText(
-                    "Installing pipdeptree..."
-                )
-                #print(f"[PROCESS]: Installing pipdeptree...")
-                self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
-                self.manager.started.connect(self.progress_bar.exec_)
-                self.manager.finished.connect(self.progress_bar.close)
-                self.manager.process_stop()
-                self.list_modules(event, style)
-        else:
+        if has_pipdeptree:
             self.list_modules(event, style)
+        else:
+            if self.has_pip(active_dir, venv):
+                msg_box_confirm = QMessageBox.question(
+                    self,
+                    "Confirm",
+                    message_txt,
+                    QMessageBox.Yes | QMessageBox.Cancel
+                )
+                if msg_box_confirm == QMessageBox.Yes:
+                    self.progress_bar = ProgBarDialog()
+                    self.progress_bar.setWindowTitle("Installing")
+                    self.progress_bar.status_label.setText(
+                        "Installing pipdeptree..."
+                    )
+                    #print(f"[PROCESS]: Installing pipdeptree...")
+                    self.manager = PipManager(active_dir, venv)
+                    self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
+                    self.manager.started.connect(self.progress_bar.exec_)
+                    self.manager.finished.connect(self.progress_bar.close)
+                    self.manager.process_stop()
+                    self.list_modules(event, style)
 
 
     def delete_venv(self, event):
