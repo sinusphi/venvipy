@@ -475,10 +475,10 @@ class InstallModules(QWizardPage):
             ["Name", "Version", "Description"]
         )
 
-        # reconnect 'next' button to self.wizard().next()
+        # connect 'next' button to self.save_requirements()
         self.next_button = self.wizard().button(QWizard.NextButton)
         self.next_button.disconnect()
-        self.next_button.clicked.connect(self.wizard().next)
+        self.next_button.clicked.connect(self.save_requirements)
 
         # remove focus from 'next' button
         QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
@@ -564,10 +564,9 @@ class InstallModules(QWizardPage):
 
     def install_module(self):
         """
-        Get the name of the double-clicked item from the results table
-        view and ask user for confirmation before installing. If confirmed
-        install the selected module into the created virtual environment,
-        else abort.
+        Get the name of the selected item from the results table. Ask user
+        for confirmation before installing. If user confirmes, install the
+        selected module into the created virtual environment, else abort.
         """
         indexes = self.selectionModel.selectedRows()
         for index in sorted(indexes):
@@ -608,10 +607,6 @@ class InstallModules(QWizardPage):
                 self.pkgNameLineEdit.clear()
                 self.pkgNameLineEdit.setFocus(True)
 
-                # connect 'next' button to self.save_requirements()
-                self.next_button.disconnect()
-                self.next_button.clicked.connect(self.save_requirements)
-
 
     def save_requirements(self):
         """
@@ -640,8 +635,10 @@ class InstallModules(QWizardPage):
                 message_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
                 self.wizard().next()
+
         else:
             self.wizard().next()
+
         self.setEnabled(True)
 
 
