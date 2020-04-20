@@ -73,29 +73,38 @@ class PipManager(QObject):
             if options is None:
                 options = []
 
+            pip = f"pip {command} {' '.join(options)};"
+            pipdeptree = f"pipdeptree {' '.join(options)};"
+            task = pipdeptree if command == "pipdeptree" else pip
+
             script = (
                 f"source {self._venv_name}/bin/activate;" \
-                f"pip {command} {' '.join(options)};" \
+                f"{task}" \
                 "deactivate;"
             )
 
             self._process.start("bash", ["-c", script])
 
 
+    def process_stop(self):
+        """Stop the process."""
+        self._process.close()
+
+
     @pyqtSlot(QProcess.ProcessState)
     def onStateChanged(self, state):
-        """Show the current process status."""
-        if state == QProcess.NotRunning:
+        """Show the current process state."""
+        if state == QProcess.Starting:
+            #print("[PROCESS]: Started")
+            pass
+        elif state == QProcess.Running:
+            #print("[PROCESS]: Running")
+            pass
+        elif state == QProcess.NotRunning:
             #print("[PROCESS]: Stopped")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
             )
-        elif state == QProcess.Starting:
-            pass
-            #print("[PROCESS]: Started")
-        elif state == QProcess.Running:
-            pass
-            #print("[PROCESS]: Running")
 
 
     @pyqtSlot(int, QProcess.ExitStatus)
