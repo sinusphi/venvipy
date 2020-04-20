@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 )
 
 from get_data import get_active_dir_str
-from dialogs import ConsoleDialog
+from dialogs import ConsoleDialog, ProgBarDialog
 from manage_pip import PipManager
 from creator import (
     fix_requirements,
@@ -37,29 +37,25 @@ class VenvTable(QTableView):
         self.context_menu = QMenu(self)
 
         # sub menus
-        self.detailsSubMenu = QMenu(
+        self.details_sub_menu = QMenu(
             "Det&ails",
             self,
             icon=QIcon.fromTheme("info")
         )
 
-        self.installSubMenu = QMenu(
+        self.install_sub_menu = QMenu(
             "&Install",
             self,
             icon=QIcon.fromTheme("software-install")
         )
 
-        # actions
         upgrade_pip_action = QAction(
             QIcon.fromTheme("system-software-update"),
             "&Upgrade Pip to latest",
             self,
             statusTip="Upgrade Pip to the latest version"
         )
-        self.context_menu.addAction(upgrade_pip_action)
         upgrade_pip_action.triggered.connect(lambda: self.upgrade_pip(event))
-
-        self.context_menu.addMenu(self.installSubMenu)
 
         add_modules_action = QAction(
             QIcon.fromTheme("list-add"),
@@ -67,7 +63,6 @@ class VenvTable(QTableView):
             self,
             statusTip="Install additional modules"
         )
-        self.installSubMenu.addAction(add_modules_action)
         add_modules_action.triggered.connect(lambda: self.add_modules(event))
 
         install_requires_action = QAction(
@@ -76,7 +71,6 @@ class VenvTable(QTableView):
             self,
             statusTip="Install modules from requirements"
         )
-        self.installSubMenu.addAction(install_requires_action)
         install_requires_action.triggered.connect(
             lambda: self.install_requires(event)
         )
@@ -87,13 +81,9 @@ class VenvTable(QTableView):
             self,
             statusTip="Write requirements to file"
         )
-        self.context_menu.addAction(save_requires_action)
         save_requires_action.triggered.connect(
             lambda: self.save_requires(event)
         )
-
-        #self.context_menu.addSeparator()
-        self.context_menu.addMenu(self.detailsSubMenu)
 
         list_modules_action = QAction(
             QIcon.fromTheme("dialog-information"),
@@ -101,7 +91,6 @@ class VenvTable(QTableView):
             self,
             statusTip="List installed modules"
         )
-        self.detailsSubMenu.addAction(list_modules_action)
         list_modules_action.triggered.connect(
             lambda: self.list_modules(event, style=1)
         )
@@ -112,20 +101,18 @@ class VenvTable(QTableView):
             self,
             statusTip="List the output of 'pip freeze'"
         )
-        self.detailsSubMenu.addAction(freeze_action)
         freeze_action.triggered.connect(
             lambda: self.freeze_output(event, style=2)
         )
 
-        dep_tree_action = QAction(
+        pipdeptree_action = QAction(
             QIcon.fromTheme("dialog-information"),
-            "Show &freeze output",
+            "Show &dependencie tree",
             self,
-            statusTip="List the output of 'pip freeze'"
+            statusTip="List dependencies with 'pipdeptree'"
         )
-        self.detailsSubMenu.addAction(dep_tree_action)
-        dep_tree_action.triggered.connect(
-            lambda: self.dep_tree_output(event, style=3)
+        pipdeptree_action.triggered.connect(
+            lambda: self.pipdeptree_output(event, style=3)
         )
 
         delete_venv_action = QAction(
@@ -134,8 +121,26 @@ class VenvTable(QTableView):
             self,
             statusTip="Delete environment"
         )
+        delete_venv_action.triggered.connect(
+            lambda: self.delete_venv(event)
+        )
+
+        self.context_menu.addAction(upgrade_pip_action)
+
+        # install sub menu
+        self.context_menu.addMenu(self.install_sub_menu)
+        self.install_sub_menu.addAction(add_modules_action)
+        self.install_sub_menu.addAction(install_requires_action)
+
+        self.context_menu.addAction(save_requires_action)
+
+        # details sub meun
+        self.context_menu.addMenu(self.details_sub_menu)
+        self.details_sub_menu.addAction(list_modules_action)
+        self.details_sub_menu.addAction(freeze_action)
+        self.details_sub_menu.addAction(pipdeptree_action)
+
         self.context_menu.addAction(delete_venv_action)
-        delete_venv_action.triggered.connect(lambda: self.delete_venv(event))
 
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
@@ -254,7 +259,46 @@ class VenvTable(QTableView):
         """
         Show `pip freeze` output in console window.
         """
-        self.list_modules(event, style=2)
+        self.list_modules(event, style)
+
+
+    def pipdeptree_output(self, event, style):
+        """
+        Test if `pipdeptree` is installed and ask user wether to
+        install it if it's not. Then call `self.list_modules()`
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+        message_txt = (
+            "This requires the pipdeptree package\nto be installed.\n\n"
+            "Do you want to install it?\n"
+        )
+        pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
+        has_pipdeptree = os.path.exists(pipdeptree_binary)
+
+        if not has_pipdeptree:
+            msg_box_confirm = QMessageBox.question(
+                self,
+                "Confirm",
+                message_txt,
+                QMessageBox.Yes | QMessageBox.Cancel
+            )
+
+            if msg_box_confirm == QMessageBox.Yes:
+                self.progress_bar = ProgBarDialog()
+                self.progress_bar.setWindowTitle("Installing")
+                self.progress_bar.status_label.setText(
+                    "Installing pipdeptree..."
+                )
+                #print(f"[PROCESS]: Installing pipdeptree...")
+                self.manager = PipManager(active_dir, venv)
+                self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
+                self.manager.started.connect(self.progress_bar.exec_)
+                self.manager.finished.connect(self.progress_bar.close)
+                self.manager.process_stop()
+                self.list_modules(event, style)
+        else:
+            self.list_modules(event, style)
 
 
     def delete_venv(self, event):
