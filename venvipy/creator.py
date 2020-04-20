@@ -12,7 +12,7 @@ from manage_pip import PipManager
 
 
 # pip commands and options
-cmds = ["install --no-cache-dir", "list", "freeze"]
+cmds = ["install --no-cache-dir", "list", "freeze", "pipdeptree"]
 opts = ["--upgrade", "--requirement"]
 
 
