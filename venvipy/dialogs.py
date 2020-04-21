@@ -147,6 +147,7 @@ class ConsoleDialog(QDialog):
             "Environment cloned successfully.\n\n"
             "All modules have been \ninstalled without errors.\n"
         )
+        print("[PROCESS]: Environment cloned successfully")
         QMessageBox.information(self, "Done", message_txt)
 
 
@@ -158,6 +159,7 @@ class ConsoleDialog(QDialog):
             "Could not install from requirements.\n\n"
             "File not found.\n"
         )
+        print("[ERROR]: Could not install from requirements")
         QMessageBox.critical(self, "Error", message_txt)
 
 

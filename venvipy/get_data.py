@@ -98,7 +98,10 @@ def get_python_vers(pyvenv_cfg):
     with open(pyvenv_cfg, "r") as f:
         lines = f.readlines()
 
-    return f"Python {lines[2][10:]}".strip()
+    python_path = lines[0][7:]  # e.g. /usr/local/bin
+    python_version = lines[2][10:]  # e.g. 3.8.2
+
+    return f"Python {python_version}".strip()
 
 
 def get_active_dir_str():
@@ -116,7 +119,6 @@ def get_active_dir_str():
         with open(active_file, "w+") as f:
             active_dir = f.write("")
             return active_dir
-
     return []
 
 

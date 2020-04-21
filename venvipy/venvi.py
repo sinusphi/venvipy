@@ -388,7 +388,7 @@ class Ui_MainWindow(QMainWindow):
         self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
 
         if not get_python_installs():
-            #print("[WARNING]: No suitable Python installation found!")
+            print("[WARNING]: No suitable Python installation found!")
 
             if self.messageBox.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
@@ -462,7 +462,7 @@ class Ui_MainWindow(QMainWindow):
                 for i, text in enumerate((info.py_version, info.py_path)):
                     self.modelTV1.setItem(0, i, QStandardItem(text))
 
-                #print(f"[PYTHON]: {info}")
+                print(f"[PYTHON]: {info}")
 
 
     def popVenvTable(self):
@@ -477,7 +477,7 @@ class Ui_MainWindow(QMainWindow):
             for i, text in enumerate((info.venv_name, info.venv_version)):
                 self.modelTV2.setItem(0, i, QStandardItem(text))
 
-            #print(f"[VENV]: {info}")
+            print(f"[VENV]: {info}")
 
 
     def select_folder(self):
@@ -497,10 +497,10 @@ class Ui_MainWindow(QMainWindow):
         if active_dir != "":
             with open(active_file, "w") as f:
                 f.write(active_dir)
-                #print(
-                    #"[INFO]: Setting active dir to "
-                    #f"'{active_dir}'"
-                #)
+                print(
+                    "[INFO]: Setting active dir to "
+                    f"'{active_dir}'"
+                )
             self.popVenvTable()
 
 

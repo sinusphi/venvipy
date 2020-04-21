@@ -73,12 +73,13 @@ class PipManager(QObject):
             if options is None:
                 options = []
 
+            venv_path = os.path.join(self._venv_dir, self._venv_name)
             pip = f"pip {command} {' '.join(options)};"
             pipdeptree = f"pipdeptree {' '.join(options)};"
             task = pipdeptree if command == "pipdeptree" else pip
 
             script = (
-                f"source {self._venv_name}/bin/activate;" \
+                f"source {venv_path}/bin/activate;" \
                 f"{task}" \
                 "deactivate;"
             )
@@ -95,13 +96,13 @@ class PipManager(QObject):
     def onStateChanged(self, state):
         """Show the current process state."""
         if state == QProcess.Starting:
-            #print("[PROCESS]: Started")
+            print("[PROCESS]: Started")
             pass
         elif state == QProcess.Running:
-            #print("[PROCESS]: Running")
+            print("[PROCESS]: Running")
             pass
         elif state == QProcess.NotRunning:
-            #print("[PROCESS]: Stopped")
+            print("[PROCESS]: Stopped")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
             )
@@ -110,7 +111,7 @@ class PipManager(QObject):
     @pyqtSlot(int, QProcess.ExitStatus)
     def onFinished(self, exitCode):
         """Show exit code when finished."""
-        #print(f"[PROCESS]: Exit code: {exitCode}")
+        print(f"[PROCESS]: Exit code: {exitCode}")
         self._process.kill()
 
 
@@ -120,7 +121,7 @@ class PipManager(QObject):
         Read from `stdout` and send the output to `update_status()`.
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
-        #print(f"[PIP]: {message}")
+        print(f"[PIP]: {message}")
         self.textChanged.emit(message)
 
 
@@ -130,7 +131,7 @@ class PipManager(QObject):
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        #print(f"[PROCESS]: {message}")
+        print(f"[PROCESS]: {message}")
         self.textChanged.emit(message)
         self.failed.emit()
         self._process.kill()

@@ -186,7 +186,7 @@ class VenvTable(QTableView):
             self.console = ConsoleDialog()
             self.console.setWindowTitle("Updating Pip")
 
-            #print("[PROCESS]: Updating Pip to the latest version...")
+            print("[PROCESS]: Updating Pip to the latest version...")
             self.manager = PipManager(active_dir, venv)
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
             self.manager.started.connect(self.console.exec_)
@@ -227,7 +227,7 @@ class VenvTable(QTableView):
                 self.console = ConsoleDialog()
                 self.console.setWindowTitle("Installing from requirements")
 
-                #print("[PROCESS]: Installing from requirements...")
+                print("[PROCESS]: Installing from requirements...")
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
                 self.manager.started.connect(self.console.exec_)
@@ -245,7 +245,7 @@ class VenvTable(QTableView):
         Write the requirements of the selected environment to file.
         """
         active_dir = get_active_dir_str()
-        venv = self.get_selected_item() 
+        venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
             save_file = QFileDialog.getSaveFileName(self, "Save requirements")
@@ -272,7 +272,7 @@ class VenvTable(QTableView):
             self.console = ConsoleDialog()
             self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
-            #print("[PROCESS]: Listing modules...")
+            print("[PROCESS]: Listing modules...")
             self.manager = PipManager(active_dir, f"'{venv}'")
             self.manager.run_pip(cmds[style])
             self.manager.started.connect(self.console.exec_)
@@ -322,7 +322,7 @@ class VenvTable(QTableView):
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
                     )
-                    #print(f"[PROCESS]: Installing pipdeptree...")
+                    print(f"[PROCESS]: Installing pipdeptree...")
                     self.manager = PipManager(active_dir, venv)
                     self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
                     self.manager.started.connect(self.progress_bar.exec_)
@@ -349,9 +349,9 @@ class VenvTable(QTableView):
 
                 venv_to_delete = os.path.join(active_dir, venv)
                 shutil.rmtree(venv_to_delete)
-                #print(
-                    #f"[PROCESS]: Successfully deleted '{active_dir}/{venv}'"
-                #)
+                print(
+                    f"[PROCESS]: Successfully deleted '{active_dir}/{venv}'"
+                )
 
                 self.refresh.emit()
 

@@ -34,7 +34,7 @@ class CreationWorker(QObject):
         Execute the required steps to create the virtual environment.
         """
         self.started.emit()
-        #print("[PROCESS]: Creating virtual environment...")
+        print("[PROCESS]: Creating virtual environment...")
 
         py_vers, name, location, with_pip, site_packages, symlinks = args
         env_dir = os.path.join(location, f"'{name}'")
