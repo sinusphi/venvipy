@@ -24,7 +24,18 @@ class PythonInfo:
     py_path: str
 
 
-def get_python_installs():
+def get_python_version(path):
+    res = Popen(
+        [path, "-V"],
+        stdout=PIPE,
+        text="utf-8"
+    )
+    out, _ = res.communicate()
+    python_version = out.strip()
+    return python_version
+
+
+def get_python_installs(custom_path=None):
     """
     Get the available python versions installed.
     """
@@ -35,16 +46,14 @@ def get_python_installs():
         python_path = shutil.which(f"python{version}")
 
         if python_path is not None:
-            res = Popen(
-                [python_path, "-V"],
-                stdout=PIPE,
-                text="utf-8"
-            )
-            out, _ = res.communicate()
-            python_version = out.strip()
-
+            python_version = get_python_version(python_path)
             py_info = PythonInfo(python_version, python_path)
             py_info_list.append(py_info)
+
+    if custom_path is not None:
+        custom_version = get_python_version(custom_path)
+        custom_info = PythonInfo(custom_version, custom_path)
+        py_info_list.append(custom_info)
 
     return py_info_list
 
@@ -82,7 +91,7 @@ def get_venvs(path):
         if not os.path.isfile(cfg_file):
             continue
 
-        version_found = get_python_vers(cfg_file)
+        version_found = get_pyvenv_cfg(cfg_file)
 
         venv_info = VenvInfo(os.path.basename(valid_venv), version_found)
         venv_info_list.append(venv_info)
@@ -90,7 +99,7 @@ def get_venvs(path):
     return venv_info_list
 
 
-def get_python_vers(pyvenv_cfg):
+def get_pyvenv_cfg(pyvenv_cfg):
     """
     Get the Python version of a virtual environment by
     reading the version str from it's `pyvenv.cfg` file.
