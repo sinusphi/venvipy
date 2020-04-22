@@ -45,17 +45,17 @@ import wizard
 
 
 
-class Ui_MainWindow(QMainWindow):
+class MainWindow(QMainWindow):
     """
     The main window.
     """
     def __init__(self):
         super().__init__()
 
-        self.initUI()
+        self.init_ui()
 
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle("VenviPy")
         self.resize(900, 570)
         self.center()
@@ -105,11 +105,11 @@ class Ui_MainWindow(QMainWindow):
             """
         )
 
-        self.appInfo = AppInfoDialog()
+        self.app_info_dialog = AppInfoDialog()
         self.venv_wizard = wizard.VenvWizard()
 
         # refresh venv table when wizard closed
-        self.venv_wizard.refresh.connect(self.popVenvTable)
+        self.venv_wizard.refresh.connect(self.pop_venv_table)
 
 
         #]===================================================================[#
@@ -132,14 +132,14 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         centralwidget = QWidget(self)
-        gridLayout = QGridLayout(centralwidget)
+        grid_layout = QGridLayout(centralwidget)
 
-        v_Layout1 = QVBoxLayout()
-        v_Layout2 = QVBoxLayout()
-        h_Layout1 = QHBoxLayout()
+        v_layout_1 = QVBoxLayout()
+        v_layout_2 = QVBoxLayout()
+        h_layout_1 = QHBoxLayout()
 
-        v_Layout1.setContentsMargins(12, 19, 5, -1)
-        v_Layout2.setContentsMargins(-1, 4, 6, -1)
+        v_layout_1.setContentsMargins(12, 19, 5, -1)
+        v_layout_2.setContentsMargins(-1, 4, 6, -1)
 
         # python logo
         self.logo = QLabel(centralwidget)
@@ -151,57 +151,60 @@ class Ui_MainWindow(QMainWindow):
         #] BUTTONS [#========================================================[#
         #]===================================================================[#
 
-        self.addButton = QPushButton(
-            "Add Interpreter", centralwidget,
+        self.add_interpreter_button = QPushButton(
+            "Add &Interpreter",
+            centralwidget,
             statusTip="Add an Interpreter",
-            clicked=self.selectInterpreter
+            clicked=self.add_interpreter
         )
-        self.addButton.setMinimumSize(QSize(150, 0))
+        self.add_interpreter_button.setMinimumSize(QSize(150, 0))
 
-        self.newVenvButton = QPushButton(
-            "New Venv", centralwidget,
+        self.new_venv_button = QPushButton(
+            "&New Venv",
+            centralwidget,
             statusTip="Create a new virtual environment",
             clicked=self.venv_wizard.exec_
         )
 
-        #self.manageVenvButton = QPushButton(
-            #"Manage Venvs", centralwidget,
-            #statusTip="Manage virtual environments"
-            #clicked=self.openManager
-        #)
+        self.search_pypi_button = QPushButton(
+            "&Search PyPI",
+            centralwidget,
+            statusTip="Search the Python Package Index",
+            clicked=self.search_pypi
+        )
 
-        self.exitButton = QPushButton(
+        self.exit_button = QPushButton(
             "Quit", centralwidget,
             statusTip="Quit Application",
             clicked=self.on_close
         )
 
-        self.changeDirToolButton = QToolButton(
+        self.change_dir_button = QToolButton(
             icon=folder_icon,
             toolTip="Switch directory",
             statusTip="Select another directory",
             clicked=self.select_folder
         )
-        self.changeDirToolButton.setFixedSize(30, 30)
+        self.change_dir_button.setFixedSize(30, 30)
 
         # use line edit to store the str
-        self.dirLineEdit = QLineEdit()
+        self.directory_line = QLineEdit()
 
         #]===================================================================[#
         # spacer between manage button and exit button
-        spacerItem1 = QSpacerItem(
+        spacer_item_1 = QSpacerItem(
             20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
         )
         #]===================================================================[#
 
-        v_Layout2.addWidget(self.logo)
-        v_Layout2.addWidget(self.addButton)
-        v_Layout2.addWidget(self.newVenvButton)
-        #v_Layout2.addWidget(self.manageVenvButton)
-        v_Layout2.addItem(spacerItem1)
-        v_Layout2.addWidget(self.exitButton)
+        v_layout_2.addWidget(self.logo)
+        v_layout_2.addWidget(self.add_interpreter_button)
+        v_layout_2.addWidget(self.new_venv_button)
+        v_layout_2.addWidget(self.search_pypi_button)
+        v_layout_2.addItem(spacer_item_1)
+        v_layout_2.addWidget(self.exit_button)
 
-        gridLayout.addLayout(v_Layout2, 0, 1, 1, 1)
+        grid_layout.addLayout(v_layout_2, 0, 1, 1, 1)
 
 
         #]===================================================================[#
@@ -209,7 +212,7 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # interpreter table header
-        interprTableLabel = QLabel(
+        interpreter_table_label = QLabel(
             '<span style="font-size: 13pt;">\
                 <b>Available Interpreters</b>\
             </span>',
@@ -217,7 +220,7 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # interpreter table
-        interprTable = QTableView(
+        interpreter_table = QTableView(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
@@ -225,30 +228,32 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # adjust vertical headers
-        v_HeaderTV1 = interprTable.verticalHeader()
-        v_HeaderTV1.setDefaultSectionSize(27)
-        v_HeaderTV1.hide()
+        v_header_interpreter_table = interpreter_table.verticalHeader()
+        v_header_interpreter_table.setDefaultSectionSize(27)
+        v_header_interpreter_table.hide()
 
         # adjust (horizontal) headers
-        h_HeaderTV1 = interprTable.horizontalHeader()
-        h_HeaderTV1.setDefaultAlignment(Qt.AlignLeft)
-        h_HeaderTV1.setDefaultSectionSize(180)
-        h_HeaderTV1.setStretchLastSection(True)
+        h_header_interpreter_table = interpreter_table.horizontalHeader()
+        h_header_interpreter_table.setDefaultAlignment(Qt.AlignLeft)
+        h_header_interpreter_table.setDefaultSectionSize(180)
+        h_header_interpreter_table.setStretchLastSection(True)
 
         # set table view model
-        self.modelTV1 = QStandardItemModel(0, 2, centralwidget)
-        self.modelTV1.setHorizontalHeaderLabels(["Version", "Path"])
-        interprTable.setModel(self.modelTV1)
+        self.model_interpreter_table = QStandardItemModel(0, 2, centralwidget)
+        self.model_interpreter_table.setHorizontalHeaderLabels(
+            ["Version", "Path"]
+        )
+        interpreter_table.setModel(self.model_interpreter_table)
 
         #]===================================================================[#
         # spacer between interpreter table and venv table title
-        spacerItem2 = QSpacerItem(
+        spacer_item_2 = QSpacerItem(
             20, 12, QSizePolicy.Minimum, QSizePolicy.Fixed
         )
         #]===================================================================[#
 
         # venv table header
-        venvTableLabel = QLabel(
+        venv_table_label = QLabel(
             '<span style="font-size: 13pt;">\
                 <b>Available virtual environments</b>\
             </span>',
@@ -256,61 +261,45 @@ class Ui_MainWindow(QMainWindow):
         )
 
         # venv table
-        venvTable = VenvTable(
+        venv_table = VenvTable(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            refresh=self.popVenvTable  # signal
+            refresh=self.pop_venv_table  # signal
         )
 
         # adjust vertical headers
-        v_HeaderTV2 = venvTable.verticalHeader()
-        v_HeaderTV2.setDefaultSectionSize(27)
-        v_HeaderTV2.hide()
+        v_header_venv_table = venv_table.verticalHeader()
+        v_header_venv_table.setDefaultSectionSize(27)
+        v_header_venv_table.hide()
 
         # adjust (horizontal) headers
-        h_HeaderTV2 = venvTable.horizontalHeader()
-        h_HeaderTV2.setDefaultAlignment(Qt.AlignLeft)
-        h_HeaderTV2.setDefaultSectionSize(180)
-        h_HeaderTV2.setStretchLastSection(True)
+        h_header_venv_table = venv_table.horizontalHeader()
+        h_header_venv_table.setDefaultAlignment(Qt.AlignLeft)
+        h_header_venv_table.setDefaultSectionSize(180)
+        h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
-        self.modelTV2 = QStandardItemModel(0, 2, centralwidget)
-        self.modelTV2.setHorizontalHeaderLabels(
+        self.model_venv_table = QStandardItemModel(0, 2, centralwidget)
+        self.model_venv_table.setHorizontalHeaderLabels(
             ["Venv Name", "Version"]
         )
-        venvTable.setModel(self.modelTV2)
+        venv_table.setModel(self.model_venv_table)
 
         # add widgets to layout
-        v_Layout1.addWidget(interprTableLabel)
-        v_Layout1.addWidget(interprTable)
-        v_Layout1.addItem(spacerItem2)
-        v_Layout1.addLayout(h_Layout1)
-        h_Layout1.addWidget(venvTableLabel)
-        h_Layout1.addWidget(self.changeDirToolButton)
-        v_Layout1.addWidget(venvTable)
+        v_layout_1.addWidget(interpreter_table_label)
+        v_layout_1.addWidget(interpreter_table)
+        v_layout_1.addItem(spacer_item_2)
+        v_layout_1.addLayout(h_layout_1)
+        h_layout_1.addWidget(venv_table_label)
+        h_layout_1.addWidget(self.change_dir_button)
+        v_layout_1.addWidget(venv_table)
 
-        gridLayout.addLayout(v_Layout1, 0, 0, 1, 1)
+        grid_layout.addLayout(v_layout_1, 0, 0, 1, 1)
 
         self.setCentralWidget(centralwidget)
-
-
-        #]===================================================================[#
-        #] MENUS [#==========================================================[#
-        #]===================================================================[#
-
-        statusBar = QStatusBar(self)
-
-        menuBar = QMenuBar(self)
-        menuBar.setGeometry(QRect(0, 0, 740, 24))
-
-        self.menuVenv = QMenu("&Venv", menuBar)
-        self.menuHelp = QMenu("&Help", menuBar)
-
-        self.setMenuBar(menuBar)
-        self.setStatusBar(statusBar)
 
 
         #]===================================================================[#
@@ -318,54 +307,84 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # create actions
-        self.actAddInterpreter = QAction(
-            find_icon, "Add &Interpreter", self,
-            statusTip="Add an Interpreter", shortcut="Ctrl+I",
-            triggered=self.selectInterpreter
+        self.action_add_interpreter = QAction(
+            find_icon,
+            "Add &Interpreter",
+            self,
+            statusTip="Add an Interpreter",
+            shortcut="Ctrl+I",
+            triggered=self.add_interpreter
         )
 
-        self.actNewVenv = QAction(
-            new_icon, "&New Venv", self,
+        self.action_new_venv = QAction(
+            new_icon,
+            "&New Venv",
+            self,
             statusTip="Create a new virtual environment",
-            shortcut="Ctrl+N", triggered=self.venv_wizard.exec_
+            shortcut="Ctrl+N",
+            triggered=self.venv_wizard.exec_
         )
 
-        #self.actManageVenvs = QAction(
-            #manage_icon, "&Manage Venvs", self,
-            #statusTip="Manage your virtual environments",
-            #shortcut="Ctrl+M", #triggered=self.openManager
-        #)
+        self.action_search_pypi = QAction(
+            manage_icon,
+            "&Search PyPI",
+            self,
+            statusTip="Search the Python Package Index",
+            shortcut="Ctrl+S",
+            triggered=self.search_pypi
+        )
 
-        self.actSelectDefaultDir = QAction(
+        self.action_select_active_dir = QAction(
             settings_icon, "Change active &directory", self,
             statusTip="Change active directory",
             shortcut="Ctrl+D", triggered=self.select_folder
         )
 
-        self.actExit = QAction(
-            exit_icon, "&Quit", self,
+        self.action_exit = QAction(
+            exit_icon,
+            "&Quit",
+            self,
             statusTip="Quit application",
-            shortcut="Ctrl+Q", triggered=self.on_close
+            shortcut="Ctrl+Q",
+            triggered=self.on_close
         )
 
-        self.actAbout = QAction(
-            info_icon, "&About", self,
+        self.action_about = QAction(
+            info_icon,
+            "&About",
+            self,
             statusTip="About VenviPy",
-            shortcut="Ctrl+B", triggered=self.appInfo.exec_
+            shortcut="Ctrl+B",
+            triggered=self.app_info_dialog.exec_
         )
 
-        # add actions to menus
-        self.menuVenv.addAction(self.actAddInterpreter)
-        self.menuVenv.addSeparator()
-        self.menuVenv.addAction(self.actNewVenv)
-        #self.menuVenv.addAction(self.actManageVenvs)
-        self.menuVenv.addAction(self.actSelectDefaultDir)
-        self.menuVenv.addSeparator()
-        self.menuVenv.addAction(self.actExit)
-        self.menuHelp.addAction(self.actAbout)
+        #]===================================================================[#
+        #] MENUS [#==========================================================[#
+        #]===================================================================[#
 
-        menuBar.addAction(self.menuVenv.menuAction())
-        menuBar.addAction(self.menuHelp.menuAction())
+        status_bar = QStatusBar(self)
+        self.setStatusBar(status_bar)
+
+        menu_bar = QMenuBar(self)
+        menu_bar.setGeometry(QRect(0, 0, 740, 24))
+        self.setMenuBar(menu_bar)
+
+        menu_venv = QMenu("&Venv", menu_bar)
+        menu_venv.addAction(self.action_add_interpreter)
+        menu_venv.addSeparator()
+        menu_venv.addAction(self.action_new_venv)
+        menu_venv.addAction(self.action_select_active_dir)
+        menu_venv.addSeparator()
+        menu_venv.addAction(self.action_exit)
+        menu_bar.addAction(menu_venv.menuAction())
+
+        menu_extras = QMenu("&Extras", menu_bar)
+        menu_extras.addAction(self.action_search_pypi)
+        menu_bar.addAction(menu_extras.menuAction())
+
+        menu_help = QMenu("&Help", menu_bar)
+        menu_help.addAction(self.action_about)
+        menu_bar.addAction(menu_help.menuAction())
 
 
         #]===================================================================[#
@@ -373,26 +392,26 @@ class Ui_MainWindow(QMainWindow):
         #]===================================================================[#
 
         # display a message box if no Python installation is found at all
-        messageText = (
+        msg_txt = (
             "No suitable Python installation found!\n\n"
             "Please specify the path to a Python (>=3.3) \n"
             "installation or click Continue to go on anyway.\n\n"
         )
 
-        self.messageBox = QMessageBox(
+        self.msg_box = QMessageBox(
             QMessageBox.Critical, "VenviPy Launcher",
-            messageText, QMessageBox.NoButton, self
+            msg_txt, QMessageBox.NoButton, self
         )
 
-        self.messageBox.addButton("&Search", QMessageBox.AcceptRole)
-        self.messageBox.addButton("&Continue", QMessageBox.RejectRole)
+        self.msg_box.addButton("&Search", QMessageBox.AcceptRole)
+        self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
 
         if not get_python_installs():
             print("[WARNING]: No suitable Python installation found!")
 
-            if self.messageBox.exec_() == QMessageBox.AcceptRole:
+            if self.msg_box.exec_() == QMessageBox.AcceptRole:
                 # let user specify path to an interpreter
-                self.selectInterpreter()
+                self.add_interpreter()
 
 
     def center(self):
@@ -411,7 +430,7 @@ class Ui_MainWindow(QMainWindow):
         self.close()
 
 
-    def selectInterpreter(self):
+    def add_interpreter(self):
         """
         Specify path to a python executable and add it to list.
         """
@@ -439,43 +458,43 @@ class Ui_MainWindow(QMainWindow):
             path = file_name[0]
 
             # populate the table
-            self.modelTV1.insertRow(0)
-            self.modelTV1.setItem(0, 0, QStandardItem(version))
-            self.modelTV1.setItem(0, 1, QStandardItem(path))
+            self.model_interpreter_table.insertRow(0)
+            self.model_interpreter_table.setItem(0, 0, QStandardItem(version))
+            self.model_interpreter_table.setItem(0, 1, QStandardItem(path))
 
             # pass the selected interpreter to the wizard's QComboBox
-            self.venv_wizard.basicSettings.interprComboBox.addItem(
+            self.venv_wizard.basic_settings.interpreter_combo_box.addItem(
                 f"{version}  ->  {path}", path
             )
 
 
-    def popInterprTable(self):
+    def pop_interpreter_table(self):
         """
         Populate the interpreter table view.
         """
         if get_python_installs():
-            self.modelTV1.setRowCount(0)
+            self.model_interpreter_table.setRowCount(0)
 
             for info in get_python_installs():
-                self.modelTV1.insertRow(0)
+                self.model_interpreter_table.insertRow(0)
 
                 for i, text in enumerate((info.py_version, info.py_path)):
-                    self.modelTV1.setItem(0, i, QStandardItem(text))
+                    self.model_interpreter_table.setItem(0, i, QStandardItem(text))
 
                 print(f"[PYTHON]: {info}")
 
 
-    def popVenvTable(self):
+    def pop_venv_table(self):
         """
         Populate the venv table view.
         """
-        self.modelTV2.setRowCount(0)
+        self.model_venv_table.setRowCount(0)
 
         for info in get_active_dir():
-            self.modelTV2.insertRow(0)
+            self.model_venv_table.insertRow(0)
 
             for i, text in enumerate((info.venv_name, info.venv_version)):
-                self.modelTV2.setItem(0, i, QStandardItem(text))
+                self.model_venv_table.setItem(0, i, QStandardItem(text))
 
             print(f"[VENV]: {info}")
 
@@ -488,11 +507,11 @@ class Ui_MainWindow(QMainWindow):
         directory = QFileDialog.getExistingDirectory(
             self, "Open directory containing virtual environments"
         )
-        self.dirLineEdit.setText(directory)
+        self.directory_line.setText(directory)
 
         current_dir = os.path.dirname(sys.argv[0])
         active_file = os.path.join(current_dir, "active")
-        active_dir = self.dirLineEdit.text()
+        active_dir = self.directory_line.text()
 
         if active_dir != "":
             with open(active_file, "w") as f:
@@ -501,7 +520,14 @@ class Ui_MainWindow(QMainWindow):
                     "[INFO]: Setting active dir to "
                     f"'{active_dir}'"
                 )
-            self.popVenvTable()
+            self.pop_venv_table()
+
+
+    def search_pypi(self):
+        """
+        Search the Python Package Index.
+        """
+        pass
 
 
 
@@ -509,9 +535,9 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    mainUI = Ui_MainWindow()
-    mainUI.popInterprTable()
-    mainUI.popVenvTable()
-    mainUI.show()
+    main_window = MainWindow()
+    main_window.pop_interpreter_table()
+    main_window.pop_venv_table()
+    main_window.show()
 
     sys.exit(app.exec_())

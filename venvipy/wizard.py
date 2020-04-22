@@ -111,7 +111,7 @@ class VenvWizard(QWizard):
         if self.currentId() != self.basic_settings_id:
             return super().nextId()
 
-        if self.basic_settings.withPipCBox.isChecked():
+        if self.basic_settings.with_pip_check_box.isChecked():
             return self.install_modules_id
 
         return self.final_page_id
@@ -175,97 +175,108 @@ class BasicSettings(QWizardPage):
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
 
-        interpreterLabel = QLabel("&Interpreter:")
-        self.interprComboBox = QComboBox()
-        interpreterLabel.setBuddy(self.interprComboBox)
+        interpreter_label = QLabel("&Interpreter:")
+        self.interpreter_combo_box = QComboBox()
+        interpreter_label.setBuddy(self.interpreter_combo_box)
 
-        # add the found Python versions to combobox
-        self.interprComboBox.addItem("---")
+        # add the found Python versions to combo box
+        self.interpreter_combo_box.addItem("---")
         for info in get_python_installs():
-            self.interprComboBox.addItem(
+            self.interpreter_combo_box.addItem(
                 f"{info.py_version}  ->  {info.py_path}", info.py_path
             )
 
-        venvNameLabel = QLabel("Venv &name:")
-        self.venvNameLineEdit = QLineEdit()
-        venvNameLabel.setBuddy(self.venvNameLineEdit)
+        venv_name_label = QLabel("Venv &name:")
+        self.venv_name_line = QLineEdit()
+        venv_name_label.setBuddy(self.venv_name_line)
 
-        venvLocationLabel = QLabel("&Location:")
-        self.venvLocationLineEdit = QLineEdit()
-        venvLocationLabel.setBuddy(self.venvLocationLineEdit)
+        venv_location_label = QLabel("&Location:")
+        self.venv_location_line = QLineEdit()
+        venv_location_label.setBuddy(self.venv_location_line)
 
-        self.selectDirToolButton = QToolButton(
+        self.select_dir_button = QToolButton(
             icon=folder_icon,
             toolTip="Browse",
             clicked=self.select_dir
         )
-        self.selectDirToolButton.setFixedSize(26, 27)
+        self.select_dir_button.setFixedSize(26, 27)
 
-        requirementsLabel = QLabel("Requirements &fiile:")
-        self.requirementsLineEdit = QLineEdit()
-        requirementsLabel.setBuddy(self.requirementsLineEdit)
+        requirements_label = QLabel("Requirements &fiile:")
+        self.requirements_line = QLineEdit()
+        requirements_label.setBuddy(self.requirements_line)
 
-        self.selectFileToolButton = QToolButton(
+        self.select_file_button = QToolButton(
             icon=folder_icon,
             toolTip="Browse",
             clicked=self.select_file
         )
-        self.selectFileToolButton.setFixedSize(26, 27)
+        self.select_file_button.setFixedSize(26, 27)
 
-        placeHolder = QLabel()
+        place_holder = QLabel()
 
-        # options groupbox
-        groupBox = QGroupBox("Options")
+        # options group box
+        group_box = QGroupBox("Options")
 
-        self.withPipCBox = QCheckBox(
+        self.with_pip_check_box = QCheckBox(
             "Install and update &Pip",
             checked=True,
-            stateChanged=self.with_pip
+            stateChanged=self.pip_enabled
         )
-        self.sitePackagesCBox = QCheckBox(
+        self.site_pkgs_check_box = QCheckBox(
             "&Make system (global) site-packages dir available to venv"
         )
-        self.symlinksCBox = QCheckBox(
+        self.symlinks_check_box = QCheckBox(
             "Attempt to &symlink rather than copy files into venv"
         )
 
         # register fields
-        self.registerField("interprComboBox*", self.interprComboBox)
-        self.registerField("pythonVers", self.interprComboBox, "currentText")
-        self.registerField("pythonPath", self.interprComboBox, "currentData")
-        self.registerField("venvName*", self.venvNameLineEdit)
-        self.registerField("venvLocation*", self.venvLocationLineEdit)
-        self.registerField("withPip", self.withPipCBox)
-        self.registerField("sitePackages", self.sitePackagesCBox)
-        self.registerField("symlinks", self.symlinksCBox)
-        self.registerField("requirements", self.requirementsLineEdit)
+        self.registerField(
+            "interpreter_combo_box*",
+            self.interpreter_combo_box
+        )
+        self.registerField(
+            "python_version",
+            self.interpreter_combo_box,
+            "currentText"
+        )
+        self.registerField(
+            "python_path",
+            self.interpreter_combo_box,
+            "currentData"
+        )
+        self.registerField("venv_name*", self.venv_name_line)
+        self.registerField("venv_location*", self.venv_location_line)
+        self.registerField("with_pip", self.with_pip_check_box)
+        self.registerField("site_pkgs", self.site_pkgs_check_box)
+        self.registerField("symlinks", self.symlinks_check_box)
+        self.registerField("requirements", self.requirements_line)
 
         # grid layout
-        gridLayout = QGridLayout()
-        gridLayout.addWidget(interpreterLabel, 0, 0, 1, 1)
-        gridLayout.addWidget(self.interprComboBox, 0, 1, 1, 2)
+        grid_layout = QGridLayout()
+        grid_layout.addWidget(interpreter_label, 0, 0, 1, 1)
+        grid_layout.addWidget(self.interpreter_combo_box, 0, 1, 1, 2)
 
-        gridLayout.addWidget(venvNameLabel, 1, 0, 1, 1)
-        gridLayout.addWidget(self.venvNameLineEdit, 1, 1, 1, 2)
+        grid_layout.addWidget(venv_name_label, 1, 0, 1, 1)
+        grid_layout.addWidget(self.venv_name_line, 1, 1, 1, 2)
 
-        gridLayout.addWidget(venvLocationLabel, 2, 0, 1, 1)
-        gridLayout.addWidget(self.venvLocationLineEdit, 2, 1, 1, 1)
-        gridLayout.addWidget(self.selectDirToolButton, 2, 2, 1, 1)
+        grid_layout.addWidget(venv_location_label, 2, 0, 1, 1)
+        grid_layout.addWidget(self.venv_location_line, 2, 1, 1, 1)
+        grid_layout.addWidget(self.select_dir_button, 2, 2, 1, 1)
 
-        gridLayout.addWidget(requirementsLabel, 3, 0, 1, 1)
-        gridLayout.addWidget(self.requirementsLineEdit, 3, 1, 1, 1)
-        gridLayout.addWidget(self.selectFileToolButton, 3, 2, 1, 1)
+        grid_layout.addWidget(requirements_label, 3, 0, 1, 1)
+        grid_layout.addWidget(self.requirements_line, 3, 1, 1, 1)
+        grid_layout.addWidget(self.select_file_button, 3, 2, 1, 1)
 
-        gridLayout.addWidget(placeHolder, 4, 0, 1, 2)
-        gridLayout.addWidget(groupBox, 5, 0, 1, 3)
-        self.setLayout(gridLayout)
+        grid_layout.addWidget(place_holder, 4, 0, 1, 2)
+        grid_layout.addWidget(group_box, 5, 0, 1, 3)
+        self.setLayout(grid_layout)
 
-        # options groupbox
-        groupBoxLayout = QVBoxLayout()
-        groupBoxLayout.addWidget(self.withPipCBox)
-        groupBoxLayout.addWidget(self.sitePackagesCBox)
-        groupBoxLayout.addWidget(self.symlinksCBox)
-        groupBox.setLayout(groupBoxLayout)
+        # options group box
+        group_box_layout = QVBoxLayout()
+        group_box_layout.addWidget(self.with_pip_check_box)
+        group_box_layout.addWidget(self.site_pkgs_check_box)
+        group_box_layout.addWidget(self.symlinks_check_box)
+        group_box.setLayout(group_box_layout)
 
 
     def initializePage(self):
@@ -279,8 +290,8 @@ class BasicSettings(QWizardPage):
         """
         Specify path where to create the virtual environment.
         """
-        folderName = QFileDialog.getExistingDirectory()
-        self.venvLocationLineEdit.setText(folderName)
+        folder_name = QFileDialog.getExistingDirectory()
+        self.venv_location_line.setText(folder_name)
 
 
     def select_file(self):
@@ -288,43 +299,43 @@ class BasicSettings(QWizardPage):
         Specify the requirements file to use
         to clone the virtual environment.
         """
-        fileName = QFileDialog.getOpenFileName()
-        self.requirementsLineEdit.setText(fileName[0])
+        file_name = QFileDialog.getOpenFileName()
+        self.requirements_line.setText(file_name[0])
 
 
-    def with_pip(self, state):
+    def pip_enabled(self, state):
         """
         Enable input line for specifying a requirements file
-        only if `self.withPipCBox` is checked, else disable it.
+        only if `self.with_pip_check_box` is checked, else disable it.
         """
-        if self.withPipCBox.isChecked():
-            self.requirementsLineEdit.setEnabled(True)
-            self.selectFileToolButton.setEnabled(True)
+        if self.with_pip_check_box.isChecked():
+            self.requirements_line.setEnabled(True)
+            self.select_file_button.setEnabled(True)
         else:
-            self.requirementsLineEdit.setEnabled(False)
-            self.selectFileToolButton.setEnabled(False)
+            self.requirements_line.setEnabled(False)
+            self.select_file_button.setEnabled(False)
 
 
     def execute_venv_create(self):
         """
         Execute the creation process.
         """
-        self.combobox = self.field("interprComboBox")
-        self.pythonVers = self.field("pythonVers")
-        self.pythonPath = self.field("pythonPath")
-        self.venvName = self.field("venvName")
-        self.venvLocation = self.field("venvLocation")
-        self.withPip = self.field("withPip")
-        self.sitePackages = self.field("sitePackages")
+        self.combo_box = self.field("interpreter_combo_box")
+        self.python_version = self.field("python_version")
+        self.python_path = self.field("python_path")
+        self.venv_name = self.field("venv_name")
+        self.venv_location = self.field("venv_location")
+        self.with_pip = self.field("with_pip")
+        self.site_pkgs = self.field("site_pkgs")
         self.symlinks = self.field("symlinks")
         self.requirements = self.field("requirements")
 
-        if self.combobox and self.venvName and self.venvLocation:
+        if self.combo_box and self.venv_name and self.venv_location:
             # format the text shown in progress bar window title
-            if self.pythonVers[12] == " ":
-                version = self.pythonVers[:12]  # stable releases
+            if self.python_version[12] == " ":
+                version = self.python_version[:12]  # stable releases
             else:
-                version = self.pythonVers[:16]  # pre-releases
+                version = self.python_version[:16]  # pre-releases
 
             # show python version in progress bar window title
             self.progress_bar.setWindowTitle(f"Using {version}")
@@ -344,11 +355,11 @@ class BasicSettings(QWizardPage):
         Create the virtual environment.
         """
         args = (
-            self.pythonPath,
-            self.venvName,
-            self.venvLocation,
-            self.withPip,
-            self.sitePackages,
+            self.python_path,
+            self.venv_name,
+            self.venv_location,
+            self.with_pip,
+            self.site_pkgs,
             self.symlinks
         )
 
@@ -369,23 +380,23 @@ class BasicSettings(QWizardPage):
         """
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
-            f"New Python {self.pythonVers[7:10]} executable in \n"
-            f"'{self.venvLocation}/{self.venvName}/bin'. \n"
+            f"New Python {self.python_version[7:10]} executable in \n"
+            f"'{self.venv_location}/{self.venv_name}/bin'. \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
 
         print(
             "[PROCESS]: Successfully created new virtual environment: "
-            f"'{self.venvLocation}/{self.venvName}'"
+            f"'{self.venv_location}/{self.venv_name}'"
         )
 
-        if self.withPipCBox.isChecked():
-            message_txt = default_msg + with_pip_msg
+        if self.with_pip_check_box.isChecked():
+            msg_txt = default_msg + with_pip_msg
             print("[PROCESS]: Installed pip, setuptools.")
         else:
-            message_txt = default_msg
+            msg_txt = default_msg
 
-        QMessageBox.information(self, "Done", message_txt)
+        QMessageBox.information(self, "Done", msg_txt)
 
         self.wizard().next()
         self.setEnabled(True)
@@ -412,7 +423,7 @@ class InstallModules(QWizardPage):
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
 
-        gridLayout = QGridLayout(self)
+        grid_layout = QGridLayout(self)
 
         pkgNameLabel = QLabel("Module &name:")
         self.pkgNameLineEdit = QLineEdit()
@@ -452,17 +463,17 @@ class InstallModules(QWizardPage):
         # selection model
         self.selectionModel = resultsTable.selectionModel()
 
-        gridLayout.addWidget(pkgNameLabel, 0, 0, 1, 1)
-        gridLayout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
-        gridLayout.addWidget(self.search_button, 0, 2, 1, 1)
-        gridLayout.addWidget(resultsTable, 1, 0, 1, 3)
+        grid_layout.addWidget(pkgNameLabel, 0, 0, 1, 1)
+        grid_layout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
+        grid_layout.addWidget(self.search_button, 0, 2, 1, 1)
+        grid_layout.addWidget(resultsTable, 1, 0, 1, 3)
 
 
     def initializePage(self):
-        self.pythonVers = self.field("pythonVers")
-        self.pythonPath = self.field("pythonPath")
-        self.venvName = self.field("venvName")
-        self.venvLocation = self.field("venvLocation")
+        self.python_version = self.field("python_version")
+        self.python_path = self.field("python_path")
+        self.venv_name = self.field("venv_name")
+        self.venv_location = self.field("venv_location")
         self.requirements = self.field("requirements")
 
         # clear all inputs and contents
@@ -505,7 +516,7 @@ class InstallModules(QWizardPage):
         """
         self.setEnabled(False)
 
-        self.manager = PipManager(self.venvLocation, f"'{self.venvName}'")
+        self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
         self.console = ConsoleDialog()
 
         self.console.setWindowTitle("Cloning environment")
@@ -567,13 +578,13 @@ class InstallModules(QWizardPage):
         for index in sorted(indexes):
             self.pkg = index.data()
 
-        messageBoxConfirm = QMessageBox.question(self,
+        msg_box_question = QMessageBox.question(self,
             "Confirm", f"Are you sure you want to install '{self.pkg}'?",
             QMessageBox.Yes | QMessageBox.Cancel
         )
 
-        if messageBoxConfirm == QMessageBox.Yes:
-            self.manager = PipManager(self.venvLocation, f"'{self.venvName}'")
+        if msg_box_question == QMessageBox.Yes:
+            self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
             self.console = ConsoleDialog()
 
             self.console.setWindowTitle("Installing")
@@ -610,25 +621,25 @@ class InstallModules(QWizardPage):
         """
         self.setEnabled(False)
 
-        messageBoxConfirm = QMessageBox.question(
+        msg_box_question = QMessageBox.question(
             self,
             "Save requirements",
             "Do you want to generate a requirements?",
             QMessageBox.Yes | QMessageBox.No
         )
 
-        if messageBoxConfirm == QMessageBox.Yes:
+        if msg_box_question == QMessageBox.Yes:
             active_dir = get_active_dir_str()
             save_file = QFileDialog.getSaveFileName(self, "Save requirements")
             save_path = save_file[0]
 
             if save_path != "":
                 print(f"[PROCESS]: Generating '{save_path}'...")
-                manager = PipManager(self.venvLocation, self.venvName)
+                manager = PipManager(self.venv_location, self.venv_name)
                 manager.run_pip(cmds[2], [">", save_path])
 
-                message_txt = (f"Saved requirements in: \n{save_path}")
-                QMessageBox.information(self, "Saved", message_txt)
+                msg_txt = (f"Saved requirements in: \n{save_path}")
+                QMessageBox.information(self, "Saved", msg_txt)
                 self.wizard().next()
 
         else:
