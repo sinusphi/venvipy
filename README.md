@@ -12,7 +12,7 @@
 
 ### **Introduction**
 
-_VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existing Python environment (that supports venv) quick and easy. 
+_VenviPy_ is a user friendly graphical interface for creating customized virtual environments or modifing any existing Python environment (that supports the built-in venv) quick and easy. 
 
 It provides useful features like a wizard, that guides the user through the creation process, a table that shows an overview over installed environments in a specific directory and a collection of context menu actions like listing detailed information about an environment and much more. 
 
@@ -21,10 +21,11 @@ It provides useful features like a wizard, that guides the user through the crea
 - Create virtual environments from any Python version (3.3+) which is properly build or installed on your system
 - Install and update Pip with one click
 - Clone an environment from a requirements file
-- Modify any environment by adding or removing packages
 - Search and install packages from [PyPI (Python Package Index)](https://pypi.org/)
-- Generate requirements from any existing environment
+- Generate requirements from an existing environment
 - List detailed information about installed packages
+- Show dependency tree (using [pipdeptree](https://github.com/naiquevin/pipdeptree) package)
+- Modify any environment by adding or removing packages _(comming soon)_
 
 
 ### **Prerequisits**
