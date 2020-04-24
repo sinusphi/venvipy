@@ -24,9 +24,12 @@ class PythonInfo:
     py_path: str
 
 
-def get_python_version(path):
+def get_python_version(py_path):
+    """
+    Return Python version.
+    """
     res = Popen(
-        [path, "-V"],
+        [py_path, "-V"],
         stdout=PIPE,
         text="utf-8"
     )
