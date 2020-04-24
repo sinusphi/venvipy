@@ -147,21 +147,42 @@ class VenvTable(QTableView):
             self.context_menu.popup(QCursor.pos())
 
 
+    def venv_exists(self, path):
+        """
+        Test wether the directory of the selected environment actually exists.
+        """
+        if os.path.exists(path):
+            return True
+
+        msg_box = QMessageBox(
+            QMessageBox.Critical,
+            "Error",
+            "The selected environment could not be found.",
+            QMessageBox.Ok,
+            self
+        )
+        msg_box.exec_()
+        self.refresh.emit()
+        return False
+
+
     def has_pip(self, venv_dir, venv_name):
         """
         Test if `pip` is installed.
         """
-        pip_binary = os.path.join(venv_dir, venv_name, "bin", "pip")
+        venv_path = os.path.join(venv_dir, venv_name)
+        pip_binary = os.path.join(venv_path, "bin", "pip")
         has_pip = os.path.exists(pip_binary)
 
-        if has_pip:
-            return True
-
-        QMessageBox.information(
-            self,
-            "Info",
-            "This environment has been created without pip."
-        )
+        if self.venv_exists(venv_path):
+            if has_pip:
+                return True
+            QMessageBox.information(
+                self,
+                "Info",
+                "Environment has been created without pip."
+            )
+            return False
         return False
 
 
@@ -337,22 +358,19 @@ class VenvTable(QTableView):
         delete from the context menu in venv table.
         """
         venv = self.get_selected_item()
+        active_dir = get_active_dir_str()
+        venv_path = os.path.join(active_dir, venv)
 
-        if venv is not None:
-            msg_box_critical = QMessageBox.critical(self,
-                "Confirm", f"Are you sure you want to delete '{venv}'?",
+        if self.venv_exists(venv_path):
+            msg_box_critical = QMessageBox.critical(
+                self,
+                "Confirm",
+                f"Are you sure you want to delete '{venv}'?",
                 QMessageBox.Yes | QMessageBox.Cancel
             )
-
             if msg_box_critical == QMessageBox.Yes:
-                active_dir = get_active_dir_str()
-
-                venv_to_delete = os.path.join(active_dir, venv)
-                shutil.rmtree(venv_to_delete)
-                print(
-                    f"[PROCESS]: Successfully deleted '{active_dir}/{venv}'"
-                )
-
+                shutil.rmtree(venv_path)
+                print(f"[PROCESS]: Successfully deleted '{venv_path}'")
                 self.refresh.emit()
 
 
