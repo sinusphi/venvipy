@@ -5,6 +5,7 @@ and setting up virtual environments.
 """
 from functools import partial
 import sys
+import os
 
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QThread
 from PyQt5.QtGui import (
@@ -129,6 +130,7 @@ class VenvWizard(QWizard):
         """
         Stop the thread, then close the wizard.
         """
+        print("[PROCESS]: Canceled by user")
         if self.basic_settings.thread.isRunning():
             self.basic_settings.thread.exit()
 
@@ -392,7 +394,7 @@ class BasicSettings(QWizardPage):
 
         if self.with_pip_check_box.isChecked():
             msg_txt = default_msg + with_pip_msg
-            print("[PROCESS]: Installed pip, setuptools.")
+            print("[PROCESS]: Installed pip and setuptools")
         else:
             msg_txt = default_msg
 
@@ -486,11 +488,6 @@ class InstallModules(QWizardPage):
             ["Name", "Version", "Description"]
         )
 
-        # connect 'next' button to self.save_requirements()
-        self.next_button = self.wizard().button(QWizard.NextButton)
-        self.next_button.disconnect()
-        self.next_button.clicked.connect(self.save_requirements)
-
         # remove focus from 'next' button
         QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
 
@@ -500,6 +497,12 @@ class InstallModules(QWizardPage):
         # disable 'back' button
         back_button = self.wizard().button(QWizard.BackButton)
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
+
+        if self.wizard().basic_settings.with_pip_check_box.isChecked():
+            # connect 'next' button to self.save_requirements()
+            self.next_button = self.wizard().button(QWizard.NextButton)
+            self.next_button.disconnect()
+            self.next_button.clicked.connect(self.save_requirements)
 
         # run the installer if self.requirements holds a str
         if len(self.requirements) > 0:
@@ -641,7 +644,6 @@ class InstallModules(QWizardPage):
                 msg_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", msg_txt)
                 self.wizard().next()
-
         else:
             self.wizard().next()
 
@@ -730,6 +732,7 @@ class FinalPage(QWizardPage):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
+    os.system("clear")
 
     wizard = VenvWizard()
     wizard.show()
