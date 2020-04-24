@@ -43,7 +43,8 @@ from tables import ResultsTable
 from get_data import (
     get_module_infos,
     get_active_dir_str,
-    get_python_installs
+    get_python_installs,
+    get_python_version
 )
 from creator import (
     CreationWorker,
@@ -130,7 +131,6 @@ class VenvWizard(QWizard):
         """
         Stop the thread, then close the wizard.
         """
-        print("[PROCESS]: Canceled by user")
         if self.basic_settings.thread.isRunning():
             self.basic_settings.thread.exit()
 
@@ -142,8 +142,6 @@ class BasicSettings(QWizardPage):
     """
     def __init__(self):
         super().__init__()
-
-        folder_icon = QIcon.fromTheme("folder")
 
         self.setTitle("Basic Settings")
         self.setSubTitle("This wizard will help you to create and set up "
@@ -179,14 +177,16 @@ class BasicSettings(QWizardPage):
 
         interpreter_label = QLabel("&Interpreter:")
         self.interpreter_combo_box = QComboBox()
+        self.interpreter_combo_box.addItem("---")
         interpreter_label.setBuddy(self.interpreter_combo_box)
 
-        # add the found Python versions to combo box
-        self.interpreter_combo_box.addItem("---")
-        for info in get_python_installs():
-            self.interpreter_combo_box.addItem(
-                f"{info.py_version}  ->  {info.py_path}", info.py_path
-            )
+        self.select_python_button = QToolButton(
+            icon=QIcon(":/img/python.png"),
+            toolTip="Add custom interpreter",
+            clicked=self.select_python
+        )
+        self.select_python_button.setFixedSize(26, 27)
+        self.pop_combo_box()
 
         venv_name_label = QLabel("Venv &name:")
         self.venv_name_line = QLineEdit()
@@ -197,8 +197,8 @@ class BasicSettings(QWizardPage):
         venv_location_label.setBuddy(self.venv_location_line)
 
         self.select_dir_button = QToolButton(
-            icon=folder_icon,
-            toolTip="Browse",
+            icon=QIcon.fromTheme("folder"),
+            toolTip="Select venv directory",
             clicked=self.select_dir
         )
         self.select_dir_button.setFixedSize(26, 27)
@@ -208,8 +208,8 @@ class BasicSettings(QWizardPage):
         requirements_label.setBuddy(self.requirements_line)
 
         self.select_file_button = QToolButton(
-            icon=folder_icon,
-            toolTip="Browse",
+            icon=QIcon.fromTheme("document"),
+            toolTip="Select requirements",
             clicked=self.select_file
         )
         self.select_file_button.setFixedSize(26, 27)
@@ -256,10 +256,11 @@ class BasicSettings(QWizardPage):
         # grid layout
         grid_layout = QGridLayout()
         grid_layout.addWidget(interpreter_label, 0, 0, 1, 1)
-        grid_layout.addWidget(self.interpreter_combo_box, 0, 1, 1, 2)
+        grid_layout.addWidget(self.interpreter_combo_box, 0, 1, 1, 1)
+        grid_layout.addWidget(self.select_python_button, 0, 2, 1, 1)
 
         grid_layout.addWidget(venv_name_label, 1, 0, 1, 1)
-        grid_layout.addWidget(self.venv_name_line, 1, 1, 1, 2)
+        grid_layout.addWidget(self.venv_name_line, 1, 1, 1, 1)
 
         grid_layout.addWidget(venv_location_label, 2, 0, 1, 1)
         grid_layout.addWidget(self.venv_location_line, 2, 1, 1, 1)
@@ -286,6 +287,38 @@ class BasicSettings(QWizardPage):
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.disconnect()
         next_button.clicked.connect(self.execute_venv_create)
+
+
+    def pop_combo_box(self):
+        """
+        Add the found Python versions to combo box
+        """
+        for info in get_python_installs():
+            self.interpreter_combo_box.addItem(
+                f"{info.py_version}  ->  {info.py_path}", info.py_path
+            )
+
+
+    def select_python(self):
+        """
+        Specify path to a custom interpreter.
+        """
+        file_name = QFileDialog.getOpenFileName(
+            self,
+            "Select Python Interpreter",
+            "/usr/local/bin",
+            "Python binary (\
+                python3.3 python3.4 python3.5 python3.6 \
+                python3.7 python3.8 python3.9 \
+            )"
+        )
+        bin_file = file_name[0]
+
+        if bin_file != "":
+            custom_version = get_python_version(bin_file)
+            self.interpreter_combo_box.addItem(
+                f"{custom_version}  ->  {bin_file}", bin_file
+            )
 
 
     def select_dir(self):
