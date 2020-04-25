@@ -65,6 +65,7 @@ class VenvWizard(QWizard):
     Wizard for creating and setting up a virtual environment.
     """
     refresh = pyqtSignal()
+    update_table = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -186,7 +187,6 @@ class BasicSettings(QWizardPage):
             clicked=self.select_python
         )
         self.select_python_button.setFixedSize(26, 27)
-        self.pop_combo_box()
 
         venv_name_label = QLabel("Venv &name:")
         self.venv_name_line = QLineEdit()
@@ -319,6 +319,9 @@ class BasicSettings(QWizardPage):
             self.interpreter_combo_box.addItem(
                 f"{custom_version}  ->  {bin_file}", bin_file
             )
+        # transmit bin_file to pop_interpreter_table() in MainWindow
+        self.wizard().update_table.emit(bin_file)
+        return bin_file
 
 
     def select_dir(self):
