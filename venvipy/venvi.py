@@ -2,11 +2,10 @@
 """
 The main module of VenviPy.
 """
-from subprocess import Popen, PIPE
 import sys
 import os
 
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (
     QIcon,
     QPixmap,
@@ -111,6 +110,12 @@ class MainWindow(QMainWindow):
         # refresh venv table when wizard closed
         self.venv_wizard.refresh.connect(self.pop_venv_table)
 
+        # refresh interpreter table when selecting a custom one in wizard menu
+        self.venv_wizard.update_table.connect(self.pop_interpreter_table)
+
+        # populate the combo box in wizard menu
+        self.venv_wizard.basic_settings.pop_combo_box()
+
 
         #]===================================================================[#
         #] ICONS [#==========================================================[#
@@ -165,6 +170,7 @@ class MainWindow(QMainWindow):
             statusTip="Create a new virtual environment",
             clicked=self.venv_wizard.exec_
         )
+        self.new_venv_button.setMinimumSize(QSize(135, 0))
 
         self.search_pypi_button = QPushButton(
             "&Search PyPI",
@@ -179,13 +185,13 @@ class MainWindow(QMainWindow):
             clicked=self.on_close
         )
 
-        self.change_dir_button = QToolButton(
+        self.active_dir_button = QToolButton(
             icon=folder_icon,
             toolTip="Switch directory",
             statusTip="Select another directory",
-            clicked=self.select_folder
+            clicked=self.select_active_dir
         )
-        self.change_dir_button.setFixedSize(30, 30)
+        self.active_dir_button.setFixedSize(30, 30)
 
         # use line edit to store the str
         self.directory_line = QLineEdit()
@@ -261,7 +267,7 @@ class MainWindow(QMainWindow):
         )
 
         # venv table
-        venv_table = VenvTable(
+        self.venv_table = VenvTable(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
@@ -271,12 +277,12 @@ class MainWindow(QMainWindow):
         )
 
         # adjust vertical headers
-        v_header_venv_table = venv_table.verticalHeader()
+        v_header_venv_table = self.venv_table.verticalHeader()
         v_header_venv_table.setDefaultSectionSize(27)
         v_header_venv_table.hide()
 
         # adjust (horizontal) headers
-        h_header_venv_table = venv_table.horizontalHeader()
+        h_header_venv_table = self.venv_table.horizontalHeader()
         h_header_venv_table.setDefaultAlignment(Qt.AlignLeft)
         h_header_venv_table.setDefaultSectionSize(180)
         h_header_venv_table.setStretchLastSection(True)
@@ -286,7 +292,7 @@ class MainWindow(QMainWindow):
         self.model_venv_table.setHorizontalHeaderLabels(
             ["Venv Name", "Version"]
         )
-        venv_table.setModel(self.model_venv_table)
+        self.venv_table.setModel(self.model_venv_table)
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
@@ -294,8 +300,8 @@ class MainWindow(QMainWindow):
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addLayout(h_layout_1)
         h_layout_1.addWidget(venv_table_label)
-        h_layout_1.addWidget(self.change_dir_button)
-        v_layout_1.addWidget(venv_table)
+        h_layout_1.addWidget(self.active_dir_button)
+        v_layout_1.addWidget(self.venv_table)
 
         grid_layout.addLayout(v_layout_1, 0, 0, 1, 1)
 
@@ -307,6 +313,7 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
 
         # create actions
+
         self.action_add_interpreter = QAction(
             find_icon,
             "Add &Interpreter",
@@ -337,7 +344,7 @@ class MainWindow(QMainWindow):
         self.action_select_active_dir = QAction(
             settings_icon, "Change active &directory", self,
             statusTip="Change active directory",
-            shortcut="Ctrl+D", triggered=self.select_folder
+            shortcut="Ctrl+D", triggered=self.select_active_dir
         )
 
         self.action_exit = QAction(
@@ -386,32 +393,44 @@ class MainWindow(QMainWindow):
         menu_help.addAction(self.action_about)
         menu_bar.addAction(menu_help.menuAction())
 
+        if not get_python_installs():
+            self.launcher()
 
-        #]===================================================================[#
-        #] MESSAGE BOX [#====================================================[#
-        #]===================================================================[#
 
-        # display a message box if no Python installation is found at all
+    def launcher(self):
+        self.enable_features(False)
+        print("[WARNING]: No suitable Python installation found!")
         msg_txt = (
             "No suitable Python installation found!\n\n"
             "Please specify the path to a Python (>=3.3) \n"
-            "installation or click Continue to go on anyway.\n\n"
+            "installation or click 'Continue' to go on anyway.\n\n"
         )
-
         self.msg_box = QMessageBox(
-            QMessageBox.Critical, "VenviPy Launcher",
-            msg_txt, QMessageBox.NoButton, self
+            QMessageBox.Critical,
+            "VenviPy",
+            msg_txt, QMessageBox.NoButton,
+            self
         )
-
-        self.msg_box.addButton("&Search", QMessageBox.AcceptRole)
+        self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
         self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
 
-        if not get_python_installs():
-            print("[WARNING]: No suitable Python installation found!")
+        if self.msg_box.exec_() == QMessageBox.AcceptRole:
+            # let user specify path to an interpreter
+            self.add_interpreter()
 
-            if self.msg_box.exec_() == QMessageBox.AcceptRole:
-                # let user specify path to an interpreter
-                self.add_interpreter()
+
+    def add_interpreter(self):
+        """
+        Add a custom interpreter.
+        """
+        if self.venv_wizard.basic_settings.select_python() != "":
+            self.enable_features(True)
+
+
+    def enable_features(self, state):
+        self.search_pypi_button.setEnabled(state)
+        self.action_search_pypi.setEnabled(state)
+        self.venv_table.setEnabled(state)
 
 
     def center(self):
@@ -430,58 +449,33 @@ class MainWindow(QMainWindow):
         self.close()
 
 
-    def add_interpreter(self):
-        """
-        Specify path to a python executable and add it to list.
-        """
-        file_name = QFileDialog.getOpenFileName(
-            self,
-            "Select Python Interpreter",
-            "/$HOME",
-            "Python binary (python3 python3.3 python3.4 \
-                            python3.5 python3.6 python3.7 \
-                            python3.8 python3.9)"
-        )
-
-        bin_file = file_name[0]
-
-        if bin_file != "":
-            # get version info and path of the selected binary
-            res = Popen(
-                [bin_file, "-V"],
-                stdout=PIPE,
-                text="utf-8"
-            )
-
-            out, _ = res.communicate()
-            version = out.strip()
-            path = file_name[0]
-
-            # populate the table
-            self.model_interpreter_table.insertRow(0)
-            self.model_interpreter_table.setItem(0, 0, QStandardItem(version))
-            self.model_interpreter_table.setItem(0, 1, QStandardItem(path))
-
-            # pass the selected interpreter to the wizard's QComboBox
-            self.venv_wizard.basic_settings.interpreter_combo_box.addItem(
-                f"{version}  ->  {path}", path
-            )
-
-
-    def pop_interpreter_table(self):
+    @pyqtSlot(str)
+    def pop_interpreter_table(self, custom_path):
         """
         Populate the interpreter table view.
         """
-        if get_python_installs():
-            self.model_interpreter_table.setRowCount(0)
+        if custom_path != "":
+            if get_python_installs(custom_path):
+                self.model_interpreter_table.setRowCount(0)
+
+            for info in get_python_installs(custom_path):
+                self.model_interpreter_table.insertRow(0)
+                for i, text in enumerate((info.py_version, info.py_path)):
+                    self.model_interpreter_table.setItem(
+                        0, i, QStandardItem(text)
+                    )
+                    print(f"[PYTHON]: {info}")
+        else:
+            if get_python_installs():
+                self.model_interpreter_table.setRowCount(0)
 
             for info in get_python_installs():
                 self.model_interpreter_table.insertRow(0)
-
                 for i, text in enumerate((info.py_version, info.py_path)):
-                    self.model_interpreter_table.setItem(0, i, QStandardItem(text))
-
-                print(f"[PYTHON]: {info}")
+                    self.model_interpreter_table.setItem(
+                        0, i, QStandardItem(text)
+                    )
+                    print(f"[PYTHON]: {info}")
 
 
     def pop_venv_table(self):
@@ -499,13 +493,14 @@ class MainWindow(QMainWindow):
             print(f"[VENV]: {info}")
 
 
-    def select_folder(self):
+    def select_active_dir(self):
         """
         Select the active directory of which the content
         should be shown in venv table.
         """
         directory = QFileDialog.getExistingDirectory(
-            self, "Open directory containing virtual environments"
+            self,
+            "Open directory containing virtual environments"
         )
         self.directory_line.setText(directory)
 
@@ -534,9 +529,10 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
+    os.system("clear")
 
     main_window = MainWindow()
-    main_window.pop_interpreter_table()
+    main_window.pop_interpreter_table(None)
     main_window.pop_venv_table()
     main_window.show()
 
