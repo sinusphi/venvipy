@@ -1,6 +1,7 @@
-.vscode/
-.mypy_cache/
 __pycache__/
+.idea/
+.mypy_cache/
+.vscode/
 testenv/
 dist/
-venvipy/active
+active
