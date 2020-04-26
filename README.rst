@@ -1,8 +1,7 @@
 VenviPy
 =======
 
-A GUI for managing multiple Python virtual environments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**A GUI for managing multiple Python virtual environments**
 
 .. image:: https://img.shields.io/badge/python-3.3+-blue
     :target: https://python.org
