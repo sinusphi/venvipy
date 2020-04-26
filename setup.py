@@ -5,21 +5,12 @@ import re
 
 
 try:
-    fh = codecs.open("README.md", encoding="utf-8")
+    fh = codecs.open("README.rst", encoding="utf-8")
     long_desc = fh.read()
     fh.close()
 except FileNotFoundError:
     long_desc = ""
 
-# does  context manager work with codecs.open() ?
-"""
-try:
-    with codecs.open("README.md", encoding="utf-8") as fh:
-        long_desc = fh.read()
-
-except FileNotFoundError:
-    long_desc = ""
-"""
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
