@@ -6,7 +6,7 @@ VenviPy
 .. image:: https://img.shields.io/badge/python-3.3+-blue
     :target: https://python.org
 
-.. image:: https://img.shields.io/badge/pyqt-5.13+-blue
+.. image:: https://img.shields.io/badge/pyqt-5.11+-blue
     :target: https://pypi.org/project/PyQt5
 
 .. image:: https://img.shields.io/badge/platform-linux-darkblue
@@ -50,12 +50,13 @@ Features
 Prerequisits
 ------------
 
-Currently *VenviPy* is aimed at *NIX systems (maybe a Windows port could come somtime in the future)
+Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
+come sometime in the future)
 
 If you want to run *VenviPy* using your operating system's Python (3.3+)
-make sure the packages ``python3-venv`` and ``python3-pip`` are
-installed, because in this case the operating system's venv and pip will
-be used to perform the commands.
+you will have to make sure that the two packages ``python3-venv`` and
+``python3-pip`` are installed, because in this case the operating system's
+venv and pip will be used to perform the commands.
 
 Installation
 ------------
