@@ -1,7 +1,8 @@
 VenviPy
 =======
 
-<h2>A GUI for managing multiple Python virtual environments</h2>
+A GUI for managing multiple Python virtual environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: https://img.shields.io/badge/python-3.3+-blue
     :target: https://python.org
@@ -17,8 +18,6 @@ VenviPy
 
 .. image:: https://img.shields.io/badge/license-MIT-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
-
------
 
 Introduction
 ------------
@@ -52,7 +51,7 @@ Features
 Prerequisits
 ------------
 
-Currently *VenviPy* is designed to work on Linux OS only (maybe a Windows port could come somtime in the future)
+Currently *VenviPy* is aimed at *NIX systems (maybe a Windows port could come somtime in the future)
 
 If you want to run *VenviPy* using your operating system's Python (3.3+)
 make sure the packages ``python3-venv`` and ``python3-pip`` are
