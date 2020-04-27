@@ -4,6 +4,7 @@ This module creates all the stuff requested.
 """
 from subprocess import Popen, PIPE
 from random import randint
+import shlex
 import os
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -13,7 +14,54 @@ from manage_pip import PipManager
 
 # pip commands and options
 cmds = ["install --no-cache-dir", "list", "freeze", "pipdeptree"]
-opts = ["--upgrade", "--requirement"]
+opts = ["--upgrade", "--requirement", "--editable"]
+
+
+
+#]===========================================================================[#
+#] CUSTOM WORKER [#==========================================================[#
+#]===========================================================================[#
+
+class CloningWorker(QObject):
+    """
+    This worker performs package install in develp mode via subprocess.
+    """
+    started = pyqtSignal()
+    finished = pyqtSignal()
+
+    @pyqtSlot(str)
+    def run_process(self, command):
+        """
+        Run the process.
+        """
+        self.started.emit()
+        print("[PROCESS]: Installing from VSC url...")
+
+        clone_repo(command)
+        self.finished.emit()
+
+
+#]===========================================================================[#
+#] CLONE AND INSTALL FROM GIT REPO [#========================================[#
+#]===========================================================================[#
+
+def clone_repo(command):
+    """
+    Clone a repository and install it into a virtual environment.
+    """
+    process = Popen(
+        shlex.split(command),
+        stdout=PIPE,
+        text="utf-8"
+    )
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            print(f"[PROCESS]: {output.strip()}")
+    rc = process.poll()
+    return rc
 
 
 #]===========================================================================[#
@@ -31,7 +79,7 @@ class CreationWorker(QObject):
     @pyqtSlot(tuple)
     def install_venv(self, args):
         """
-        Execute the required steps to create the virtual environment.
+        Execute the commands to create the environment.
         """
         self.started.emit()
         print("[PROCESS]: Creating virtual environment...")

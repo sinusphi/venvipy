@@ -34,8 +34,8 @@ class PipManager(QObject):
     """
     started = pyqtSignal()
     finished = pyqtSignal()
-    textChanged = pyqtSignal(str)
     failed = pyqtSignal()
+    textChanged = pyqtSignal(str)
 
 
     def __init__(self, venv_dir, venv_name, parent=None):
@@ -48,21 +48,21 @@ class PipManager(QObject):
         self._process.setWorkingDirectory(venv_dir)
 
         self._process.readyReadStandardOutput.connect(
-            self.onReadyReadStandardOutput
+            self.on_ready_read_stdout
         )
         self._process.readyReadStandardError.connect(
-            self.onReadyReadStandardError
+            self.on_ready_read_stderr
         )
 
         # started
         self._process.started.connect(self.started)
 
         # updated
-        self._process.stateChanged.connect(self.onStateChanged)
+        self._process.stateChanged.connect(self.on_state_changed)
 
         # finished
         self._process.finished.connect(self.finished)
-        self._process.finished.connect(self.onFinished)
+        self._process.finished.connect(self.on_finished)
 
 
     def run_pip(self, command="", options=None):
@@ -79,11 +79,10 @@ class PipManager(QObject):
             task = pipdeptree if command == "pipdeptree" else pip
 
             script = (
-                f"source {venv_path}/bin/activate;" \
-                f"{task}" \
+                f"source {venv_path}/bin/activate;"
+                f"{task}"
                 "deactivate;"
             )
-
             self._process.start("bash", ["-c", script])
 
 
@@ -93,14 +92,12 @@ class PipManager(QObject):
 
 
     @pyqtSlot(QProcess.ProcessState)
-    def onStateChanged(self, state):
+    def on_state_changed(self, state):
         """Show the current process state."""
         if state == QProcess.Starting:
             print("[PROCESS]: Started")
-            pass
         elif state == QProcess.Running:
             print("[PROCESS]: Running")
-            pass
         elif state == QProcess.NotRunning:
             print("[PROCESS]: Stopped")
             self.textChanged.emit(
@@ -109,14 +106,14 @@ class PipManager(QObject):
 
 
     @pyqtSlot(int, QProcess.ExitStatus)
-    def onFinished(self, exitCode):
+    def on_finished(self, exitCode):
         """Show exit code when finished."""
         print(f"[PROCESS]: Exit code: {exitCode}")
         self._process.kill()
 
 
     @pyqtSlot()
-    def onReadyReadStandardOutput(self):
+    def on_ready_read_stdout(self):
         """
         Read from `stdout` and send the output to `update_status()`.
         """
@@ -126,12 +123,12 @@ class PipManager(QObject):
 
 
     @pyqtSlot()
-    def onReadyReadStandardError(self):
+    def on_ready_read_stderr(self):
         """
         Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[PROCESS]: {message}")
+        print(f"[ERROR]: {message}")
         self.textChanged.emit(message)
         self.failed.emit()
         self._process.kill()
