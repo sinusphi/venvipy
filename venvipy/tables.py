@@ -2,23 +2,26 @@
 """
 This module contains the implementation of QTableView.
 """
+from functools import partial
 import shutil
 import os
 
 from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QThread, QTimer
 from PyQt5.QtWidgets import (
     QAction,
     QTableView,
     QMenu,
     QMessageBox,
-    QFileDialog
+    QFileDialog,
+    QInputDialog
 )
 
 from get_data import get_active_dir_str
 from dialogs import ConsoleDialog, ProgBarDialog
 from manage_pip import PipManager
 from creator import (
+    CloningWorker,
     fix_requirements,
     cmds,
     opts
@@ -31,6 +34,9 @@ class VenvTable(QTableView):
     The table that lists the virtual environments
     found in the specified folder.
     """
+    started = pyqtSignal()
+    finished = pyqtSignal()
+    text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
 
     def contextMenuEvent(self, event):
@@ -49,21 +55,31 @@ class VenvTable(QTableView):
             icon=QIcon.fromTheme("software-install")
         )
 
+        self.editable_sub_menu = QMenu(
+            "&Editable",
+            self,
+            icon=QIcon.fromTheme("software-install")
+        )
+
         upgrade_pip_action = QAction(
             QIcon.fromTheme("system-software-update"),
             "&Upgrade Pip to latest",
             self,
             statusTip="Upgrade Pip to the latest version"
         )
-        upgrade_pip_action.triggered.connect(lambda: self.upgrade_pip(event))
+        upgrade_pip_action.triggered.connect(
+            lambda: self.upgrade_pip(event)
+        )
 
-        add_modules_action = QAction(
+        install_modules_action = QAction(
             QIcon.fromTheme("list-add"),
             "&Install additional modules",
             self,
             statusTip="Install additional modules"
         )
-        add_modules_action.triggered.connect(lambda: self.add_modules(event))
+        install_modules_action.triggered.connect(
+            lambda: self.add_modules(event)
+        )
 
         install_requires_action = QAction(
             QIcon.fromTheme("list-add"),
@@ -73,6 +89,26 @@ class VenvTable(QTableView):
         )
         install_requires_action.triggered.connect(
             lambda: self.install_requires(event)
+        )
+
+        install_local_action = QAction(
+            QIcon.fromTheme("list-add"),
+            "Install &local project",
+            self,
+            statusTip="Install a local project"
+        )
+        install_local_action.triggered.connect(
+            lambda: self.install_local(event)
+        )
+
+        install_vsc_action = QAction(
+            QIcon.fromTheme("list-add"),
+            "Install from &repository",
+            self,
+            statusTip="Install from VSC repository"
+        )
+        install_vsc_action.triggered.connect(
+            lambda: self.install_vsc(event)
         )
 
         save_requires_action = QAction(
@@ -129,8 +165,13 @@ class VenvTable(QTableView):
 
         # install sub menu
         self.context_menu.addMenu(self.install_sub_menu)
-        self.install_sub_menu.addAction(add_modules_action)
+        self.install_sub_menu.addAction(install_modules_action)
         self.install_sub_menu.addAction(install_requires_action)
+
+        # editable sub menu
+        self.install_sub_menu.addMenu(self.editable_sub_menu)
+        self.editable_sub_menu.addAction(install_local_action)
+        self.editable_sub_menu.addAction(install_vsc_action)
 
         self.context_menu.addAction(save_requires_action)
 
@@ -145,6 +186,26 @@ class VenvTable(QTableView):
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
             self.context_menu.popup(QCursor.pos())
+
+
+        #]===================================================================[#
+        #] THREAD  [#========================================================[#
+        #]===================================================================[#
+
+        self.thread = QThread(self)
+        self.thread.start()
+
+        self.progress_bar = ProgBarDialog()
+
+        self.m_clone_repo_worker = CloningWorker()
+        self.m_clone_repo_worker.moveToThread(self.thread)
+
+        # started
+        self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
+
+        # finished
+        self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
+        self.m_clone_repo_worker.finished.connect(self.finish_info)
 
 
     def venv_exists(self, path):
@@ -261,6 +322,86 @@ class VenvTable(QTableView):
                     self.console.console_window.clear()
 
 
+    def install_local(self, event):
+        """
+        Install from a local project.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+
+        project_dir = QFileDialog.getExistingDirectory(
+            self,
+            "Select project directory"
+        )
+        project_name = os.path.basename(project_dir)
+
+        if project_dir != "":
+            if self.has_pip(active_dir, venv):
+                self.console = ConsoleDialog()
+                self.console.setWindowTitle(f"Installing {project_name}")
+
+                print("[PROCESS]: Installing from local project path...")
+                self.manager = PipManager(active_dir, venv)
+                self.manager.run_pip(cmds[0], [opts[2], f"'{project_dir}'"])
+                self.manager.started.connect(self.console.exec_)
+
+                # display the updated output
+                self.manager.textChanged.connect(self.console.update_status)
+
+                # clear the content on window close
+                if self.console.close:
+                    self.console.console_window.clear()
+
+
+    def install_vsc(self, event):
+        """
+        Install from a VSC repository.
+        """
+        self.clone_process()
+
+
+    def clone_process(self):
+        """
+        Clone the repository.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_bin = os.path.join(active_dir, venv, "bin", "python")
+
+        url, ok = QInputDialog.getText(
+            self,
+            "Specify VSC project url",
+            "Enter url to repository:" + " " * 65
+        )
+
+        if url != "":
+            if self.has_pip(active_dir, venv):
+                project_name = os.path.basename(url)
+                project_url = f"git+{url}#egg={project_name}"
+                cmd = (
+                    f"{venv_bin} -m pip install --no-cache-dir -e {project_url}"
+                )
+
+                print(f"[PROCESS]: Installing {project_name}...")
+                self.progress_bar.setWindowTitle(f"Installing {project_name}")
+                self.progress_bar.status_label.setText("Cloning repository...")
+
+                wrapper = partial(
+                    self.m_clone_repo_worker.run_process, cmd
+                )
+                QTimer.singleShot(0, wrapper)
+
+
+    def finish_info(self):
+        """
+        Show an info message when the cloning process has finished successfully.
+        """
+        msg_txt = (
+            "Successfully installed package       \nfrom VSC repository.\n"
+        )
+        QMessageBox.information(self, "Done", msg_txt)
+
+
     def save_requires(self, event):
         """
         Write the requirements of the selected environment to file.
@@ -278,7 +419,8 @@ class VenvTable(QTableView):
                 self.manager.run_pip(cmds[2], [">", save_path])
 
                 # show an info message
-                message_txt = (f"Saved requirements in: \n{save_path}")
+                print(f"[PROCESS]: Saved requirements in {save_path}...")
+                message_txt = (f"Saved requirements in \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
 
 

@@ -443,9 +443,10 @@ class MainWindow(QMainWindow):
 
     def on_close(self):
         """
-        Stop the thread, then close the application.
+        Stop all threads, then close the application.
         """
         self.venv_wizard.basic_settings.thread.exit()
+        self.venv_table.thread.exit()
         self.close()
 
 
