@@ -128,13 +128,13 @@ class ConsoleDialog(QDialog):
 
 
     @pyqtSlot(str)
-    def update_status(self, status):
+    def update_status(self, message):
         """
         Print the output from stdin/ stderr to `console_window`.
         """
         metrix = QFontMetrics(self.console_window.font())
         formatted_text = metrix.elidedText(
-            status, Qt.ElideNone, self.console_window.width()
+            message, Qt.ElideNone, self.console_window.width()
         )
         self.console_window.append(formatted_text)
 
