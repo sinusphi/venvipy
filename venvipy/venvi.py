@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import (
 )
 import venvipy_rc  # pylint: disable=unused-import
 
-from get_data import get_python_installs, get_active_dir
+from get_data import get_python_installs, get_active_dir, get_active_dir_str
 from dialogs import AppInfoDialog
 from tables import VenvTable
 import wizard
@@ -259,12 +259,7 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
 
         # venv table header
-        venv_table_label = QLabel(
-            '<span style="font-size: 13pt;">\
-                <b>Available virtual environments</b>\
-            </span>',
-            centralwidget
-        )
+        self.venv_table_label = QLabel(centralwidget)
 
         # venv table
         self.venv_table = VenvTable(
@@ -273,7 +268,7 @@ class MainWindow(QMainWindow):
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            refresh=self.pop_venv_table  # signal
+            refresh=self.pop_venv_table
         )
 
         # adjust vertical headers
@@ -299,7 +294,7 @@ class MainWindow(QMainWindow):
         v_layout_1.addWidget(interpreter_table)
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addLayout(h_layout_1)
-        h_layout_1.addWidget(venv_table_label)
+        h_layout_1.addWidget(self.venv_table_label)
         h_layout_1.addWidget(self.active_dir_button)
         v_layout_1.addWidget(self.venv_table)
 
@@ -313,7 +308,6 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
 
         # create actions
-
         self.action_add_interpreter = QAction(
             find_icon,
             "Add &Interpreter",
@@ -393,13 +387,6 @@ class MainWindow(QMainWindow):
         menu_help.addAction(self.action_about)
         menu_bar.addAction(menu_help.menuAction())
 
-        if not get_python_installs():
-            self.launcher()
-
-
-    def launcher(self):
-        self.enable_features(False)
-        print("[WARNING]: No suitable Python installation found!")
         msg_txt = (
             "No suitable Python installation found!\n\n"
             "Please specify the path to a Python (>=3.3) \n"
@@ -411,26 +398,21 @@ class MainWindow(QMainWindow):
             msg_txt, QMessageBox.NoButton,
             self
         )
+
+        if not get_python_installs():
+            self.launcher()
+
+
+    def launcher(self):
+        self.enable_features(False)
+        print("[WARNING]: No suitable Python installation found!")
+
         self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
         self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
 
         if self.msg_box.exec_() == QMessageBox.AcceptRole:
             # let user specify path to an interpreter
             self.add_interpreter()
-
-
-    def add_interpreter(self):
-        """
-        Add a custom interpreter.
-        """
-        if self.venv_wizard.basic_settings.select_python() != "":
-            self.enable_features(True)
-
-
-    def enable_features(self, state):
-        self.search_pypi_button.setEnabled(state)
-        self.action_search_pypi.setEnabled(state)
-        self.venv_table.setEnabled(state)
 
 
     def center(self):
@@ -448,6 +430,20 @@ class MainWindow(QMainWindow):
         self.venv_wizard.basic_settings.thread.exit()
         self.venv_table.thread.exit()
         self.close()
+
+
+    def add_interpreter(self):
+        """
+        Add a custom interpreter.
+        """
+        if self.venv_wizard.basic_settings.select_python() != "":
+            self.enable_features(True)
+
+
+    def enable_features(self, state):
+        self.search_pypi_button.setEnabled(state)
+        self.action_search_pypi.setEnabled(state)
+        self.venv_table.setEnabled(state)
 
 
     @pyqtSlot(str)
@@ -494,6 +490,18 @@ class MainWindow(QMainWindow):
             print(f"[VENV]: {info}")
 
 
+    def update_label(self):
+        active_dir_str = get_active_dir_str()
+        self.venv_table_label.setText(
+            f'<span style="font-size: 13pt;">\
+            <b>Virtual environments:</b>\
+                </span>\
+            <span style="font-size: 13pt; color: #0059ff;">\
+                {active_dir_str}\
+            </span>'
+        )
+
+
     def select_active_dir(self):
         """
         Select the active directory of which the content
@@ -517,6 +525,7 @@ class MainWindow(QMainWindow):
                     f"'{active_dir}'"
                 )
             self.pop_venv_table()
+            self.update_label()
 
 
     def search_pypi(self):
@@ -535,6 +544,7 @@ if __name__ == "__main__":
     main_window = MainWindow()
     main_window.pop_interpreter_table(None)
     main_window.pop_venv_table()
+    main_window.update_label()
     main_window.show()
 
     sys.exit(app.exec_())
