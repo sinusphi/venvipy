@@ -674,8 +674,8 @@ class InstallModules(QWizardPage):
 
             if save_path != "":
                 print(f"[PROCESS]: Generating '{save_path}'...")
-                manager = PipManager(self.venv_location, self.venv_name)
-                manager.run_pip(cmds[2], [">", save_path])
+                self.manager = PipManager(self.venv_location, self.venv_name)
+                self.manager.run_pip(cmds[2], [">", save_path])
 
                 msg_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", msg_txt)
