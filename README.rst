@@ -44,6 +44,7 @@ Features
 *  List detailed information about installed packages
 *  Show dependency tree (using
    `pipdeptree <https://github.com/naiquevin/pipdeptree>`__ package)
+*  Install packages from local projects and from repository urls *(git)*
 *  Modify any environment by adding or removing packages *(comming
    soon)*
 
