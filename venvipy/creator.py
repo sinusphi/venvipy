@@ -97,10 +97,10 @@ class CreationWorker(QObject):
 
         if with_pip:
             # update pip to the latest version
-            self.manager = PipManager(location, f"'{name}'")
+            manager = PipManager(location, f"'{name}'")
             self.updatePipMsg.emit()
-            self.manager.run_pip(cmds[0], [opts[0], "pip"])
-            self.manager.finished.connect(self.finished.emit)
+            manager.run_pip(cmds[0], [opts[0], "pip"])
+            manager.finished.connect(self.finished.emit)
 
         else:
             self.finished.emit()

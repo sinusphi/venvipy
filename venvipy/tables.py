@@ -39,23 +39,40 @@ class VenvTable(QTableView):
     text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.progress_bar = ProgBarDialog()
+        self.console = ConsoleDialog()
+        self.manager = PipManager("", "")
+        self.thread = QThread(self)
+        self.m_clone_repo_worker = CloningWorker()
+
+        # thread
+        self.thread.start()
+        self.m_clone_repo_worker.moveToThread(self.thread)
+        self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
+        self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
+        self.m_clone_repo_worker.finished.connect(self.finish_info)
+
+
     def contextMenuEvent(self, event):
-        self.context_menu = QMenu(self)
+        # context menu
+        context_menu = QMenu(self)
 
         # sub menus
-        self.details_sub_menu = QMenu(
+        details_sub_menu = QMenu(
             "Det&ails",
             self,
             icon=QIcon.fromTheme("info")
         )
-
-        self.install_sub_menu = QMenu(
+        install_sub_menu = QMenu(
             "&Install",
             self,
             icon=QIcon.fromTheme("software-install")
         )
-
-        self.editable_sub_menu = QMenu(
+        editable_sub_menu = QMenu(
             "&Editable",
             self,
             icon=QIcon.fromTheme("software-install")
@@ -161,51 +178,31 @@ class VenvTable(QTableView):
             lambda: self.delete_venv(event)
         )
 
-        self.context_menu.addAction(upgrade_pip_action)
+        context_menu.addAction(upgrade_pip_action)
 
         # install sub menu
-        self.context_menu.addMenu(self.install_sub_menu)
-        self.install_sub_menu.addAction(install_modules_action)
-        self.install_sub_menu.addAction(install_requires_action)
+        context_menu.addMenu(install_sub_menu)
+        install_sub_menu.addAction(install_modules_action)
+        install_sub_menu.addAction(install_requires_action)
 
         # editable sub menu
-        self.install_sub_menu.addMenu(self.editable_sub_menu)
-        self.editable_sub_menu.addAction(install_local_action)
-        self.editable_sub_menu.addAction(install_vsc_action)
+        install_sub_menu.addMenu(editable_sub_menu)
+        editable_sub_menu.addAction(install_local_action)
+        editable_sub_menu.addAction(install_vsc_action)
 
-        self.context_menu.addAction(save_requires_action)
+        context_menu.addAction(save_requires_action)
 
         # details sub meun
-        self.context_menu.addMenu(self.details_sub_menu)
-        self.details_sub_menu.addAction(list_modules_action)
-        self.details_sub_menu.addAction(freeze_action)
-        self.details_sub_menu.addAction(pipdeptree_action)
+        context_menu.addMenu(details_sub_menu)
+        details_sub_menu.addAction(list_modules_action)
+        details_sub_menu.addAction(freeze_action)
+        details_sub_menu.addAction(pipdeptree_action)
 
-        self.context_menu.addAction(delete_venv_action)
+        context_menu.addAction(delete_venv_action)
 
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
-            self.context_menu.popup(QCursor.pos())
-
-
-        #]===================================================================[#
-        #] THREAD  [#========================================================[#
-        #]===================================================================[#
-
-        self.thread = QThread(self)
-        self.thread.start()
-
-        self.progress_bar = ProgBarDialog()
-
-        self.m_clone_repo_worker = CloningWorker()
-        self.m_clone_repo_worker.moveToThread(self.thread)
-
-        # started
-        self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
-
-        # finished
-        self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
-        self.m_clone_repo_worker.finished.connect(self.finish_info)
+            context_menu.popup(QCursor.pos())
 
 
     def venv_exists(self, path):
@@ -265,7 +262,6 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
-            self.console = ConsoleDialog()
             self.console.setWindowTitle("Updating Pip")
 
             print("[PROCESS]: Updating Pip to the latest version...")
@@ -305,11 +301,9 @@ class VenvTable(QTableView):
 
             if file_path != "":
                 fix_requirements(file_path)
-
-                self.console = ConsoleDialog()
+                print("[PROCESS]: Installing from requirements...")
                 self.console.setWindowTitle("Installing from requirements")
 
-                print("[PROCESS]: Installing from requirements...")
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
                 self.manager.started.connect(self.console.exec_)
@@ -337,10 +331,9 @@ class VenvTable(QTableView):
 
         if project_dir != "":
             if self.has_pip(active_dir, venv):
-                self.console = ConsoleDialog()
+                print("[PROCESS]: Installing from local project path...")
                 self.console.setWindowTitle(f"Installing {project_name}")
 
-                print("[PROCESS]: Installing from local project path...")
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(cmds[0], [opts[2], f"'{project_dir}'"])
                 self.manager.started.connect(self.console.exec_)
@@ -432,7 +425,6 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
-            self.console = ConsoleDialog()
             self.console.setWindowTitle(f"Modules installed in:  {venv}")
 
             print("[PROCESS]: Listing modules...")
@@ -480,7 +472,6 @@ class VenvTable(QTableView):
                     QMessageBox.Yes | QMessageBox.Cancel
                 )
                 if msg_box_confirm == QMessageBox.Yes:
-                    self.progress_bar = ProgBarDialog()
                     self.progress_bar.setWindowTitle("Installing")
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
@@ -524,10 +515,13 @@ class ResultsTable(QTableView):
     """
     context_triggered = pyqtSignal()
 
-    def contextMenuEvent(self, event):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.context_menu = QMenu(self)
 
-        # actions
+
+    def contextMenuEvent(self, event):
         install_action = QAction(
             QIcon.fromTheme("software-install"),
             "Install module",
@@ -535,7 +529,10 @@ class ResultsTable(QTableView):
             statusTip="&Install module"
         )
         self.context_menu.addAction(install_action)
-        install_action.triggered.connect(lambda: self.context_triggered.emit())
+        # connect to install_module() in InstallModules() in wizard
+        install_action.triggered.connect(
+            lambda: self.context_triggered.emit()
+        )
 
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
