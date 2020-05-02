@@ -2,7 +2,6 @@
 """
 This module contains some dialogs.
 """
-from platform import system, release
 import sys
 
 from PyQt5.QtWidgets import (
@@ -14,15 +13,14 @@ from PyQt5.QtWidgets import (
     QTextEdit,
     QProgressBar,
     QPushButton,
-    QSpacerItem,
     QApplication,
-    QSizePolicy,
-    QFormLayout,
     QGridLayout,
     QMessageBox
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
+
+import venvipy_rc  # pylint: disable=unused-import
 
 from get_data import __version__
 
@@ -168,9 +166,9 @@ class ConsoleDialog(QDialog):
 #] APPLICATION INFO DIALOG [#================================================[#
 #]===========================================================================[#
 
-class AppInfoDialog(QDialog):
+class InfoAboutVenviPy(QDialog):
     """
-    Show application infos.
+    The "Info about VenviPy" dialog.
     """
     def __init__(self):
         super().__init__()
@@ -180,154 +178,73 @@ class AppInfoDialog(QDialog):
 
     def initUI(self):
         self.setWindowTitle("About VenviPy")
-        self.setFixedSize(420, 390)
+        self.setFixedSize(425, 340)
         self.center()
         self.setWindowIcon(QIcon(":/img/python.png"))
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
-
-        #]===================================================================[#
-        #] LAYOUTS [#========================================================[#
-        #]===================================================================[#
-
-        gridLayout = QGridLayout(self)
-        formLayout = QFormLayout()
-
-        horizontalLayout_0 = QHBoxLayout()
-        horizontalLayout_1 = QHBoxLayout()
-        horizontalLayout_2 = QHBoxLayout()
-        horizontalLayout_3 = QHBoxLayout()
-
-        horizontalLayout_0.setContentsMargins(247, 8, 0, 25)
-        horizontalLayout_1.setContentsMargins(0, 0, 55, 25)
-        horizontalLayout_3.setContentsMargins(0, 75, 6, 0)
-        formLayout.setContentsMargins(37, -1, 20, -1)
-
-        gridLayout.addLayout(horizontalLayout_0, 0, 0, 1, 1)
-        gridLayout.addLayout(horizontalLayout_1, 0, 0, 1, 1)
-        gridLayout.addLayout(horizontalLayout_2, 2, 0, 1, 1)
-        gridLayout.addLayout(horizontalLayout_3, 0, 0, 1, 0)
-        gridLayout.addLayout(formLayout, 1, 0, 1, 1)
-
-
-        #]===================================================================[#
-        #] LABELS [#=========================================================[#
-        #]===================================================================[#
-
-        # python logo
+        # logo
         logo = QLabel()
-        logo.setPixmap(QPixmap(":/img/pylogo.png"))
-        logo.setAlignment(Qt.AlignVCenter)
+        pixmap = QPixmap(":/img/python.png")
+        logo_scaled = pixmap.scaled(102, 102, Qt.KeepAspectRatio)
+        logo.setPixmap(logo_scaled)
 
-        if sys.platform == "win32":
-            # title
-            labelTitle = QLabel(
-                '<p align="center"><span style="font-size:31pt;">\
-                    <b>VenviPy</b>\
-                </span></p>'
-            )
-            labelTitle.setFont(QFont("Segoe Print", italic=True))
-
-            # subtitle
-            labelSubtitle = QLabel(
-                '<p align="center"><span style="font-size:11pt;">\
-                    Virtual Environment Manager for Python\
-                </span></p>'
-            )
-            labelSubtitle.setFont(QFont("", italic=True))
-
-        else:
-            # title
-            labelTitle = QLabel(
-                '<p align="center"><span style="font-size:35pt;">\
-                    <b>VenviPy</b>\
-                </span></p>'
-            )
-            labelTitle.setFont(QFont("FreeSerif", italic=True))
-
-            # subtitle
-            labelSubtitle = QLabel(
-                '<p align="center"><span style="font-size:13.5pt;">\
-                    Virtual Environment Manager for Python\
-                </span></p>'
-            )
-            labelSubtitle.setFont(QFont("FreeSerif", italic=True))
-
-        #]===================================================================[#
-
-        # spacer below subtitle
-        spacer1 = QSpacerItem(20, 25, QSizePolicy.Minimum, QSizePolicy.Fixed)
-        formLayout.addItem(spacer1)
+        place_holder = QLabel(maximumHeight=5)
 
         # version
-        labelVersion = QLabel("<b>Version:</b>")
-        fieldVersion = QLabel()
-        fieldVersion.setText(__version__)
+        version_label = QLabel(
+            f'<p><span style="font-size:11pt;">\
+                {__version__}\
+            </span></p>'
+        )
 
-        # OS
-        labelOS = QLabel("<b>OS:</b>")
-        fieldOS = QLabel()
-        fieldOS.setText(system() + ' ' + release())
+        # title
+        title_label = QLabel(
+            '<p><span style="font-size:20pt;">\
+                <b>VenviPy</b>\
+            </span></p>'
+        )
+        title_label.setFont(QFont("FreeSerif", italic=True))
 
-        # author
-        labelAuthor = QLabel("<b>Author:</b>")
-        fieldAuthor = QLabel()
-        fieldAuthor.setText("Youssef Serestou")
+        # subtitle
+        subtitle_label = QLabel(
+            '<p><span style="font-size:11pt;">\
+                Virtual Environment Manager for Python\
+            </span></p>'
+        )
 
-        # email
-        labelEmail = QLabel("<b>E-Mail:</b>")
-        fieldEmail = QLabel()
-        fieldEmail.setText("youssef.serestou.83@gmail.com")
-
-        # link to repository
-        labelRepo = QLabel("<b>Repository:</b>")
-        fieldRepo = QLabel()
-        fieldRepo.setText(
-            "<a href='https://github.com/sinusphi/venvipy'>\
+        repo_label = QLabel(
+            '<p><span style="font-size:11pt;">\
+            <a href="https://github.com/sinusphi/venvipy">\
                 www.github.com/sinusphi/venvipy\
-            </a>"
+            </a></span></p>',
+            openExternalLinks=True
         )
-        fieldRepo.setOpenExternalLinks(True)
 
-        # link to python.org
-        labelPython = QLabel("<b>Python:</b>")
-        fieldPython = QLabel()
-        fieldPython.setText(
-            "<a href='https://python.org'>\
-                www.python.org\
-            </a>"
+        # copyright
+        copyright_label = QLabel(
+            '<p><span style="font-size:10pt;">\
+                Copyright © 2019-2020 Youssef Serestou\
+            </span></p>'
         )
-        fieldPython.setOpenExternalLinks(True)
 
         # close button
-        closeButton = QPushButton(
-            "Close",
-            clicked=self.close,
-        )
-        closeButton.setMinimumSize(QSize(110, 0))
+        close_button = QPushButton("Close", clicked=self.close)
+        close_button.setMinimumSize(QSize(110, 15))
 
-        #]===================================================================[#
 
-        horizontalLayout_0.addWidget(logo)
-        horizontalLayout_1.addWidget(labelTitle, 0, Qt.AlignVCenter)
-        horizontalLayout_2.addWidget(
-            closeButton, 0, Qt.AlignRight | Qt.AlignBottom
-        )
-        horizontalLayout_3.addWidget(labelSubtitle, 0, Qt.AlignVCenter)
+        grid_layout = QGridLayout(self)
+        grid_layout.setContentsMargins(15, 20, 10, 15)
 
-        formLayout.setWidget(1, QFormLayout.LabelRole, labelVersion)
-        formLayout.setWidget(1, QFormLayout.FieldRole, fieldVersion)
-        formLayout.setWidget(2, QFormLayout.LabelRole, labelOS)
-        formLayout.setWidget(2, QFormLayout.FieldRole, fieldOS)
-        formLayout.setWidget(3, QFormLayout.LabelRole, labelAuthor)
-        formLayout.setWidget(3, QFormLayout.FieldRole, fieldAuthor)
-        formLayout.setWidget(4, QFormLayout.LabelRole, labelEmail)
-        formLayout.setWidget(4, QFormLayout.FieldRole, fieldEmail)
-        formLayout.setWidget(5, QFormLayout.LabelRole, labelRepo)
-        formLayout.setWidget(5, QFormLayout.FieldRole, fieldRepo)
-        formLayout.setWidget(6, QFormLayout.LabelRole, labelPython)
-        formLayout.setWidget(6, QFormLayout.FieldRole, fieldPython)
+        grid_layout.addWidget(logo, 0, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(place_holder, 1, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(title_label, 2, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(version_label, 3, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(subtitle_label, 4, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(repo_label, 5, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(copyright_label, 6, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(close_button, 7, 0, Qt.AlignRight)
+        self.setLayout(grid_layout)
 
 
     def center(self):
@@ -343,13 +260,13 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    progress_dialog = ProgBarDialog()
-    #progress_dialog.exec()
+    #progress_dialog = ProgBarDialog()
+    #progress_dialog.show()
 
-    console_dialog = ConsoleDialog()
-    #console_dialog.exec()
+    #console_dialog = ConsoleDialog()
+    #console_dialog.show()
 
-    info_dialog = AppInfoDialog()
-    info_dialog.exec()
+    info_about_venvipy = InfoAboutVenviPy()
+    info_about_venvipy.show()
 
     sys.exit(app.exec_())
