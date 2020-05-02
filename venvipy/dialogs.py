@@ -216,7 +216,7 @@ class InfoAboutVenviPy(QDialog):
         repo_label = QLabel(
             '<p><span style="font-size:11pt;">\
             <a href="https://github.com/sinusphi/venvipy">\
-                www.github.com/sinusphi/venvipy\
+                Website\
             </a></span></p>',
             openExternalLinks=True
         )
