@@ -3,6 +3,7 @@
 This module contains the implementation of QTableView.
 """
 from functools import partial
+import webbrowser
 import shutil
 import os
 
@@ -58,7 +59,6 @@ class VenvTable(QTableView):
 
 
     def contextMenuEvent(self, event):
-        # context menu
         context_menu = QMenu(self)
 
         # sub menus
@@ -518,15 +518,15 @@ class ResultsTable(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.context_menu = QMenu(self)
-
 
     def contextMenuEvent(self, event):
+        self.context_menu = QMenu(self)
+
         install_action = QAction(
             QIcon.fromTheme("software-install"),
-            "Install module",
+            "&Install module",
             self,
-            statusTip="&Install module"
+            statusTip="Install module"
         )
         self.context_menu.addAction(install_action)
         # connect to install_module() in InstallModules() in wizard
@@ -534,6 +534,36 @@ class ResultsTable(QTableView):
             lambda: self.context_triggered.emit()
         )
 
+        open_pypi_action = QAction(
+            QIcon.fromTheme("open"),
+            "&Open on PyPI",
+            self,
+            statusTip="Open on Python Package Index"
+        )
+        self.context_menu.addAction(open_pypi_action)
+        open_pypi_action.triggered.connect(
+            lambda: self.open_on_pypi(event)
+        )
+
         # pop up only if clicking on a row
         if self.indexAt(event.pos()).isValid():
             self.context_menu.popup(QCursor.pos())
+
+
+    def get_selected_item(self):
+        """
+        Get the venv name of the selected row.
+        """
+        listed_venvs = self.selectionModel().selectedRows()
+        for index in listed_venvs:
+            selected_venv = index.data()
+            return selected_venv
+
+
+    def open_on_pypi(self, event):
+        """
+        Open pypi.org and show the project description
+        of the selected package.
+        """
+        package = self.get_selected_item()
+        webbrowser.open(f"pypi.org/project/{package}/#description")
