@@ -13,6 +13,7 @@ from PyQt5.QtGui import (
     QStandardItem
 )
 from PyQt5.QtWidgets import (
+    QStyle,
     QMainWindow,
     QApplication,
     QAction,
@@ -38,7 +39,7 @@ from PyQt5.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 
 from get_data import get_python_installs, get_active_dir, get_active_dir_str
-from dialogs import AppInfoDialog
+from dialogs import InfoAboutVenviPy
 from tables import VenvTable
 import wizard
 
@@ -104,7 +105,7 @@ class MainWindow(QMainWindow):
             """
         )
 
-        self.app_info_dialog = AppInfoDialog()
+        self.info_about_venvipy = InfoAboutVenviPy()
         self.venv_wizard = wizard.VenvWizard()
 
         # refresh venv table when wizard closed
@@ -121,16 +122,19 @@ class MainWindow(QMainWindow):
         #] ICONS [#==========================================================[#
         #]===================================================================[#
 
+        python_icon = QIcon(":/img/python.png")
         refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
         info_icon = QIcon.fromTheme("dialog-information")
         new_icon = QIcon.fromTheme("list-add")
         settings_icon = QIcon.fromTheme("preferences-system")
-        exit_icon = QIcon.fromTheme("exit")
+        exit_icon = QIcon.fromTheme("application-exit")
         delete_icon = QIcon.fromTheme("delete")
         folder_icon = QIcon.fromTheme("folder")
-
+        qt_icon = QIcon(
+            self.style().standardIcon(getattr(QStyle, "SP_TitleBarMenuButton"))
+        )
 
         #]===================================================================[#
         #] LAYOUTS [#========================================================[#
@@ -350,13 +354,22 @@ class MainWindow(QMainWindow):
             triggered=self.on_close
         )
 
-        self.action_about = QAction(
+        self.action_about_venvipy = QAction(
             info_icon,
-            "&About",
+            "&About VenviPy",
             self,
             statusTip="About VenviPy",
-            shortcut="Ctrl+B",
-            triggered=self.app_info_dialog.exec_
+            shortcut="Ctrl+A",
+            triggered=self.info_about_venvipy.exec_
+        )
+
+        self.action_about_qt = QAction(
+            qt_icon,
+            "About &Qt",
+            self,
+            statusTip="About Qt",
+            shortcut="Ctrl+Q",
+            triggered=self.info_about_qt
         )
 
         #]===================================================================[#
@@ -384,7 +397,9 @@ class MainWindow(QMainWindow):
         menu_bar.addAction(menu_extras.menuAction())
 
         menu_help = QMenu("&Help", menu_bar)
-        menu_help.addAction(self.action_about)
+        menu_help.addAction(self.action_about_venvipy)
+        menu_help.addAction(self.action_about_qt)
+
         menu_bar.addAction(menu_help.menuAction())
 
         msg_txt = (
@@ -401,6 +416,11 @@ class MainWindow(QMainWindow):
 
         if not get_python_installs():
             self.launcher()
+
+
+    def info_about_qt(self):
+        """Open the "About Qt" dialog."""
+        QMessageBox.aboutQt(self)
 
 
     def launcher(self):
