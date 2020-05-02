@@ -9,7 +9,7 @@ import shutil
 import sys
 import os
 
-__version__ = '0.12'
+__version__ = '0.12.0'
 
 
 
