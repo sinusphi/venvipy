@@ -10,6 +10,7 @@ import os
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
 from PyQt5.QtWidgets import (
+    QStyle,
     QAction,
     QTableView,
     QMenu,
@@ -44,6 +45,13 @@ class VenvTable(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.info_icon = QIcon(
+            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
+        )
+        self.drive_icon = QIcon(
+            self.style().standardIcon(getattr(QStyle, "SP_DriveHDIcon"))
+        )
+
         self.progress_bar = ProgBarDialog()
         self.console = ConsoleDialog()
         self.manager = PipManager("", "")
@@ -65,7 +73,7 @@ class VenvTable(QTableView):
         details_sub_menu = QMenu(
             "Det&ails",
             self,
-            icon=QIcon.fromTheme("info")
+            icon=self.info_icon
         )
         install_sub_menu = QMenu(
             "&Install",
@@ -109,7 +117,7 @@ class VenvTable(QTableView):
         )
 
         install_local_action = QAction(
-            QIcon.fromTheme("list-add"),
+            self.drive_icon,
             "Install &local project",
             self,
             statusTip="Install a local project"
@@ -119,7 +127,7 @@ class VenvTable(QTableView):
         )
 
         install_vsc_action = QAction(
-            QIcon.fromTheme("list-add"),
+            QIcon.fromTheme("software-install"),
             "Install from &repository",
             self,
             statusTip="Install from VSC repository"
@@ -139,7 +147,7 @@ class VenvTable(QTableView):
         )
 
         list_modules_action = QAction(
-            QIcon.fromTheme("dialog-information"),
+            self.info_icon,
             "&List installed modules",
             self,
             statusTip="List installed modules"
@@ -149,7 +157,7 @@ class VenvTable(QTableView):
         )
 
         freeze_action = QAction(
-            QIcon.fromTheme("dialog-information"),
+            self.info_icon,
             "Show &freeze output",
             self,
             statusTip="List the output of 'pip freeze'"
@@ -159,7 +167,7 @@ class VenvTable(QTableView):
         )
 
         pipdeptree_action = QAction(
-            QIcon.fromTheme("dialog-information"),
+            self.info_icon,
             "Show &dependencie tree",
             self,
             statusTip="List dependencies with 'pipdeptree'"
@@ -518,6 +526,10 @@ class ResultsTable(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.info_icon = QIcon(
+            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
+        )
+
 
     def contextMenuEvent(self, event):
         self.context_menu = QMenu(self)
@@ -535,7 +547,7 @@ class ResultsTable(QTableView):
         )
 
         open_pypi_action = QAction(
-            QIcon.fromTheme("open"),
+            self.info_icon,
             "&Open on PyPI",
             self,
             statusTip="Open on Python Package Index"

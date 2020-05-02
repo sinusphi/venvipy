@@ -126,7 +126,6 @@ class MainWindow(QMainWindow):
         refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
-        info_icon = QIcon.fromTheme("dialog-information")
         new_icon = QIcon.fromTheme("list-add")
         settings_icon = QIcon.fromTheme("preferences-system")
         exit_icon = QIcon.fromTheme("application-exit")
@@ -134,6 +133,9 @@ class MainWindow(QMainWindow):
         folder_icon = QIcon.fromTheme("folder")
         qt_icon = QIcon(
             self.style().standardIcon(getattr(QStyle, "SP_TitleBarMenuButton"))
+        )
+        info_icon = QIcon(
+            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
         )
 
         #]===================================================================[#

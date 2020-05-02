@@ -77,6 +77,15 @@ class VenvWizard(QWizard):
 
         self.setStyleSheet(
             """
+            QMenu {
+                background-color: rgb(47, 52, 63);
+                color: rgb(210, 210, 210)
+            }
+
+            QMenu::item::selected {
+                background-color: rgb(72, 72, 82)
+            }
+
             QToolTip {
                 background-color: rgb(47, 52, 63);
                 border: rgb(47, 52, 63);
