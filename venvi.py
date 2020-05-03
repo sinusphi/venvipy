@@ -36,12 +36,16 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLineEdit
 )
-import venvipy_rc  # pylint: disable=unused-import
+import venvipy.venvipy_rc  # pylint: disable=unused-import
 
-from get_data import get_python_installs, get_active_dir, get_active_dir_str
-from dialogs import InfoAboutVenviPy
-from tables import VenvTable
-import wizard
+from venvipy.get_data import (
+    get_python_installs,
+    get_active_dir,
+    get_active_dir_str
+)
+from venvipy.dialogs import InfoAboutVenviPy
+from venvipy.tables import VenvTable
+import venvipy.wizard as wizard
 
 
 
