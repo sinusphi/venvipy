@@ -516,8 +516,8 @@ class MainWindow(QMainWindow):
         active_dir_str = get_active_dir_str()
         self.venv_table_label.setText(
             f'<span style="font-size: 13pt;">\
-            <b>Virtual environments:</b>\
-                </span>\
+                <b>Virtual environments:</b>\
+            </span>\
             <span style="font-size: 13pt; color: #0059ff;">\
                 {active_dir_str}\
             </span>'
@@ -535,19 +535,19 @@ class MainWindow(QMainWindow):
         )
         self.directory_line.setText(directory)
 
-        current_dir = os.path.dirname(sys.argv[0])
-        active_file = os.path.join(current_dir, "active")
+        active_file = os.path.expanduser("~/.venvipy/active")
         active_dir = self.directory_line.text()
 
         if active_dir != "":
-            with open(active_file, "w") as f:
-                f.write(active_dir)
-                print(
-                    "[INFO]: Setting active dir to "
-                    f"'{active_dir}'"
-                )
-            self.pop_venv_table()
-            self.update_label()
+            if os.path.exists(active_file):
+                with open(active_file, "w") as f:
+                    f.write(active_dir)
+                    print(
+                        "[INFO]: Setting active dir to "
+                        f"'{active_dir}'"
+                    )
+                self.pop_venv_table()
+                self.update_label()
 
 
     def search_pypi(self):

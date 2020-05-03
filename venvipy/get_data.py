@@ -6,7 +6,6 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 import xmlrpc.client
 import shutil
-import sys
 import os
 
 __version__ = "0.1.4"
@@ -120,14 +119,14 @@ def get_active_dir_str():
     """
     Get the default venv directory string from `active` file.
     """
-    current_dir = os.path.dirname(sys.argv[0])
-    active_file = os.path.join(current_dir, "active")
+    active_file = os.path.expanduser("~/.venvipy/active")
 
     if os.path.exists(active_file):
         with open(active_file, "r") as f:
             active_dir = f.read()
             return active_dir
     else:
+        os.mkdir(os.path.expanduser("~/.venvipy"))
         with open(active_file, "w+") as f:
             active_dir = f.write("")
             return active_dir
