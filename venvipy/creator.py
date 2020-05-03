@@ -9,7 +9,7 @@ import os
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from venvipy.manage_pip import PipManager
+from manage_pip import PipManager
 
 
 # pip commands and options

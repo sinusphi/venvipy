@@ -20,9 +20,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
 
-import venvipy.venvipy_rc  # pylint: disable=unused-import
+import venvipy_rc  # pylint: disable=unused-import
 
-from venvipy.get_data import __version__
+from get_data import __version__
 
 
 
