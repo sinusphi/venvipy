@@ -19,10 +19,10 @@ from PyQt5.QtWidgets import (
     QInputDialog
 )
 
-from get_data import get_active_dir_str
-from dialogs import ConsoleDialog, ProgBarDialog
-from manage_pip import PipManager
-from creator import (
+from venvipy.get_data import get_active_dir_str
+from venvipy.dialogs import ConsoleDialog, ProgBarDialog
+from venvipy.manage_pip import PipManager
+from venvipy.creator import (
     CloningWorker,
     fix_requirements,
     cmds,

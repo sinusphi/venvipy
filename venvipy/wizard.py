@@ -35,18 +35,18 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QDesktopWidget
 )
-import venvipy_rc  # pylint: disable=unused-import
+import venvipy.venvipy_rc  # pylint: disable=unused-import
 
-from dialogs import ProgBarDialog, ConsoleDialog
-from manage_pip import PipManager
-from tables import ResultsTable
-from get_data import (
+from venvipy.dialogs import ProgBarDialog, ConsoleDialog
+from venvipy.manage_pip import PipManager
+from venvipy.tables import ResultsTable
+from venvipy.get_data import (
     get_module_infos,
     get_active_dir_str,
     get_python_installs,
     get_python_version
 )
-from creator import (
+from venvipy.creator import (
     CreationWorker,
     fix_requirements,
     random_zen_line,
