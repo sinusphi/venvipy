@@ -18,6 +18,7 @@ VenviPy
 .. image:: https://img.shields.io/badge/license-MIT-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
 
+
 Introduction
 ------------
 
@@ -30,6 +31,7 @@ the creation process, a table that shows an overview over installed
 environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
 more.
+
 
 Features
 --------
@@ -44,9 +46,10 @@ Features
 *  List detailed information about installed packages
 *  Show dependency tree (using
    `pipdeptree <https://github.com/naiquevin/pipdeptree>`__ package)
-*  Install packages from local projects and from repository urls *(git)*
+*  Install packages from local projects and from repository urls *(git only)*
 *  Modify any environment by adding or removing packages *(comming
    soon)*
+
 
 Prerequisits
 ------------
@@ -59,27 +62,22 @@ you will have to make sure that the two packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
 venv and pip will be used to perform the commands.
 
+
 Installation
 ------------
 
-The easiest way is to download the
-`standalone <https://github.com/sinusphi/venvipy/raw/master/venvipy.tar.xz>`__
-from the repository. Then just unpack the archive and *VenviPy* is ready
-to use by running the ``VenviPy`` executable which can be found inside
-the unpacked folder named ``venvipy``.
-
-Or, from a terminal, navigate to the location where the archive has been
-downloaded to, and run:
+To install the latest version of *VenviPy* simply run:
 
 .. code-block:: bash
 
-    $ tar -xvf venvipy.tar.xz
+    $ pip install venvipy
 
-Then cd into the unpacked ``VenviPy`` folder and run:
+or
 
 .. code-block:: bash
 
-    $ ./VenviPy
+    $ pip install git+https://github.com/sinusphi/venvipy.git
+
 
 Running from source
 -------------------
@@ -119,6 +117,7 @@ Finally inside the repo cd into the ``venvipy/`` folder and run:
 
     $ (your_env_name) python venvi.py
 
+
 Known issues
 ------------
 
@@ -131,6 +130,7 @@ For this in the main menu click on the ``Add Interpreter`` button in the
 upper right corner. Then select the correct python binary file (e.g.
 "/usr/local/bin/python3.x") and you'll be able to use the added
 interpreter.
+
 
 Contributing
 ------------
