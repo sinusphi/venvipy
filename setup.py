@@ -1,7 +1,7 @@
 import codecs
 import ast
 import re
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 try:
@@ -28,7 +28,8 @@ install_requires = [
 
 setup(
     name="venvipy",
-    packages=["venvipy"],
+    packages=find_packages(),
+    include_package_data=True,
     version=version,
     license="MIT",
     description="A GUI for managing Python virtual environments.",
@@ -36,7 +37,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.1.8.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.1.9.tar.gz",
     keywords=[
         "python",
         "python3",
@@ -50,7 +51,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            "venvipy=venvi:main"
+            "venvipy=venvipy.venvi:main"
         ]
     },
     classifiers=[
