@@ -28,7 +28,7 @@ install_requires = [
 
 setup(
     name="venvipy",
-    packages=find_packages(where="venvipy"),
+    packages=find_packages(),
     include_package_data=True,
     version=version,
     license="MIT",
