@@ -1,7 +1,7 @@
-from distutils.core import setup
 import codecs
 import ast
 import re
+from setuptools import setup
 
 
 try:
@@ -36,7 +36,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.1.7.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.1.4.tar.gz",
     keywords=[
         "python",
         "python3",
@@ -50,7 +50,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            "venvipy=venvipy.venvi:main"
+            "venvipy=venvi:main"
         ]
     },
     classifiers=[
