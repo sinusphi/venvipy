@@ -93,11 +93,11 @@ and then run:
 **NOTE:** Unfortunately running *VenviPy* from the command line doesn't work 
 at the moment, instead you'll have to navigate to the package folder installed 
 by ``pip`` (``/path-to-venv/lib/python3.x/site-packages/venvipy/``) and 
-manually run:
+manually run (*with activated venv* ):
 
 .. code-block:: bash
 
-    $ python venvi.py
+    $ (your-venv) python venvi.py
 
 
 Running from source
