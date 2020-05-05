@@ -90,6 +90,15 @@ and then run:
 
     $ venvipy
 
+**NOTE:** Unfortunately running *VenviPy* from the command line doesn't work 
+at the moment, instead you'll have to navigate to the package folder installed 
+by ``pip`` (``/path-to-venv/lib/python3.x/site-packages/venvipy/``) and 
+manually run:
+
+.. code-block:: bash
+
+    $ python venvi.py
+
 
 Running from source
 -------------------
@@ -135,11 +144,11 @@ Known issues
 
 When launching *VenviPy* from a virtual environment you'll have to choose 
 the interpreter (the one that created the environment in which you're running 
-*VenviPy*) manually to be able to use it. 
+*VenviPy* ) manually to be able to use it. 
 
 For this in the main menu click on the ``Add Interpreter`` button in the
 upper right corner. Then select the correct python binary file (e.g.
-"/usr/local/bin/python3.x") and you'll be able to use the added
+``/usr/local/bin/python3.x``) and you'll be able to use the added
 interpreter.
 
 
