@@ -206,6 +206,14 @@ class MainWindow(QMainWindow):
         # use line edit to store the str
         self.directory_line = QLineEdit()
 
+        self.refresh_button = QToolButton(
+            icon=refresh_icon,
+            toolTip="Refresh",
+            statusTip="Refresh venv table",
+            clicked=self.pop_venv_table
+        )
+        self.refresh_button.setFixedSize(30, 30)
+
         #]===================================================================[#
         # spacer between manage button and exit button
         spacer_item_1 = QSpacerItem(
@@ -305,6 +313,7 @@ class MainWindow(QMainWindow):
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addLayout(h_layout_1)
         h_layout_1.addWidget(self.venv_table_label)
+        h_layout_1.addWidget(self.refresh_button)
         h_layout_1.addWidget(self.active_dir_button)
         v_layout_1.addWidget(self.venv_table)
 
