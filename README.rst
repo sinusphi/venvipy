@@ -3,7 +3,7 @@ VenviPy
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/python-3.3+-blue
+.. image:: https://img.shields.io/badge/python-3.7+-blue
     :target: https://python.org
 
 .. image:: https://img.shields.io/badge/pyqt-5.11+-blue
@@ -63,7 +63,7 @@ Prerequisits
 Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
 come sometime in the future)
 
-If you want to run *VenviPy* using your operating system's Python (3.3+)
+If you want to run *VenviPy* using your operating system's Python (3.7+)
 you will have to make sure that the two packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
 venv and pip will be used to perform the commands.
@@ -72,7 +72,7 @@ venv and pip will be used to perform the commands.
 Installation
 ------------
 
-To install the latest version of *VenviPy* simply run:
+You can install the latest version of *VenviPy* via:
 
 .. code-block:: bash
 
@@ -83,6 +83,12 @@ or
 .. code-block:: bash
 
     $ pip install git+https://github.com/sinusphi/venvipy.git
+
+and then run:
+
+.. code-block:: bash
+
+    $ venvipy
 
 
 Running from source
@@ -102,7 +108,7 @@ Change to the created directory and run:
 
     $ source bin/activate
 
-The easiest to install the required packages is to use the
+The easiest way to install the required packages is to use the
 `requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__
 from the repository. Navigate to the downloaded repo and run:
 
@@ -127,10 +133,9 @@ Finally inside the repo cd into the ``venvipy/`` folder and run:
 Known issues
 ------------
 
-It might be possible that when launching *VenviPy* the first time on a
-machine you would have to choose the interpreter (the one that created
-the environment in which you're running *VenviPy*) manually to be able
-to use it.
+When launching *VenviPy* from a virtual environment you'll have to choose 
+the interpreter (the one that created the environment in which you're running 
+*VenviPy*) manually to be able to use it. 
 
 For this in the main menu click on the ``Add Interpreter`` button in the
 upper right corner. Then select the correct python binary file (e.g.
