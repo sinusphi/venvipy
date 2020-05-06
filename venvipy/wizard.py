@@ -16,6 +16,7 @@ from PyQt5.QtGui import (
     QFont
 )
 from PyQt5.QtWidgets import (
+    QStyle,
     QApplication,
     QGridLayout,
     QLabel,
@@ -157,6 +158,12 @@ class BasicSettings(QWizardPage):
         self.setSubTitle("This wizard will help you to create and set up "
                          "a virtual environment for Python. ")
 
+        folder_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_DirOpenIcon)
+        )
+        file_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_FileDialogContentsView)
+        )
 
         #]===================================================================[#
         #] THREAD [#=========================================================[#
@@ -206,7 +213,7 @@ class BasicSettings(QWizardPage):
         venv_location_label.setBuddy(self.venv_location_line)
 
         self.select_dir_button = QToolButton(
-            icon=QIcon.fromTheme("folder"),
+            icon=folder_icon,
             toolTip="Select venv directory",
             clicked=self.select_dir
         )
@@ -217,7 +224,7 @@ class BasicSettings(QWizardPage):
         requirements_label.setBuddy(self.requirements_line)
 
         self.select_file_button = QToolButton(
-            icon=QIcon.fromTheme("document"),
+            icon=file_icon,
             toolTip="Select requirements",
             clicked=self.select_file
         )

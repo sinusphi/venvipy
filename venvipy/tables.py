@@ -46,10 +46,16 @@ class VenvTable(QTableView):
         super().__init__(*args, **kwargs)
 
         self.info_icon = QIcon(
-            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
+            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
         self.drive_icon = QIcon(
-            self.style().standardIcon(getattr(QStyle, "SP_DriveHDIcon"))
+            self.style().standardIcon(QStyle.SP_DriveHDIcon)
+        )
+        self.delete_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_TrashIcon)
+        )
+        self.save_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_DialogSaveButton)
         )
 
         self.progress_bar = ProgBarDialog()
@@ -137,7 +143,7 @@ class VenvTable(QTableView):
         )
 
         save_requires_action = QAction(
-            QIcon.fromTheme("document-save"),
+            self.save_icon,
             "Save &requirements",
             self,
             statusTip="Write requirements to file"
@@ -177,7 +183,7 @@ class VenvTable(QTableView):
         )
 
         delete_venv_action = QAction(
-            QIcon.fromTheme("delete"),
+            self.delete_icon,
             "&Delete environment",
             self,
             statusTip="Delete environment"
@@ -527,7 +533,7 @@ class ResultsTable(QTableView):
         super().__init__(*args, **kwargs)
 
         self.info_icon = QIcon(
-            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
+            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
 
 

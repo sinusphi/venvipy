@@ -127,19 +127,30 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
 
         python_icon = QIcon(":/img/python.png")
-        refresh_icon = QIcon.fromTheme("view-refresh")
         find_icon = QIcon.fromTheme("edit-find")
         manage_icon = QIcon.fromTheme("insert-object")
-        new_icon = QIcon.fromTheme("list-add")
         settings_icon = QIcon.fromTheme("preferences-system")
-        exit_icon = QIcon.fromTheme("application-exit")
-        delete_icon = QIcon.fromTheme("delete")
-        folder_icon = QIcon.fromTheme("folder")
+
+        new_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_FileDialogNewFolder)
+        )
+        exit_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_BrowserStop)
+        )
+        reload_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_BrowserReload)
+        )
+        delete_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_TrashIcon)
+        )
+        folder_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_DirOpenIcon)
+        )
         qt_icon = QIcon(
-            self.style().standardIcon(getattr(QStyle, "SP_TitleBarMenuButton"))
+            self.style().standardIcon(QStyle.SP_TitleBarMenuButton)
         )
         info_icon = QIcon(
-            self.style().standardIcon(getattr(QStyle, "SP_FileDialogInfoView"))
+            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
 
         #]===================================================================[#
@@ -206,13 +217,13 @@ class MainWindow(QMainWindow):
         # use line edit to store the str
         self.directory_line = QLineEdit()
 
-        self.refresh_button = QToolButton(
-            icon=refresh_icon,
-            toolTip="Refresh",
-            statusTip="Refresh venv table",
+        self.reload_button = QToolButton(
+            icon=reload_icon,
+            toolTip="Reload",
+            statusTip="Reload venv table content",
             clicked=self.pop_venv_table
         )
-        self.refresh_button.setFixedSize(30, 30)
+        self.reload_button.setFixedSize(30, 30)
 
         #]===================================================================[#
         # spacer between manage button and exit button
@@ -313,7 +324,7 @@ class MainWindow(QMainWindow):
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addLayout(h_layout_1)
         h_layout_1.addWidget(self.venv_table_label)
-        h_layout_1.addWidget(self.refresh_button)
+        h_layout_1.addWidget(self.reload_button)
         h_layout_1.addWidget(self.active_dir_button)
         v_layout_1.addWidget(self.venv_table)
 
@@ -355,9 +366,12 @@ class MainWindow(QMainWindow):
         )
 
         self.action_select_active_dir = QAction(
-            settings_icon, "Change active &directory", self,
+            folder_icon,
+            "Change active &directory",
+            self,
             statusTip="Change active directory",
-            shortcut="Ctrl+D", triggered=self.select_active_dir
+            shortcut="Ctrl+D",
+            triggered=self.select_active_dir
         )
 
         self.action_exit = QAction(
