@@ -88,16 +88,10 @@ and then run:
 
 .. code-block:: bash
 
-    $ venvipy
+    $ sudo venvipy
 
-**NOTE:** Unfortunately running *VenviPy* from the command line doesn't work 
-at the moment, instead you'll have to navigate to the package folder installed 
-by ``pip`` (``/path-to-venv/lib/python3.x/site-packages/venvipy/``) and 
-manually run (*with activated venv* ):
-
-.. code-block:: bash
-
-    $ (your-venv) python venvi.py
+**NOTE:** At the moment running *VenviPy* from the command line requires 
+``sudo``. This will be fixed in the next release. 
 
 
 Running from source
