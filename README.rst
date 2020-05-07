@@ -32,11 +32,11 @@ environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
 more.
 
-.. image:: ./img/screen-1.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-1.png
 
-.. image:: ./img/screen-2.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-2.png
 
-.. image:: ./img/screen-3.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-3.png
 
 
 Features
