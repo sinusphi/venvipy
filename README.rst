@@ -46,10 +46,10 @@ Features
    properly build or installed on your system
 *  Install and update Pip with one click
 *  Clone an environment from a requirements file
-*  Search and install packages from `PyPI (Python Package
-   Index) <https://pypi.org/>`__
+*  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Generate requirements from an existing environment
 *  List detailed information about installed packages
+*  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
 *  Show dependency tree (using
    `pipdeptree <https://github.com/naiquevin/pipdeptree>`__ package)
 *  Install packages from local projects and from repository urls *(git only)*
@@ -88,10 +88,7 @@ and then run:
 
 .. code-block:: bash
 
-    $ sudo venvipy
-
-**NOTE:** At the moment running *VenviPy* from the command line requires 
-``sudo``. This will be fixed in the next release. 
+    $ venvipy
 
 
 Running from source
