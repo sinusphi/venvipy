@@ -4,6 +4,13 @@ The main module of VenviPy.
 """
 import sys
 import os
+from pathlib import Path
+
+# need to set the correct cwd
+CURRENT_DIR = Path(__file__).parent
+sys.path.insert(0, str(CURRENT_DIR))
+os.chdir(CURRENT_DIR)
+
 
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (
