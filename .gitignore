@@ -1,5 +1,6 @@
 __pycache__/
 .vscode/
 testenv/
+build/
 dist/
 *.egg-info/
