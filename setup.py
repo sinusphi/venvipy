@@ -3,7 +3,7 @@ import ast
 import sys
 import re
 from pathlib import Path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # since the source code contains f-strings we need at least Python 3.7
 assert sys.version_info >= (3, 7, 0), "VenviPy requires Python 3.7+"
@@ -13,7 +13,7 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))  # for setuptools.build_meta
 
 try:
-    fh = codecs.open(f"{CURRENT_DIR}/README.rst", encoding="utf-8")
+    fh = codecs.open(CURRENT_DIR / "README.rst", encoding="utf-8")
     long_desc = fh.read()
     fh.close()
 except FileNotFoundError:
@@ -22,7 +22,7 @@ except FileNotFoundError:
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
-with open(f"{CURRENT_DIR}/venvipy/get_data.py", "rb") as f:
+with open(CURRENT_DIR / "venvipy/get_data.py", "rb") as f:
     version = str(ast.literal_eval(
         _version_re.search(
             f.read().decode("utf-8")).group(1)
@@ -37,7 +37,7 @@ install_requires = [
 setup(
     name="venvipy",
     python_requires=">=3.7",
-    packages=["venvipy"],
+    packages=find_packages(),
     include_package_data=True,
     version=version,
     license="MIT",
@@ -46,7 +46,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.0.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.1.tar.gz",
     keywords=[
         "python",
         "python3",
