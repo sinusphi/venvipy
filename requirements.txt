@@ -1,3 +1,6 @@
+# pyqt
 PyQt5
 PyQt5-sip
+
+# dev
 black
