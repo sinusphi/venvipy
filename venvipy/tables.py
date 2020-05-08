@@ -6,6 +6,7 @@ from functools import partial
 import webbrowser
 import shutil
 import os
+from subprocess import Popen
 
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
@@ -57,6 +58,9 @@ class VenvTable(QTableView):
         self.save_icon = QIcon(
             self.style().standardIcon(QStyle.SP_DialogSaveButton)
         )
+        self.folder_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_DirOpenIcon)
+        )
 
         self.progress_bar = ProgBarDialog()
         self.console = ConsoleDialog()
@@ -91,6 +95,11 @@ class VenvTable(QTableView):
             self,
             icon=QIcon.fromTheme("software-install")
         )
+
+
+        #]===================================================================[#
+        #] ACTIONS [#========================================================[#
+        #]===================================================================[#
 
         upgrade_pip_action = QAction(
             QIcon.fromTheme("system-software-update"),
@@ -182,6 +191,16 @@ class VenvTable(QTableView):
             lambda: self.pipdeptree_output(event, style=3)
         )
 
+        open_folder_action = QAction(
+            self.folder_icon,
+            "&Open containing folder",
+            self,
+            statusTip="Open the folder containing the virtual environment"
+        )
+        open_folder_action.triggered.connect(
+            lambda: self.open_folder(event)
+        )
+
         delete_venv_action = QAction(
             self.delete_icon,
             "&Delete environment",
@@ -191,6 +210,11 @@ class VenvTable(QTableView):
         delete_venv_action.triggered.connect(
             lambda: self.delete_venv(event)
         )
+
+
+        #]===================================================================[#
+        #] ADD ACTIONS [#====================================================[#
+        #]===================================================================[#
 
         context_menu.addAction(upgrade_pip_action)
 
@@ -212,6 +236,7 @@ class VenvTable(QTableView):
         details_sub_menu.addAction(freeze_action)
         details_sub_menu.addAction(pipdeptree_action)
 
+        context_menu.addAction(open_folder_action)
         context_menu.addAction(delete_venv_action)
 
         # pop up only if clicking on a row
@@ -266,6 +291,18 @@ class VenvTable(QTableView):
         for index in listed_venvs:
             selected_venv = index.data()
             return selected_venv
+
+
+    def open_folder(self, event):
+        """
+        Open the selected venv directory.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_dir = os.path.join(active_dir, venv)
+
+        if os.path.isdir(venv_dir):
+            Popen(["xdg-open", venv_dir])
 
 
     def upgrade_pip(self, event):
