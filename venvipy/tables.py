@@ -191,14 +191,14 @@ class VenvTable(QTableView):
             lambda: self.pipdeptree_output(event, style=3)
         )
 
-        open_folder_action = QAction(
+        open_venv_dir_action = QAction(
             self.folder_icon,
             "&Open containing folder",
             self,
             statusTip="Open the folder containing the virtual environment"
         )
-        open_folder_action.triggered.connect(
-            lambda: self.open_folder(event)
+        open_venv_dir_action.triggered.connect(
+            lambda: self.open_venv_dir(event)
         )
 
         delete_venv_action = QAction(
@@ -236,7 +236,7 @@ class VenvTable(QTableView):
         details_sub_menu.addAction(freeze_action)
         details_sub_menu.addAction(pipdeptree_action)
 
-        context_menu.addAction(open_folder_action)
+        context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
 
         # pop up only if clicking on a row
@@ -291,18 +291,6 @@ class VenvTable(QTableView):
         for index in listed_venvs:
             selected_venv = index.data()
             return selected_venv
-
-
-    def open_folder(self, event):
-        """
-        Open the selected venv directory.
-        """
-        active_dir = get_active_dir_str()
-        venv = self.get_selected_item()
-        venv_dir = os.path.join(active_dir, venv)
-
-        if os.path.isdir(venv_dir):
-            Popen(["xdg-open", venv_dir])
 
 
     def upgrade_pip(self, event):
@@ -539,6 +527,18 @@ class VenvTable(QTableView):
                     self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()
                     self.list_modules(event, style)
+
+
+    def open_venv_dir(self, event):
+        """
+        Open the selected venv directory.
+        """
+        active_dir = get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_dir = os.path.join(active_dir, venv)
+
+        if os.path.isdir(venv_dir):
+            Popen(["xdg-open", venv_dir])
 
 
     def delete_venv(self, event):
