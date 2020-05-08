@@ -11,7 +11,6 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))
 os.chdir(CURRENT_DIR)
 
-
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (
     QIcon,
@@ -208,7 +207,8 @@ class MainWindow(QMainWindow):
         )
 
         self.exit_button = QPushButton(
-            "Quit", centralwidget,
+            "Quit",
+            centralwidget,
             statusTip="Quit Application",
             clicked=self.on_close
         )
@@ -451,7 +451,7 @@ class MainWindow(QMainWindow):
         )
 
         if not get_python_installs():
-            self.launcher()
+            self.launching_without_python()
 
 
     def info_about_qt(self):
@@ -459,13 +459,11 @@ class MainWindow(QMainWindow):
         QMessageBox.aboutQt(self)
 
 
-    def launcher(self):
-        self.enable_features(False)
+    def launching_without_python(self):
         print("[WARNING]: No suitable Python installation found!")
-
+        self.enable_features(False)
         self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
         self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
-
         if self.msg_box.exec_() == QMessageBox.AcceptRole:
             # let user specify path to an interpreter
             self.add_interpreter()
@@ -517,7 +515,7 @@ class MainWindow(QMainWindow):
                     self.model_interpreter_table.setItem(
                         0, i, QStandardItem(text)
                     )
-                    print(f"[PYTHON]: {info}")
+                print(f"[PYTHON]: {info}")
         else:
             if get_python_installs():
                 self.model_interpreter_table.setRowCount(0)
@@ -528,7 +526,7 @@ class MainWindow(QMainWindow):
                     self.model_interpreter_table.setItem(
                         0, i, QStandardItem(text)
                     )
-                    print(f"[PYTHON]: {info}")
+                print(f"[PYTHON]: {info}")
 
 
     def pop_venv_table(self):
@@ -539,10 +537,8 @@ class MainWindow(QMainWindow):
 
         for info in get_active_dir():
             self.model_venv_table.insertRow(0)
-
             for i, text in enumerate((info.venv_name, info.venv_version)):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
-
             print(f"[VENV]: {info}")
 
 
