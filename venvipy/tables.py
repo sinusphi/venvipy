@@ -415,9 +415,14 @@ class VenvTable(QTableView):
         """
         active_dir = get_active_dir_str()
         venv = self.get_selected_item()
+        venv_dir = os.path.join(active_dir, venv)
 
         if self.has_pip(active_dir, venv):
-            save_file = QFileDialog.getSaveFileName(self, "Save requirements")
+            save_file = QFileDialog.getSaveFileName(
+                self,
+                "Save requirements",
+                directory=f"{venv_dir}/requirements.txt"
+            )
             save_path = save_file[0]
 
             if save_path != "":
