@@ -4,27 +4,18 @@ dist: bionic
 
 python:
   - "3.7"
-  - "3.8"
+
+virtualenv:
+  system_site_packages: true
 
 before_script:
-  - sudo apt-add-repository ppa:beineri/opt-qt-5.14.0-bionic -y
   - sudo apt-get update
-  - sudo apt-get install qt-default
-  - source /opt/qt514/bin/qt514-env.sh
+  - sudo apt-get install python3-pyqt5
 
   - pip install --upgrade pip
   - pip install wheel
 
 install:
-  - sudo mkdir -p /builds && sudo chmod a+rw /builds
-  - sudo mkdir -p /downloads && sudo chmod a+rw /downloads
-  - curl -L -o /downloads/sip.tar.gz https://www.riverbankcomputing.com/static/Downloads/sip/4.19.22/sip-4.19.22.tar.gz
-  - curl -L -o /downloads/pyqt.tar.gz https://www.riverbankcomputing.com/static/Downloads/PyQt5/PyQt5-5.14.3.dev2005051533.tar.gz
-  - tar xzf /downloads/sip.tar.gz -C /builds --keep-newer-files
-  - tar xzf /downloads/pyqt.tar.gz -C /builds --keep-newer-files
-  - cd /builds/sip-4.19.22 && python configure.py && sudo make && sudo make install
-  - cd /builds/PyQt5-5.14.3.dev2005051533 && python configure.py --confirm-license && sudo make && sudo make install
-
   - pip install -r requirements.txt
   - pip install --upgrade venvipy
 
