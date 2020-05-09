@@ -10,6 +10,7 @@ python:
 
 before_script:
   - sudo apt-get install libxkbcommon-x11-0
+  - sudo chmod +x tests/test.sh
   - "export DISPLAY=:99.0"
 
 install:
