@@ -8,7 +8,7 @@ python:
   - "3.8"
 
 before_script:
-  - sudo apt-get install -qq libegl1-mesa
+  - sudo apt-get install qt5dxcb-plugin
   - pip install --upgrade pip
   - pip install wheel
 
