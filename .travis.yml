@@ -5,16 +5,7 @@ dist: xenial
 python:
   - "3.7"
 
-before_script:
-  - sudo apt-get update
-  - sudo apt-get install -y libxkbcommon-x11-0
-  - sudo apt-get install -y libegl1-mesa
-  - pip install --upgrade pip
-  - export DISPLAY=:99.0
-  - sleep 3
-
 install:
-  - pip install -r requirements.txt
   - pip install --upgrade venvipy
 
 script:
