@@ -16,4 +16,4 @@ install:
   - pip install --upgrade venvipy
 
 script:
-  - locate libxkbcommon-x11.so.0
+  - venvipy
