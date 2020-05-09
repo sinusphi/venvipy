@@ -15,3 +15,4 @@ install:
 
 script:
   - ls -la /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/PyQt5/Qt/plugins/platforms
+  - locate libxkbcommon-x11.so.0
