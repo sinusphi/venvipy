@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 from setuptools import setup, find_packages
 
-# since the source code contains f-strings we need at least Python 3.7
 assert sys.version_info >= (3, 7, 0), "VenviPy requires Python 3.7+"
 
 
@@ -30,7 +29,7 @@ with open(CURRENT_DIR / "venvipy/get_data.py", "rb") as f:
     )
 
 install_requires = [
-    "PyQt5",
+    "PyQt5==5.14.0",
     "PyQt5-sip",
 ]
 
@@ -46,7 +45,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.3.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.4.tar.gz",
     keywords=[
         "python",
         "python3",
