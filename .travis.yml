@@ -1,7 +1,6 @@
 language: python
 os: linux
 dist: xenial
-sudo: required
 
 python:
   - "3.7"
@@ -11,12 +10,24 @@ virtualenv:
   system_site_packages: true
 
 before_script:
+  - sudo apt-add-repository ppa:beineri/opt-qt551 -y
   - sudo apt-get update
-  - sudo apt-get -y install python3-pyqt5
+  - sudo apt-get install qt-latest
+  - source /opt/qt55/bin/qt55-env.sh
+
   - pip install --upgrade pip
   - pip install wheel
 
 install:
+  - sudo mkdir -p /builds && sudo chmod a+rw /builds
+  - sudo mkdir -p /downloads && sudo chmod a+rw /downloads
+  - curl -L -o /downloads/sip.tar.gz https://sourceforge.net/projects/pyqt/files/sip/sip-4.19.13/sip-4.19.13.tar.gz
+  - curl -L -o /downloads/pyqt.tar.gz https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.11.3/PyQt5_gpl-5.11.3.tar.gz
+  - tar xzf /downloads/sip.tar.gz -C /builds --keep-newer-files
+  - tar xzf /downloads/pyqt.tar.gz -C /builds --keep-newer-files
+  - cd /builds/sip-4.19.13 && python configure.py && sudo make && sudo make install
+  - cd /builds/PyQt5_gpl-5.11.3 && python configure.py --confirm-license && sudo make && sudo make install
+
   - pip install -r requirements.txt
   - pip install --upgrade venvipy
 
