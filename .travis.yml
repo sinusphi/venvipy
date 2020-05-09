@@ -4,10 +4,11 @@ python:
   - "3.8"
 
 befor_script:
-  - python3 -m pip install wheel
+  - pip install --upgrade pip
+  - pip install wheel
 
 install:
-  - python3 -m pip install -r requirements.txt
+  - pip install -r requirements.txt
 
 script:
-  - python3 venvipy/venvi.py
+  - python venvipy/venvi.py
