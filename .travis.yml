@@ -6,7 +6,6 @@ python:
   - "3.7"
 
 before_script:
-  - export QT_DEBUG_PLUGINS=1
   - pip install --upgrade pip
   - pip install wheel
 
@@ -15,4 +14,4 @@ install:
   - pip install --upgrade venvipy
 
 script:
-  - venvipy
+  - ls -la /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/PyQt5/Qt/plugins/platforms
