@@ -35,9 +35,15 @@ environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
 more.
 
+**The main menu:**
+
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-1.png
 
+**The wizard:**
+
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-2.png
+
+**The output when running pip commands:**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-3.png
 
