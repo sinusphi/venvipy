@@ -1,16 +1,16 @@
 language: python
 os: linux
-dist: xenial
+dist: bionic
 
 python:
   - "3.7"
   - "3.8"
 
 before_script:
-  - sudo apt-add-repository ppa:beineri/opt-qt551 -y
+  - sudo apt-add-repository ppa:beineri/opt-qt-5.14.0-bionic -y
   - sudo apt-get update
-  - sudo apt-get install qt5-default
-  - source /opt/qt55/bin/qt55-env.sh
+  - sudo apt-get install qt-default
+  - source /opt/qt514/bin/qt514-env.sh
 
   - pip install --upgrade pip
   - pip install wheel
