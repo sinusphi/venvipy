@@ -10,6 +10,7 @@ python:
 
 before_script:
   - sudo apt-get install libxkbcommon-x11-0
+  - "export DISPLAY=:99.0"
 
 install:
   - pip install venvipy==0.2.4
