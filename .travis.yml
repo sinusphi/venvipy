@@ -16,4 +16,4 @@ install:
   - pip install venvipy==0.2.4
 
 script:
-  - xvfb-run venvipy
+  - xvfb-run -a venvipy
