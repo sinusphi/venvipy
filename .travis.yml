@@ -6,6 +6,8 @@ python:
   - "3.7"
 
 before_script:
+  - sudo apt-get update
+  - sudo apt-get install -y libxkbcommon-x11-0
   - pip install --upgrade pip
   - pip install wheel
 
@@ -14,5 +16,4 @@ install:
   - pip install --upgrade venvipy
 
 script:
-  - ls -la /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/PyQt5/Qt/plugins/platforms
   - locate libxkbcommon-x11.so.0
