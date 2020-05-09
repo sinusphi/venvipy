@@ -9,4 +9,4 @@ install:
   - pip install venvipy==0.2.4
 
 script:
-  - venvipy
+  - python /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/venvipy/venvi.py
