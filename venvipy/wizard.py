@@ -43,7 +43,6 @@ from manage_pip import PipManager
 from tables import ResultsTable
 from get_data import (
     get_module_infos,
-    get_active_dir_str,
     get_python_installs,
     get_python_version
 )
