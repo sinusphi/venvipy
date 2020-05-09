@@ -9,13 +9,10 @@ python:
   - "3.7"
 
 before_script:
-  - "export DISPLAY=:99.0"
-
-before_install:
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1920x1080x16"
+  - sudo apt-get install libxkbcommon-x11-0
 
 install:
   - pip install venvipy==0.2.4
 
 script:
-  - venvipy
+  - xvfb-run venvipy
