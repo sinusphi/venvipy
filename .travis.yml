@@ -6,6 +6,7 @@ python:
   - "3.7"
 
 before_script:
+  - export QT_DEBUG_PLUGINS=1
   - pip install --upgrade pip
   - pip install wheel
 
