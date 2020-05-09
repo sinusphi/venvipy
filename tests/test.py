@@ -4,6 +4,10 @@ from time import sleep
 from venvipy import venvi
 
 
-venvi.MainWindow.show()
+main_ui = venvi.MainWindow()
+
+venvi.main()
 sleep(5)
-venvi.MainWindow.close()
+
+if venvi.main():
+    main_ui.on_close()
