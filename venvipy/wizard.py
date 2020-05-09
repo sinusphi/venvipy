@@ -684,8 +684,12 @@ class InstallModules(QWizardPage):
         )
 
         if msg_box_question == QMessageBox.Yes:
-            active_dir = get_active_dir_str()
-            save_file = QFileDialog.getSaveFileName(self, "Save requirements")
+            venv_dir = os.path.join(self.venv_location, self.venv_name)
+            save_file = QFileDialog.getSaveFileName(
+                self,
+                "Save requirements",
+                directory=f"{venv_dir}/requirements.txt"
+            )
             save_path = save_file[0]
 
             if save_path != "":
