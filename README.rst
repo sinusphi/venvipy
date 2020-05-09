@@ -9,6 +9,9 @@ VenviPy
 .. image:: https://img.shields.io/badge/pyqt-5.11+-blue
     :target: https://pypi.org/project/PyQt5
 
+.. image:: https://img.shields.io/badge/pypi-v0.2.3-blue
+    :target: https://pypi.org/project/venvipy
+
 .. image:: https://img.shields.io/badge/platform-linux-darkblue
     :target: https://www.linux.org/pages/download
 
