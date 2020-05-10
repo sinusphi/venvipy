@@ -58,10 +58,11 @@ Features
 *  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Generate requirements from an existing environment
 *  List detailed information about installed packages
-*  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
 *  Show dependency tree (using
-   `pipdeptree <https://github.com/naiquevin/pipdeptree>`__ package)
-*  Install packages from local projects and from repository urls *(git only)*
+   `pipdeptree <https://pypi.org/project/pipdeptree/#description>`__ package)
+*  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
+*  Install packages from local projects and from repository urls 
+   *(currently git only)*
 *  Modify any environment by adding or removing packages *(comming
    soon)*
 
@@ -136,7 +137,7 @@ running the following command:
 
 .. code-block:: bash
 
-    $ (your_env_name) pip install PyQt5 PyQt5-sip
+    $ (your_env_name) pip install PyQt5==5.14.0 PyQt5-sip
 
 Finally inside the repo cd into the ``venvipy/`` folder and run:
 
@@ -150,12 +151,16 @@ Known issues
 
 When launching *VenviPy* from a virtual environment you'll have to choose 
 the interpreter (the one that created the environment in which you're running 
-*VenviPy* ) manually to be able to use it. 
+*VenviPy* ) manually to be able to use it.
 
 For this in the main menu click on the ``Add Interpreter`` button in the
 upper right corner. Then select the correct python binary file (e.g.
-``/usr/local/bin/python3.x``) and you'll be able to use the added
-interpreter.
+``/usr/local/bin/python3.x``). Further, when launching the wizard you can 
+also choose a custom Python version which will be added permantently (until 
+you close *VenviPy* ). 
+
+Sometimes it happens that when starting the creation process the wizard page 
+freezes. Restarting *VenviPy* fixes this. 
 
 
 Contributing
