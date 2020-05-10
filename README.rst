@@ -1,5 +1,6 @@
-VenviPy
-=======
+
+
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/default.png
 
 **A GUI for managing multiple Python virtual environments**
 
