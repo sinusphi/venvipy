@@ -1,6 +1,6 @@
 
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/cover.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/cover_slim.png
 
 **A GUI for managing multiple Python virtual environments**
 
