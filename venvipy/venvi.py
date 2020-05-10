@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("VenviPy")
         self.resize(900, 570)
         self.center()
-        self.setWindowIcon(QIcon(":/img/python.png"))
+        self.setWindowIcon(QIcon(":/img/profile.png"))
 
         self.setStyleSheet(
             """

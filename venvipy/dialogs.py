@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QMessageBox
 )
-from PyQt5.QtGui import QIcon, QPixmap, QFont, QFontMetrics
+from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -43,7 +43,7 @@ class ProgBarDialog(QDialog):
     def initUI(self):
         self.setFixedSize(350, 85)
         self.center()
-        self.setWindowIcon(QIcon(":/img/python.png"))
+        self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -93,7 +93,7 @@ class ConsoleDialog(QDialog):
     def initUI(self):
         self.resize(880, 510)
         self.center()
-        self.setWindowIcon(QIcon(":/img/python.png"))
+        self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
@@ -178,18 +178,26 @@ class InfoAboutVenviPy(QDialog):
 
     def initUI(self):
         self.setWindowTitle("About VenviPy")
-        self.setFixedSize(425, 340)
+        self.setFixedSize(420, 350)
         self.center()
-        self.setWindowIcon(QIcon(":/img/python.png"))
+        self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
         # logo
         logo = QLabel()
-        pixmap = QPixmap(":/img/python.png")
-        logo_scaled = pixmap.scaled(102, 102, Qt.KeepAspectRatio)
+        pixmap = QPixmap(":/img/default.png")
+        logo_scaled = pixmap.scaled(136, 136, Qt.KeepAspectRatio)
         logo.setPixmap(logo_scaled)
 
-        place_holder = QLabel(maximumHeight=5)
+        place_holder = QLabel(maximumHeight=1)
+
+        # title
+        title_label = QLabel(
+            '<p><span style="font-size:12pt;">\
+                <b>VenviPy</b>\
+            </span></p>'
+        )
+        #title_label.setFont(QFont("FreeSerif", italic=True))
 
         # version
         version_label = QLabel(
@@ -197,14 +205,6 @@ class InfoAboutVenviPy(QDialog):
                 {__version__}\
             </span></p>'
         )
-
-        # title
-        title_label = QLabel(
-            '<p><span style="font-size:20pt;">\
-                <b>VenviPy</b>\
-            </span></p>'
-        )
-        title_label.setFont(QFont("FreeSerif", italic=True))
 
         # subtitle
         subtitle_label = QLabel(
@@ -234,7 +234,7 @@ class InfoAboutVenviPy(QDialog):
 
 
         grid_layout = QGridLayout(self)
-        grid_layout.setContentsMargins(15, 20, 10, 15)
+        grid_layout.setContentsMargins(15, 15, 10, 15)
 
         grid_layout.addWidget(logo, 0, 0, Qt.AlignHCenter)
         grid_layout.addWidget(place_holder, 1, 0, Qt.AlignHCenter)
