@@ -6,7 +6,7 @@ VenviPy
 .. image:: https://img.shields.io/badge/python-3.7+-blue
     :target: https://python.org
 
-.. image:: https://img.shields.io/badge/pyqt-5.11+-blue
+.. image:: https://img.shields.io/badge/pyqt-5.14.0-blue
     :target: https://pypi.org/project/PyQt5
 
 .. image:: https://img.shields.io/badge/pypi-v0.2.4-blue
@@ -87,13 +87,19 @@ You can install the latest version of *VenviPy* via:
 
     $ pip install venvipy
 
-or
+or:
 
 .. code-block:: bash
 
     $ pip install git+https://github.com/sinusphi/venvipy.git
 
-and then run:
+or to install from repository:
+
+.. code-block:: bash
+
+    $ pip install -e git+https://github.com/sinusphi/venvipy#egg=venvipy
+
+then run:
 
 .. code-block:: bash
 
