@@ -614,10 +614,10 @@ class ResultsTable(QTableView):
         """
         Get the venv name of the selected row.
         """
-        listed_venvs = self.selectionModel().selectedRows()
-        for index in listed_venvs:
-            selected_venv = index.data()
-            return selected_venv
+        listed_items = self.selectionModel().selectedRows()
+        for index in listed_items:
+            selected_item = index.data()
+            return selected_item
 
 
     def open_on_pypi(self, event):
