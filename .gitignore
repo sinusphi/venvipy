@@ -4,3 +4,5 @@ testenv/
 build/
 dist/
 *.egg-info/
+*.qrc
+*.in
