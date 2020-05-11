@@ -784,6 +784,7 @@ if __name__ == "__main__":
     os.system("clear")
 
     wizard = VenvWizard()
+    wizard.basic_settings.pop_combo_box()
     wizard.show()
 
     sys.exit(app.exec_())
