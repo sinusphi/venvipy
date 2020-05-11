@@ -8,7 +8,7 @@
 .. image:: https://img.shields.io/badge/pyqt-5.14.0-blue
     :target: https://pypi.org/project/PyQt5
 
-.. image:: https://img.shields.io/badge/pypi-v0.2.5-blue
+.. image:: https://img.shields.io/badge/pypi-v0.2.6-blue
     :target: https://pypi.org/project/venvipy
 
 .. image:: https://img.shields.io/badge/platform-linux-darkblue
