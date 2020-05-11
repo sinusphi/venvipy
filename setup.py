@@ -45,7 +45,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.4.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.5.tar.gz",
     keywords=[
         "python",
         "python3",
@@ -59,7 +59,8 @@ setup(
     install_requires=install_requires,
     entry_points={
         "console_scripts": [
-            "venvipy=venvipy.venvi:main"
+            "venvipy=venvipy.venvi:main",
+            "venvipy-wizard=venvipy.wizard:main"
         ]
     },
     classifiers=[
