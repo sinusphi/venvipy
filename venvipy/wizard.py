@@ -3,9 +3,15 @@
 This module contains the wizard for creating
 and setting up virtual environments.
 """
-from functools import partial
 import sys
 import os
+from functools import partial
+from pathlib import Path
+
+# need to set the correct cwd
+CURRENT_DIR = Path(__file__).parent
+sys.path.insert(0, str(CURRENT_DIR))
+os.chdir(CURRENT_DIR)
 
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QThread
 from PyQt5.QtGui import (
@@ -773,7 +779,6 @@ class FinalPage(QWizardPage):
 
         # call update_zen_line to get a different line every new session
         self.wizard().refresh.connect(self.update_zen_line)
-
         self.wizard().refresh.emit()
 
 
