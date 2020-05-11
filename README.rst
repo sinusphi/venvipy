@@ -9,7 +9,7 @@
     :target: https://pypi.org/project/PyQt5
 
 .. image:: https://img.shields.io/badge/pypi-v0.2.6-blue
-    :target: https://pypi.org/project/venvipy
+    :target: https://pypi.org/project/venvipy/0.2.6/#description
 
 .. image:: https://img.shields.io/badge/platform-linux-darkblue
     :target: https://www.linux.org/pages/download
