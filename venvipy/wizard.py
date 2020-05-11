@@ -192,6 +192,10 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.finished.connect(self.progress_bar.close)
         self.m_install_venv_worker.finished.connect(self.finish_info)
 
+        # perform a proper stop using quit() and wait()
+        self.thread.finished.connect(self.thread.quit)
+        self.thread.finished.connect(self.thread.wait)
+
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
