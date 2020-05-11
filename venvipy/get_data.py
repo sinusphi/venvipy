@@ -69,6 +69,7 @@ class VenvInfo:
     """_"""
     venv_name: str
     venv_version: str
+    system_site_packages: str
 
 
 def get_venvs(path):
@@ -93,26 +94,39 @@ def get_venvs(path):
         if not os.path.isfile(cfg_file):
             continue
 
-        version_found = get_pyvenv_cfg(cfg_file)
+        version_found = get_pyvenv_cfg(cfg_file, line=2)
+        system_site_packages = get_pyvenv_cfg(cfg_file, line=1)
+        venv_name = os.path.basename(valid_venv)
 
-        venv_info = VenvInfo(os.path.basename(valid_venv), version_found)
+        venv_info = VenvInfo(
+            venv_name, version_found, system_site_packages
+        )
         venv_info_list.append(venv_info)
 
     return venv_info_list
 
 
-def get_pyvenv_cfg(pyvenv_cfg):
+def get_pyvenv_cfg(cfg_file, line):
     """
     Get the Python version of a virtual environment by
     reading the version str from it's `pyvenv.cfg` file.
     """
-    with open(pyvenv_cfg, "r") as f:
+    with open(cfg_file, "r") as f:
         lines = f.readlines()
 
-    python_path = lines[0][7:]  # e.g. /usr/local/bin
-    python_version = lines[2][10:]  # e.g. 3.8.2
-
-    return f"Python {python_version}".strip()
+    if line == 0:
+        python_path = lines[0][7:]  # e.g. /usr/local/bin
+        return python_path.strip()
+    if line == 1:
+        system_site_packages = lines[1][31:]  # true | false
+        if "true" in system_site_packages:
+            return "global"
+        if "false" in system_site_packages:
+            return "isolated"
+    if line == 2:
+        python_version = lines[2][10:]  # e.g. 3.8.2
+        return f"Python {python_version}".strip()
+    return "N/A"
 
 
 def get_active_dir_str():

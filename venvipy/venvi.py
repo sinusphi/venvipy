@@ -319,9 +319,9 @@ class MainWindow(QMainWindow):
         h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
-        self.model_venv_table = QStandardItemModel(0, 2, centralwidget)
+        self.model_venv_table = QStandardItemModel(0, 3, centralwidget)
         self.model_venv_table.setHorizontalHeaderLabels(
-            ["Venv Name", "Version"]
+            ["Venv", "Version", "System site packages"]
         )
         self.venv_table.setModel(self.model_venv_table)
 
@@ -537,7 +537,9 @@ class MainWindow(QMainWindow):
 
         for info in get_active_dir():
             self.model_venv_table.insertRow(0)
-            for i, text in enumerate((info.venv_name, info.venv_version)):
+            for i, text in enumerate(
+                (info.venv_name, info.venv_version, info.system_site_packages)
+            ):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
             print(f"[VENV]: {info}")
 
