@@ -76,7 +76,7 @@ class VenvWizard(QWizard):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Venv Wizard")
+        self.setWindowTitle("VenviPy - Venv Wizard")
         self.resize(680, 510)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
