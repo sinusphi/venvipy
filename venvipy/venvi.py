@@ -321,7 +321,7 @@ class MainWindow(QMainWindow):
         # set table view model
         self.model_venv_table = QStandardItemModel(0, 3, centralwidget)
         self.model_venv_table.setHorizontalHeaderLabels(
-            ["Venv", "Version", "System site packages"]
+            ["Venv", "Version", "Packages"]
         )
         self.venv_table.setModel(self.model_venv_table)
 
