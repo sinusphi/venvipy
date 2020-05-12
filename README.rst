@@ -3,7 +3,7 @@
 **A GUI for managing multiple Python virtual environments**
 
 .. image:: https://img.shields.io/badge/python-3.7+-blue
-    :target: https://python.org
+    :target: https://www.python.org/downloads
 
 .. image:: https://img.shields.io/badge/pyqt-5.14.0-blue
     :target: https://pypi.org/project/PyQt5
@@ -42,7 +42,7 @@ more.
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-2.png
 
-**The output when running pip commands:**
+**Output when running pip commands:**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-3.png
 
@@ -92,12 +92,6 @@ or:
 .. code-block:: bash
 
     $ pip install git+https://github.com/sinusphi/venvipy.git
-
-or to install from repository:
-
-.. code-block:: bash
-
-    $ pip install -e git+https://github.com/sinusphi/venvipy#egg=venvipy
 
 then run:
 
