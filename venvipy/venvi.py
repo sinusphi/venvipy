@@ -499,7 +499,7 @@ class MainWindow(QMainWindow):
 
     def enable_features(self, state):
         #self.search_pypi_button.setEnabled(state)
-        self.action_search_pypi.setEnabled(state)
+        #self.action_search_pypi.setEnabled(state)
         self.venv_table.setEnabled(state)
 
 
