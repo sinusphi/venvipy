@@ -126,9 +126,11 @@ def is_installed(cfg_file):
     target = f"{python_path}/python{python_version}"
     csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
+    if not os.path.isfile(csv_file):
+        get_python_installs()
+
     with open(csv_file, newline="") as cf:
         reader = csv.DictReader(cf, delimiter=",")
-
         for info in reader:
             if target == info["PYTHON_PATH"]:
                 return "yes"
