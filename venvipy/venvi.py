@@ -269,10 +269,8 @@ class MainWindow(QMainWindow):
             alternatingRowColors=True
         )
 
-        # adjust vertical headers
-        v_header_interpreter_table = interpreter_table.verticalHeader()
-        v_header_interpreter_table.setDefaultSectionSize(27)
-        v_header_interpreter_table.hide()
+        # hide vertical header
+        interpreter_table.verticalHeader().hide()
 
         # adjust (horizontal) headers
         h_header_interpreter_table = interpreter_table.horizontalHeader()
@@ -307,21 +305,19 @@ class MainWindow(QMainWindow):
             refresh=self.pop_venv_table
         )
 
-        # adjust vertical headers
-        v_header_venv_table = self.venv_table.verticalHeader()
-        v_header_venv_table.setDefaultSectionSize(27)
-        v_header_venv_table.hide()
+        # hide vertical header
+        self.venv_table.verticalHeader().hide()
 
-        # adjust (horizontal) headers
+        # adjust horizontal headers
         h_header_venv_table = self.venv_table.horizontalHeader()
         h_header_venv_table.setDefaultAlignment(Qt.AlignLeft)
-        h_header_venv_table.setDefaultSectionSize(180)
+        h_header_venv_table.setDefaultSectionSize(120)
         h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
         self.model_venv_table = QStandardItemModel(0, 3, centralwidget)
         self.model_venv_table.setHorizontalHeaderLabels(
-            ["Venv", "Version", "Packages"]
+            ["Venv", "Version", "Packages", "installed"]
         )
         self.venv_table.setModel(self.model_venv_table)
 
@@ -537,9 +533,12 @@ class MainWindow(QMainWindow):
 
         for info in get_active_dir():
             self.model_venv_table.insertRow(0)
-            for i, text in enumerate(
-                (info.venv_name, info.venv_version, info.system_site_packages)
-            ):
+            for i, text in enumerate((
+                info.venv_name,
+                info.venv_version,
+                info.system_site_packages,
+                info.is_on_system
+            )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
             print(f"[VENV]: {info}")
 
