@@ -5,6 +5,7 @@ and setting up virtual environments.
 """
 import sys
 import os
+import csv
 from functools import partial
 from pathlib import Path
 
@@ -49,7 +50,6 @@ from manage_pip import PipManager
 from tables import ResultsTable
 from get_data import (
     get_module_infos,
-    get_python_installs,
     get_python_version
 )
 from creator import (
@@ -252,6 +252,7 @@ class BasicSettings(QWizardPage):
         self.site_pkgs_check_box = QCheckBox(
             "&Make system (global) site-packages dir available to venv"
         )
+        # since we are on linux we don't really need this :D
         self.symlinks_check_box = QCheckBox(
             "Attempt to &symlink rather than copy files into venv"
         )
@@ -303,7 +304,7 @@ class BasicSettings(QWizardPage):
         group_box_layout = QVBoxLayout()
         group_box_layout.addWidget(self.with_pip_check_box)
         group_box_layout.addWidget(self.site_pkgs_check_box)
-        group_box_layout.addWidget(self.symlinks_check_box)
+        #group_box_layout.addWidget(self.symlinks_check_box)
         group_box.setLayout(group_box_layout)
 
 
@@ -318,10 +319,18 @@ class BasicSettings(QWizardPage):
         """
         Add the found Python versions to combo box
         """
-        for info in get_python_installs():
-            self.interpreter_combo_box.addItem(
-                f"{info.py_version}  ->  {info.py_path}", info.py_path
-            )
+        csv_file = os.path.expanduser("~/.venvipy/py-installs")
+
+        if os.path.isfile(csv_file):
+            info = []
+            with open(csv_file, newline="") as cf:
+                reader = csv.DictReader(cf, delimiter=",")
+
+                for info in reader:
+                    self.interpreter_combo_box.addItem(
+                        f'{info["PYTHON_VERSION"]}  ->  {info["PYTHON_PATH"]}',
+                        info["PYTHON_PATH"]
+                    )
 
 
     def select_python(self):
@@ -341,9 +350,19 @@ class BasicSettings(QWizardPage):
 
         if bin_file != "":
             custom_version = get_python_version(bin_file)
-            self.interpreter_combo_box.addItem(
-                f"{custom_version}  ->  {bin_file}", bin_file
-            )
+            csv_file = os.path.expanduser("~/.venvipy/py-installs")
+            with open(csv_file, "a", newline="") as cf:
+                fields = ["PYTHON_VERSION", "PYTHON_PATH"]
+                writer = csv.DictWriter(
+                    cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
+                )
+                writer.writerow({
+                    "PYTHON_VERSION": custom_version,
+                    "PYTHON_PATH": bin_file
+                })
+                self.interpreter_combo_box.addItem(
+                    f"{custom_version}  ->  {bin_file}", bin_file
+                )
         # transmit bin_file to pop_interpreter_table() in MainWindow
         self.wizard().update_table.emit(bin_file)
         return bin_file
