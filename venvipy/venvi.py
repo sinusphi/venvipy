@@ -4,6 +4,7 @@ The main module of VenviPy.
 """
 import sys
 import os
+import csv
 from pathlib import Path
 
 # need to set the correct cwd
@@ -45,7 +46,6 @@ from PyQt5.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 
 from get_data import (
-    get_python_installs,
     get_active_dir,
     get_active_dir_str
 )
@@ -446,8 +446,14 @@ class MainWindow(QMainWindow):
             self
         )
 
-        if not get_python_installs():
-            self.launching_without_python()
+        # check if any Python is installed
+        csv_file = os.path.expanduser("~/.venvipy/py-installs")
+        if os.path.isfile(csv_file):
+            info = []
+            with open(csv_file, newline="") as cf:
+                reader = csv.DictReader(cf, delimiter=",")
+                if reader is None:
+                    self.launching_without_python()
 
 
     def info_about_qt(self):
@@ -497,32 +503,26 @@ class MainWindow(QMainWindow):
 
 
     @pyqtSlot(str)
-    def pop_interpreter_table(self, custom_path):
+    def pop_interpreter_table(self):
         """
         Populate the interpreter table view.
         """
-        if custom_path != "":
-            if get_python_installs(custom_path):
-                self.model_interpreter_table.setRowCount(0)
+        csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
-            for info in get_python_installs(custom_path):
-                self.model_interpreter_table.insertRow(0)
-                for i, text in enumerate((info.py_version, info.py_path)):
-                    self.model_interpreter_table.setItem(
-                        0, i, QStandardItem(text)
-                    )
-                print(f"[PYTHON]: {info}")
-        else:
-            if get_python_installs():
+        if os.path.isfile(csv_file):
+            info = []
+            with open(csv_file, newline="") as cf:
+                reader = csv.DictReader(cf, delimiter=",")
                 self.model_interpreter_table.setRowCount(0)
-
-            for info in get_python_installs():
-                self.model_interpreter_table.insertRow(0)
-                for i, text in enumerate((info.py_version, info.py_path)):
-                    self.model_interpreter_table.setItem(
-                        0, i, QStandardItem(text)
-                    )
-                print(f"[PYTHON]: {info}")
+                for info in reader:
+                    self.model_interpreter_table.insertRow(0)
+                    for i, text in enumerate(
+                        (info["PYTHON_VERSION"], info["PYTHON_PATH"])
+                    ):
+                        self.model_interpreter_table.setItem(
+                            0, i, QStandardItem(text)
+                        )
+                    print(f"[PYTHON]: {info}")
 
 
     def pop_venv_table(self):
@@ -593,7 +593,7 @@ def main():
     os.system("clear")
 
     main_window = MainWindow()
-    main_window.pop_interpreter_table(None)
+    main_window.pop_interpreter_table()
     main_window.pop_venv_table()
     main_window.update_label()
     main_window.show()
