@@ -47,7 +47,8 @@ import venvipy_rc  # pylint: disable=unused-import
 
 from get_data import (
     get_active_dir,
-    get_active_dir_str
+    get_active_dir_str,
+    get_python_installs
 )
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable
@@ -199,12 +200,12 @@ class MainWindow(QMainWindow):
         )
         self.new_venv_button.setMinimumSize(QSize(135, 0))
 
-        self.search_pypi_button = QPushButton(
-            "&Search PyPI",
-            centralwidget,
-            statusTip="Search the Python Package Index",
-            clicked=self.search_pypi
-        )
+        #self.search_pypi_button = QPushButton(
+            #"&Search PyPI",
+            #centralwidget,
+            #statusTip="Search the Python Package Index",
+            #clicked=self.search_pypi
+        #)
 
         self.exit_button = QPushButton(
             "Quit",
@@ -242,7 +243,7 @@ class MainWindow(QMainWindow):
         v_layout_2.addWidget(self.logo)
         v_layout_2.addWidget(self.add_interpreter_button)
         v_layout_2.addWidget(self.new_venv_button)
-        v_layout_2.addWidget(self.search_pypi_button)
+        #v_layout_2.addWidget(self.search_pypi_button)
         v_layout_2.addItem(spacer_item_1)
         v_layout_2.addWidget(self.exit_button)
 
@@ -359,14 +360,14 @@ class MainWindow(QMainWindow):
             triggered=self.venv_wizard.exec_
         )
 
-        self.action_search_pypi = QAction(
-            manage_icon,
-            "&Search PyPI",
-            self,
-            statusTip="Search the Python Package Index",
-            shortcut="Ctrl+S",
-            triggered=self.search_pypi
-        )
+        #self.action_search_pypi = QAction(
+            #manage_icon,
+            #"&Search PyPI",
+            #self,
+            #statusTip="Search the Python Package Index",
+            #shortcut="Ctrl+S",
+            #triggered=self.search_pypi
+        #)
 
         self.action_select_active_dir = QAction(
             folder_icon,
@@ -424,9 +425,9 @@ class MainWindow(QMainWindow):
         menu_venv.addAction(self.action_exit)
         menu_bar.addAction(menu_venv.menuAction())
 
-        menu_extras = QMenu("&Extras", menu_bar)
-        menu_extras.addAction(self.action_search_pypi)
-        menu_bar.addAction(menu_extras.menuAction())
+        #menu_extras = QMenu("&Extras", menu_bar)
+        #menu_extras.addAction(self.action_search_pypi)
+        #menu_bar.addAction(menu_extras.menuAction())
 
         menu_help = QMenu("&Help", menu_bar)
         menu_help.addAction(self.action_about_venvipy)
@@ -497,7 +498,7 @@ class MainWindow(QMainWindow):
 
 
     def enable_features(self, state):
-        self.search_pypi_button.setEnabled(state)
+        #self.search_pypi_button.setEnabled(state)
         self.action_search_pypi.setEnabled(state)
         self.venv_table.setEnabled(state)
 
@@ -593,6 +594,7 @@ def main():
     os.system("clear")
 
     main_window = MainWindow()
+    get_python_installs()
     main_window.pop_interpreter_table()
     main_window.pop_venv_table()
     main_window.update_label()
