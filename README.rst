@@ -20,6 +20,9 @@
 .. image:: https://img.shields.io/badge/license-MIT-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
 
+.. image:: https://travis-ci.org/sinusphi/venvipy.svg?branch=master
+    :target: https://travis-ci.org/sinusphi/venvipy
+
 
 Introduction
 ------------
