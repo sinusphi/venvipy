@@ -2,11 +2,12 @@
 """
 This module provides all the necessary data.
 """
-from subprocess import Popen, PIPE
-from dataclasses import dataclass
 import xmlrpc.client
 import shutil
+import csv
 import os
+from subprocess import Popen, PIPE
+from dataclasses import dataclass
 
 __version__ = "0.2.6"
 
@@ -37,27 +38,32 @@ def get_python_version(py_path):
     return python_version
 
 
-def get_python_installs(custom_path=None):
+def get_python_installs():
     """
     Get the available python versions installed.
     """
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
+    csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
-    for i, version in enumerate(versions):
-        python_path = shutil.which(f"python{version}")
+    with open(csv_file, "w", newline="") as cf:
+        fields = ["PYTHON_VERSION", "PYTHON_PATH"]
+        writer = csv.DictWriter(
+            cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
+        )
+        writer.writeheader()
 
-        if python_path is not None:
-            python_version = get_python_version(python_path)
-            py_info = PythonInfo(python_version, python_path)
-            py_info_list.append(py_info)
+        for i, version in enumerate(versions):
+            python_path = shutil.which(f"python{version}")
+            if python_path is not None:
+                python_version = get_python_version(python_path)
+                py_info = PythonInfo(python_version, python_path)
+                py_info_list.append(py_info)
 
-    if custom_path is not None:
-        custom_version = get_python_version(custom_path)
-        custom_info = PythonInfo(custom_version, custom_path)
-        py_info_list.append(custom_info)
-
-    return py_info_list
+                writer.writerow({
+                    "PYTHON_VERSION": py_info.py_version,
+                    "PYTHON_PATH": py_info.py_path
+                })
 
 
 #]===========================================================================[#
@@ -70,6 +76,7 @@ class VenvInfo:
     venv_name: str
     venv_version: str
     system_site_packages: str
+    is_on_system: str
 
 
 def get_venvs(path):
@@ -94,22 +101,44 @@ def get_venvs(path):
         if not os.path.isfile(cfg_file):
             continue
 
+        venv_name = os.path.basename(valid_venv)
         version_found = get_pyvenv_cfg(cfg_file, line=2)
         system_site_packages = get_pyvenv_cfg(cfg_file, line=1)
-        venv_name = os.path.basename(valid_venv)
+        is_on_system = is_installed(cfg_file)
 
         venv_info = VenvInfo(
-            venv_name, version_found, system_site_packages
+            venv_name, version_found, system_site_packages, is_on_system
         )
         venv_info_list.append(venv_info)
 
     return venv_info_list
 
 
+def is_installed(cfg_file):
+    """
+    Check if a Python version is installed.
+    """
+    with open(cfg_file, "r") as f:
+        lines = f.readlines()
+
+    python_path = lines[0][7:].strip()  # e.g. /usr/local/bin
+    python_version = lines[2][10:13].strip()  # e.g. 3.8
+    target = f"{python_path}/python{python_version}"
+    csv_file = os.path.expanduser("~/.venvipy/py-installs")
+
+    with open(csv_file, newline="") as cf:
+        reader = csv.DictReader(cf, delimiter=",")
+
+        for info in reader:
+            if target == info["PYTHON_PATH"]:
+                return "yes"
+        return "no"
+
+
 def get_pyvenv_cfg(cfg_file, line):
     """
-    Get the Python version of a virtual environment by
-    reading the version str from it's `pyvenv.cfg` file.
+    Get the required info of a virtual environment
+    by reading `pyvenv.cfg` file.
     """
     with open(cfg_file, "r") as f:
         lines = f.readlines()
@@ -191,7 +220,19 @@ def get_module_infos(name):
 
 
 if __name__ == "__main__":
-    pass
+    #pass
+
+    get_python_installs()
+
+
+    #]=======================================================================[#
+
+    #test_cfg_file = "/mnt/SQ-Core/coding/.virtualenvs/.OLD/pgsqltest/pyvenv.cfg"
+    #test_cfg_file = "/mnt/SQ-Core/coding/.virtualenvs/pyqt-dev-build/pyvenv.cfg"
+
+    #print(is_installed(test_cfg_file))
+
+    #]=======================================================================[#
 
     #for python in get_python_installs():
         #print(python.py_version, python.py_path)
