@@ -71,7 +71,7 @@ class VenvWizard(QWizard):
     Wizard for creating and setting up a virtual environment.
     """
     refresh = pyqtSignal()
-    update_table = pyqtSignal(str)
+    update_table = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -317,7 +317,7 @@ class BasicSettings(QWizardPage):
 
     def pop_combo_box(self):
         """
-        Add the found Python versions to combo box
+        Add the selected Python version to combo box.
         """
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
@@ -360,12 +360,12 @@ class BasicSettings(QWizardPage):
                     "PYTHON_VERSION": custom_version,
                     "PYTHON_PATH": bin_file
                 })
-                self.interpreter_combo_box.addItem(
-                    f"{custom_version}  ->  {bin_file}", bin_file
-                )
-        # transmit bin_file to pop_interpreter_table() in MainWindow
-        self.wizard().update_table.emit(bin_file)
-        return bin_file
+            # clear combo box content and add the new set from csv file
+            self.interpreter_combo_box.clear()
+            self.interpreter_combo_box.addItem("---")
+            self.pop_combo_box()
+            # call pop_interpreter_table() in MainWindow
+            self.wizard().update_table.emit()
 
 
     def select_dir(self):

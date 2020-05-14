@@ -125,9 +125,6 @@ class MainWindow(QMainWindow):
         # refresh interpreter table when selecting a custom one in wizard menu
         self.venv_wizard.update_table.connect(self.pop_interpreter_table)
 
-        # populate the combo box in wizard menu
-        self.venv_wizard.basic_settings.pop_combo_box()
-
 
         #]===================================================================[#
         #] ICONS [#==========================================================[#
@@ -503,7 +500,7 @@ class MainWindow(QMainWindow):
         self.venv_table.setEnabled(state)
 
 
-    @pyqtSlot(str)
+    @pyqtSlot()
     def pop_interpreter_table(self):
         """
         Populate the interpreter table view.
@@ -596,6 +593,7 @@ def main():
     main_window = MainWindow()
     get_python_installs()
     main_window.pop_interpreter_table()
+    main_window.venv_wizard.basic_settings.pop_combo_box()
     main_window.pop_venv_table()
     main_window.update_label()
     main_window.show()

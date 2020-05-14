@@ -171,7 +171,6 @@ def get_active_dir_str():
             active_dir = f.read()
             return active_dir
     else:
-        os.mkdir(os.path.expanduser("~/.venvipy"))
         with open(active_file, "w+") as f:
             active_dir = f.write("")
             return active_dir
