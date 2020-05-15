@@ -46,6 +46,9 @@ def get_python_installs():
     py_info_list = []
     csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
+    if not os.path.exists(os.path.expanduser("~/.venvipy")):
+        os.mkdir(os.path.expanduser("~/.venvipy"))
+
     with open(csv_file, "w", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
@@ -145,9 +148,6 @@ def get_pyvenv_cfg(cfg_file, line):
     with open(cfg_file, "r") as f:
         lines = f.readlines()
 
-    if line == 0:
-        python_path = lines[0][7:]  # e.g. /usr/local/bin
-        return python_path.strip()
     if line == 1:
         system_site_packages = lines[1][31:]  # true | false
         if "true" in system_site_packages:
@@ -165,6 +165,9 @@ def get_active_dir_str():
     Get the default venv directory string from `active` file.
     """
     active_file = os.path.expanduser("~/.venvipy/active")
+
+    if not os.path.exists(os.path.expanduser("~/.venvipy")):
+        os.mkdir(os.path.expanduser("~/.venvipy"))
 
     if os.path.exists(active_file):
         with open(active_file, "r") as f:
