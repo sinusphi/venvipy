@@ -309,7 +309,6 @@ class MainWindow(QMainWindow):
         # adjust horizontal headers
         h_header_venv_table = self.venv_table.horizontalHeader()
         h_header_venv_table.setDefaultAlignment(Qt.AlignLeft)
-        h_header_venv_table.setDefaultSectionSize(120)
         h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
@@ -318,6 +317,12 @@ class MainWindow(QMainWindow):
             ["Venv", "Version", "Packages", "installed"]
         )
         self.venv_table.setModel(self.model_venv_table)
+
+        # adjust column width
+        self.venv_table.setColumnWidth(0, 225)
+        self.venv_table.setColumnWidth(1, 120)
+        self.venv_table.setColumnWidth(2, 100)
+        self.venv_table.setColumnWidth(3, 80)
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
@@ -542,15 +547,30 @@ class MainWindow(QMainWindow):
 
 
     def update_label(self):
-        active_dir_str = get_active_dir_str()
-        self.venv_table_label.setText(
-            f'<span style="font-size: 13pt;">\
-                <b>Virtual environments:</b>\
-            </span>\
-            <span style="font-size: 13pt; color: #0059ff;">\
-                {active_dir_str}\
+        """
+        Show the currently selected folder containing
+        virtual environments.
+        """
+        head = (
+            '<span style="font-size: 13pt;">\
+                    <b>Virtual environments:</b>\
+                </span>'
+        )
+        no_folder = (
+            '<span style="font-size: 13pt; color: #ff0000;">\
+                <i> --- please select a folder containing virtual environments</i>\
             </span>'
         )
+        with_folder = (
+            f'<span style="font-size: 13pt; color: #0059ff;">\
+                {get_active_dir_str()}\
+            </span>'
+        )
+
+        if get_active_dir_str() != "":
+            self.venv_table_label.setText(f"{head}{with_folder}")
+        else:
+            self.venv_table_label.setText(f"{head}{no_folder}")
 
 
     def select_active_dir(self):
