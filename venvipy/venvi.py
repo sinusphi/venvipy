@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("VenviPy")
-        self.resize(900, 570)
+        self.resize(1100, 690)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
@@ -264,7 +264,8 @@ class MainWindow(QMainWindow):
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
-            alternatingRowColors=True
+            alternatingRowColors=True,
+            sortingEnabled=True
         )
 
         # hide vertical header
