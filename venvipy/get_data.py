@@ -5,6 +5,7 @@ This module provides all the necessary data.
 import xmlrpc.client
 import shutil
 import csv
+import sys
 import os
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
@@ -55,18 +56,39 @@ def get_python_installs():
             cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
         )
         writer.writeheader()
-
         for i, version in enumerate(versions):
             python_path = shutil.which(f"python{version}")
             if python_path is not None:
                 python_version = get_python_version(python_path)
                 py_info = PythonInfo(python_version, python_path)
                 py_info_list.append(py_info)
-
                 writer.writerow({
                     "PYTHON_VERSION": py_info.py_version,
                     "PYTHON_PATH": py_info.py_path
                 })
+    add_sys_python()
+
+
+def add_sys_python():
+    """
+    Add the system python if running VenviPy in a
+    virtual environment.
+    """
+    csv_file = os.path.expanduser("~/.venvipy/py-installs")
+    super_python = os.path.realpath(sys.executable)
+
+    if not os.path.isfile(csv_file):
+        get_python_installs()
+
+    with open(csv_file, "a", newline="") as cf:
+        fields = ["PYTHON_VERSION", "PYTHON_PATH"]
+        writer = csv.DictWriter(
+            cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
+        )
+        writer.writerow({
+            "PYTHON_VERSION": get_python_version(super_python),
+            "PYTHON_PATH": super_python
+        })
 
 
 #]===========================================================================[#
