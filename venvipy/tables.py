@@ -520,7 +520,7 @@ class VenvTable(QTableView):
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
                     )
-                    print(f"[PROCESS]: Installing pipdeptree...")
+                    print("[PROCESS]: Installing pipdeptree...")
                     self.manager = PipManager(active_dir, venv)
                     self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
                     self.manager.started.connect(self.progress_bar.exec_)
