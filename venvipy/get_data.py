@@ -10,7 +10,7 @@ import os
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 
 
 
