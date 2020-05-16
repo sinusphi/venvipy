@@ -322,10 +322,8 @@ class BasicSettings(QWizardPage):
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
         if os.path.isfile(csv_file):
-            info = []
             with open(csv_file, newline="") as cf:
                 reader = csv.DictReader(cf, delimiter=",")
-
                 for info in reader:
                     self.interpreter_combo_box.addItem(
                         f'{info["PYTHON_VERSION"]}  ->  {info["PYTHON_PATH"]}',
@@ -360,11 +358,11 @@ class BasicSettings(QWizardPage):
                     "PYTHON_VERSION": custom_version,
                     "PYTHON_PATH": bin_file
                 })
-            # clear combo box content and add the new set from csv file
+            # clear combo box content and call pop_combo_box()
             self.interpreter_combo_box.clear()
             self.interpreter_combo_box.addItem("---")
             self.pop_combo_box()
-            # call pop_interpreter_table() in MainWindow
+            # also call pop_interpreter_table() method in venvi.MainWindow
             self.wizard().update_table.emit()
 
 
