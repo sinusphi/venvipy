@@ -7,8 +7,7 @@ from setuptools import setup, find_packages
 
 
 if sys.version_info < (3, 7, 0):
-    print("Sorry, VenviPy requires at least Python 3.7")
-    sys.exit(0)
+    sys.exit("Sorry, VenviPy requires at least Python 3.7")
 
 
 CURRENT_DIR = Path(__file__).parent
