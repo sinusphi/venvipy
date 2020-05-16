@@ -5,7 +5,9 @@ import re
 from pathlib import Path
 from setuptools import setup, find_packages
 
-assert sys.version_info >= (3, 7, 0), "VenviPy requires Python 3.7+"
+
+if sys.version_info < (3, 7, 0):
+    sys.exit("Sorry, VenviPy requires at least Python 3.7")
 
 
 CURRENT_DIR = Path(__file__).parent
@@ -45,7 +47,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.7.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.8.tar.gz",
     keywords=[
         "python",
         "python3",
@@ -54,7 +56,7 @@ setup(
         "pyqt",
         "pyqt5",
         "pyqt5-desktop-application",
-        "gui",
+        "gui"
     ],
     install_requires=install_requires,
     entry_points={
@@ -64,10 +66,11 @@ setup(
         ]
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: X11 Applications",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
+        "Intended Audience :: Other Audience",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: User Interfaces",
         "License :: OSI Approved :: MIT License",
@@ -80,6 +83,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: Implementation :: CPython",
-    ],
+        "Programming Language :: Python :: Implementation :: CPython"
+    ]
 )
