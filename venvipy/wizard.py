@@ -50,7 +50,8 @@ from manage_pip import PipManager
 from tables import ResultsTable
 from get_data import (
     get_module_infos,
-    get_python_version
+    get_python_version,
+    get_python_installs
 )
 from creator import (
     CreationWorker,
@@ -319,6 +320,7 @@ class BasicSettings(QWizardPage):
         """
         Add the selected Python version to combo box.
         """
+        get_python_installs()
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
         if os.path.isfile(csv_file):
