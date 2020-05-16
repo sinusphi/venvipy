@@ -129,15 +129,14 @@ class VenvWizard(QWizard):
         # process the flow only if the current page is BasicSettings()
         if self.currentId() != self.basic_settings_id:
             return super().nextId()
-
         if self.basic_settings.with_pip_check_box.isChecked():
             return self.install_modules_id
-
         return self.final_page_id
 
 
     def center(self):
-        """Center window."""
+        """Center window.
+        """
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -317,8 +316,7 @@ class BasicSettings(QWizardPage):
 
 
     def pop_combo_box(self):
-        """
-        Add the selected Python version to combo box.
+        """Add the selected Python version to combo box.
         """
         get_python_installs()
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
@@ -334,8 +332,7 @@ class BasicSettings(QWizardPage):
 
 
     def select_python(self):
-        """
-        Specify path to a custom interpreter.
+        """Specify path to a custom interpreter.
         """
         file_name = QFileDialog.getOpenFileName(
             self,
@@ -369,8 +366,7 @@ class BasicSettings(QWizardPage):
 
 
     def select_dir(self):
-        """
-        Specify path where to create the virtual environment.
+        """Specify path where to create the virtual environment.
         """
         folder_name = QFileDialog.getExistingDirectory()
         self.venv_location_line.setText(folder_name)
@@ -399,8 +395,7 @@ class BasicSettings(QWizardPage):
 
 
     def execute_venv_create(self):
-        """
-        Execute the creation process.
+        """Execute the creation process.
         """
         self.combo_box = self.field("interpreter_combo_box")
         self.python_version = self.field("python_version")
@@ -424,11 +419,8 @@ class BasicSettings(QWizardPage):
             self.progress_bar.status_label.setText(
                 "Creating virtual environment..."
             )
-
             # run the create process
             self.create_process()
-
-            # disable page during create process
             self.setEnabled(False)
 
 
@@ -467,19 +459,12 @@ class BasicSettings(QWizardPage):
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
 
-        print(
-            "[PROCESS]: Successfully created new virtual environment: "
-            f"'{self.venv_location}/{self.venv_name}'"
-        )
-
         if self.with_pip_check_box.isChecked():
             msg_txt = default_msg + with_pip_msg
-            print("[PROCESS]: Installed pip and setuptools")
         else:
             msg_txt = default_msg
 
         QMessageBox.information(self, "Done", msg_txt)
-
         self.wizard().next()
         self.setEnabled(True)
 
@@ -594,8 +579,7 @@ class InstallModules(QWizardPage):
 
 
     def install_requirements(self):
-        """
-        Install the modules from the specified requirements file.
+        """Install the modules from the specified requirements file.
         """
         self.setEnabled(False)
 
@@ -608,8 +592,8 @@ class InstallModules(QWizardPage):
         self.manager.started.connect(self.console.exec_)
 
         # start installing modules from requirements file
-        print("[PROCESS]: Installing Modules from requirements...")
-        print(f"[PROCESS]: Using file '{self.requirements}'")
+        #print("[PROCESS]: Installing Modules from requirements...")
+        #print(f"[PROCESS]: Using file '{self.requirements}'")
         self.manager.run_pip(cmds[0], [opts[1], f"'{self.requirements}'"])
 
         # display the updated output
@@ -627,8 +611,7 @@ class InstallModules(QWizardPage):
 
 
     def pop_results_table(self):
-        """
-        Refresh the results table.
+        """Refresh the results table.
         """
         search_item = self.pkgNameLineEdit.text()
 
@@ -643,7 +626,7 @@ class InstallModules(QWizardPage):
                 self.resultsModel.setItem(0, i, QStandardItem(text))
 
         if not get_module_infos(search_item):
-            print(f"[PIP]: No matches for '{search_item}'")
+            #print(f"[PIP]: No matches for '{search_item}'")
 
             QMessageBox.information(self,
                 "No result",
@@ -667,16 +650,17 @@ class InstallModules(QWizardPage):
         )
 
         if msg_box_question == QMessageBox.Yes:
-            self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
+            self.manager = PipManager(
+                self.venv_location, f"'{self.venv_name}'"
+            )
             self.console = ConsoleDialog()
-
-            self.console.setWindowTitle("Installing")
+            self.console.setWindowTitle(f"Installing {self.pkg}")
 
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected module
-            print(f"[PROCESS]: Installing module '{self.pkg}'...")
+            #print(f"[PROCESS]: Installing module '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
@@ -715,7 +699,7 @@ class InstallModules(QWizardPage):
             save_path = save_file[0]
 
             if save_path != "":
-                print(f"[PROCESS]: Generating '{save_path}'...")
+                #print(f"[PROCESS]: Generating '{save_path}'...")
                 self.manager = PipManager(self.venv_location, self.venv_name)
                 self.manager.run_pip(cmds[2], [">", save_path])
 
@@ -731,7 +715,8 @@ class InstallModules(QWizardPage):
 
 class FinalPage(QWizardPage):
     """
-    The last page.
+    The last page. Shows a random line from
+    the Zen of Python.
     """
     def __init__(self):
         super().__init__()

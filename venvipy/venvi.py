@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-The main module of VenviPy.
+"""The main module of VenviPy.
 """
 import sys
 import os
@@ -260,7 +259,7 @@ class MainWindow(QMainWindow):
         )
 
         # interpreter table
-        interpreter_table = QTableView(
+        self.interpreter_table = QTableView(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
@@ -269,10 +268,10 @@ class MainWindow(QMainWindow):
         )
 
         # hide vertical header
-        interpreter_table.verticalHeader().hide()
+        self.interpreter_table.verticalHeader().hide()
 
         # adjust (horizontal) headers
-        h_header_interpreter_table = interpreter_table.horizontalHeader()
+        h_header_interpreter_table = self.interpreter_table.horizontalHeader()
         h_header_interpreter_table.setDefaultAlignment(Qt.AlignLeft)
         h_header_interpreter_table.setDefaultSectionSize(180)
         h_header_interpreter_table.setStretchLastSection(True)
@@ -282,7 +281,7 @@ class MainWindow(QMainWindow):
         self.model_interpreter_table.setHorizontalHeaderLabels(
             ["Version", "Path"]
         )
-        interpreter_table.setModel(self.model_interpreter_table)
+        self.interpreter_table.setModel(self.model_interpreter_table)
 
         #]===================================================================[#
         # spacer between interpreter table and venv table title
@@ -327,7 +326,7 @@ class MainWindow(QMainWindow):
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
-        v_layout_1.addWidget(interpreter_table)
+        v_layout_1.addWidget(self.interpreter_table)
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addLayout(h_layout_1)
         h_layout_1.addWidget(self.venv_table_label)
@@ -461,7 +460,8 @@ class MainWindow(QMainWindow):
 
 
     def info_about_qt(self):
-        """Open the "About Qt" dialog."""
+        """Open the "About Qt" dialog.
+        """
         QMessageBox.aboutQt(self)
 
 
@@ -476,7 +476,8 @@ class MainWindow(QMainWindow):
 
 
     def center(self):
-        """Center window."""
+        """Center window.
+        """
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -484,8 +485,7 @@ class MainWindow(QMainWindow):
 
 
     def on_close(self):
-        """
-        Stop all threads, then close the application.
+        """Stop all threads, then close the application.
         """
         self.venv_wizard.basic_settings.thread.exit()
         self.venv_table.thread.exit()
@@ -493,8 +493,7 @@ class MainWindow(QMainWindow):
 
 
     def add_interpreter(self):
-        """
-        Add a custom interpreter.
+        """Add a custom interpreter.
         """
         if self.venv_wizard.basic_settings.select_python() != "":
             self.enable_features(True)
@@ -508,8 +507,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def pop_interpreter_table(self):
-        """
-        Populate the interpreter table view.
+        """Populate the interpreter table view.
         """
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
@@ -526,12 +524,10 @@ class MainWindow(QMainWindow):
                         self.model_interpreter_table.setItem(
                             0, i, QStandardItem(text)
                         )
-                    print(f"[PYTHON]: {info}")
 
 
     def pop_venv_table(self):
-        """
-        Populate the venv table view.
+        """Populate the venv table view.
         """
         self.model_venv_table.setRowCount(0)
 
@@ -544,7 +540,6 @@ class MainWindow(QMainWindow):
                 info.is_on_system
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
-            print(f"[VENV]: {info}")
 
 
     def update_label(self):
@@ -581,7 +576,7 @@ class MainWindow(QMainWindow):
         """
         directory = QFileDialog.getExistingDirectory(
             self,
-            "Open directory containing virtual environments"
+            "Open a folder containing virtual environments"
         )
         self.directory_line.setText(directory)
 
@@ -592,17 +587,12 @@ class MainWindow(QMainWindow):
             if os.path.exists(active_file):
                 with open(active_file, "w") as f:
                     f.write(active_dir)
-                    print(
-                        "[INFO]: Setting active dir to "
-                        f"'{active_dir}'"
-                    )
                 self.pop_venv_table()
                 self.update_label()
 
 
     def search_pypi(self):
-        """
-        Search the Python Package Index.
+        """Search the Python Package Index.
         """
         pass
 

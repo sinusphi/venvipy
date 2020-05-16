@@ -26,8 +26,7 @@ class PythonInfo:
 
 
 def get_python_version(py_path):
-    """
-    Return Python version.
+    """Return Python version.
     """
     res = Popen(
         [py_path, "-V"],
@@ -40,8 +39,7 @@ def get_python_version(py_path):
 
 
 def get_python_installs():
-    """
-    Get the available python versions installed.
+    """Get the available python versions installed.
     """
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
@@ -140,8 +138,7 @@ def get_venvs(path):
 
 
 def is_installed(cfg_file):
-    """
-    Check if a Python version is installed.
+    """Check if a Python version is installed.
     """
     with open(cfg_file, "r") as f:
         lines = f.readlines()
@@ -246,36 +243,6 @@ def get_module_infos(name):
 
 
 if __name__ == "__main__":
-    #pass
+    pass
 
-    get_python_installs()
-
-
-    #]=======================================================================[#
-
-    #test_cfg_file = "/mnt/SQ-Core/coding/.virtualenvs/.OLD/pgsqltest/pyvenv.cfg"
-    #test_cfg_file = "/mnt/SQ-Core/coding/.virtualenvs/pyqt-dev-build/pyvenv.cfg"
-
-    #print(is_installed(test_cfg_file))
-
-    #]=======================================================================[#
-
-    #for python in get_python_installs():
-        #print(python.py_version, python.py_path)
-
-    #]=======================================================================[#
-
-    # venv in get_active_dir():
-        #print(venv.name, venv.version)
-
-    #]=======================================================================[#
-
-    #test_module = "test"
-
-    #for item in get_module_infos(test_mod):
-        #print(item.mod_name, item.mod_version, item.mod_summary)
-
-    #if not get_module_infos(test_module):
-        #print("No modules found!")
-
-    #print(get_active_dir())
+    #get_python_installs()
