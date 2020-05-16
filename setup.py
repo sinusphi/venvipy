@@ -7,7 +7,8 @@ from setuptools import setup, find_packages
 
 
 if sys.version_info < (3, 7, 0):
-    sys.exit("Sorry, VenviPy requires at least Python 3.7")
+    print("Sorry, VenviPy requires at least Python 3.7")
+    sys.exit(0)
 
 
 CURRENT_DIR = Path(__file__).parent
@@ -22,13 +23,16 @@ except FileNotFoundError:
 
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
-
-with open(CURRENT_DIR / "venvipy/get_data.py", "rb") as f:
-    version = str(ast.literal_eval(
-        _version_re.search(
-            f.read().decode("utf-8")).group(1)
+try:
+    with open(CURRENT_DIR / "venvipy/get_data.py", "rb") as f:
+        version = str(ast.literal_eval(
+            _version_re.search(
+                f.read().decode("utf-8")).group(1)
+            )
         )
-    )
+except FileNotFoundError:
+    version = "latest"
+
 
 install_requires = [
     "PyQt5==5.14.0",
@@ -47,7 +51,7 @@ setup(
     author="Youssef Serestou",
     author_email="youssef.serestou.83@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.8.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.9.tar.gz",
     keywords=[
         "python",
         "python3",
