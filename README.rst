@@ -2,16 +2,19 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/python-3.7+-blue
-    :target: https://www.python.org/downloads
-
-.. image:: https://img.shields.io/badge/pyqt-5.14.0-blue
-    :target: https://pypi.org/project/PyQt5
-
-.. image:: https://img.shields.io/badge/pypi-v0.2.7-blue
+.. image:: https://img.shields.io/badge/pypi-v0.2.7-blue?logo=pypi&logoColor=FFE873
     :target: https://pypi.org/project/venvipy/0.2.7/#description
 
-.. image:: https://img.shields.io/badge/platform-linux-darkblue
+.. image:: https://img.shields.io/badge/python-3.7+-blue?logo=python&logoColor=FFE873
+    :target: https://www.python.org/downloads
+
+.. image:: https://img.shields.io/badge/pyqt-5.14.0-darkgreen
+    :target: https://pypi.org/project/PyQt5
+
+.. image:: https://img.shields.io/pypi/dm/venvipy?color=brightgreen
+    :target: https://pypistats.org/packages/venvipy
+
+.. image:: https://img.shields.io/badge/platform-linux-darkblue?logo=linux&logoColor=FFE873
     :target: https://www.linux.org/pages/download
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000
@@ -20,7 +23,7 @@
 .. image:: https://img.shields.io/badge/license-MIT-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
 
-.. image:: https://travis-ci.org/sinusphi/venvipy.svg?branch=master
+.. image:: https://img.shields.io/travis/sinusphi/venvipy/master?label=Travis%20CI&logo=travis
     :target: https://travis-ci.org/sinusphi/venvipy
 
 
@@ -96,11 +99,18 @@ or:
 
     $ pip install git+https://github.com/sinusphi/venvipy.git
 
-then run:
+Now you can launch the main menu via:
 
 .. code-block:: bash
 
     $ venvipy
+
+Or if you just want to quickly create a new virtual environment use
+the wizard standalone:
+
+.. code-block:: bash
+
+    $ venvipy-wizard
 
 
 Running from source
@@ -144,16 +154,6 @@ Finally inside the repo cd into the ``venvipy/`` folder and run:
 
 Known issues
 ------------
-
-When launching *VenviPy* from a virtual environment you'll have to choose 
-the interpreter (the one that created the environment in which you're running 
-*VenviPy* ) manually to be able to use it.
-
-For this in the main menu click on the ``Add Interpreter`` button in the
-upper right corner. Then select the correct python binary file (e.g.
-``/usr/local/bin/python3.x``). Further, when launching the wizard you can 
-also choose a custom Python version which will be added permantently (until 
-you close *VenviPy* ). 
 
 Sometimes it happens that when starting the creation process the wizard page 
 freezes. Restarting *VenviPy* fixes this. 
