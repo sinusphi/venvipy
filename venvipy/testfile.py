@@ -1,22 +1,13 @@
 # -*- coding: utf-8 -*-
-"""
-This module provides all the necessary data.
-"""
-import xmlrpc.client
 import shutil
 import csv
 import sys
 import os
-from subprocess import Popen, PIPE
 from dataclasses import dataclass
-
-__version__ = "0.2.9"
-
+from subprocess import Popen, PIPE
 
 
-#]===========================================================================[#
-#] FIND PYTHON 3 INSTALLATIONS [#============================================[#
-#]===========================================================================[#
+
 
 @dataclass
 class PythonInfo:
@@ -87,10 +78,6 @@ def add_sys_python():
             "PYTHON_PATH": super_python
         })
 
-
-#]===========================================================================[#
-#] GET VENVS [#==============================================================[#
-#]===========================================================================[#
 
 @dataclass
 class VenvInfo:
@@ -182,70 +169,19 @@ def get_pyvenv_cfg(cfg_file, cfg):
     return "N/A"
 
 
-def get_active_dir_str():
-    """
-    Get the default venv directory string from `active` file.
-    """
-    active_file = os.path.expanduser("~/.venvipy/active")
-
-    if not os.path.exists(os.path.expanduser("~/.venvipy")):
-        os.mkdir(os.path.expanduser("~/.venvipy"))
-
-    if os.path.exists(active_file):
-        with open(active_file, "r") as f:
-            active_dir = f.read()
-            return active_dir
-    else:
-        with open(active_file, "w+") as f:
-            active_dir = f.write("")
-            return active_dir
-    return []
-
-
-def get_active_dir():
-    """
-    Get the active venv directory path string from `active`
-    file and pass it to `get_venvs()`.
-    """
-    active_dir = get_active_dir_str()
-    return get_venvs(active_dir)
-
-
-#]===========================================================================[#
-#] GET INFOS FROM PYTHON PACKAGE INDEX [#====================================[#
-#]===========================================================================[#
-
-@dataclass
-class PackageInfo:
-    """_"""
-    pkg_name: str
-    pkg_version: str
-    pkg_summary: str
-
-
-def get_package_infos(name):
-    """
-    Get the package's name, version and description
-    from [PyPI](https://pypi.org/pypi).
-    """
-    client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
-    search_result = client.search({"name": name})
-
-    package_info_list = []
-
-    for i, pkg in enumerate(search_result):
-        pkg_name = pkg["name"]
-        pkg_version = pkg["version"]
-        pkg_summary = pkg["summary"]
-
-        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_summary)
-        package_info_list.append(pkg_info)
-
-    return package_info_list[::-1]
-
 
 
 if __name__ == "__main__":
-    pass
+    os.system("clear")
 
-    #get_python_installs()
+    config_file = "/mnt/SQ-Core/coding/.virtualenvs/DEV/test-0000/pyvenv.cfg"
+
+    py_version = get_pyvenv_cfg(config_file, cfg="version")
+    site_pkgs = get_pyvenv_cfg(config_file, cfg="site_packages")
+    binary_location = get_pyvenv_cfg(config_file, cfg="py_path")
+    is_present = get_pyvenv_cfg(config_file, cfg="installed")
+
+    print(py_version)
+    print(site_pkgs)
+    print(binary_location)
+    print(is_present)

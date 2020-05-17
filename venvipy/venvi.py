@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""The main module of VenviPy.
+"""
+The main module of VenviPy.
 """
 import sys
 import os
@@ -536,8 +537,8 @@ class MainWindow(QMainWindow):
             for i, text in enumerate((
                 info.venv_name,
                 info.venv_version,
-                info.system_site_packages,
-                info.is_on_system
+                info.site_packages,
+                info.is_installed
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
 

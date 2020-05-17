@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-This module contains the implementation of QTableView.
+This module contains the tables.
 """
-from functools import partial
 import webbrowser
 import shutil
 import os
+from functools import partial
 from subprocess import Popen
 
 from PyQt5.QtGui import QIcon, QCursor
@@ -111,21 +111,21 @@ class VenvTable(QTableView):
             lambda: self.upgrade_pip(event)
         )
 
-        install_modules_action = QAction(
+        install_packages_action = QAction(
             QIcon.fromTheme("list-add"),
-            "&Install additional modules",
+            "&Install additional packages",
             self,
-            statusTip="Install additional modules"
+            statusTip="Install additional packages"
         )
-        install_modules_action.triggered.connect(
-            lambda: self.add_modules(event)
+        install_packages_action.triggered.connect(
+            lambda: self.add_packages(event)
         )
 
         install_requires_action = QAction(
             QIcon.fromTheme("list-add"),
             "Install from &requirements",
             self,
-            statusTip="Install modules from requirements"
+            statusTip="Install packages from requirements"
         )
         install_requires_action.triggered.connect(
             lambda: self.install_requires(event)
@@ -161,14 +161,14 @@ class VenvTable(QTableView):
             lambda: self.save_requires(event)
         )
 
-        list_modules_action = QAction(
+        list_packages_action = QAction(
             self.info_icon,
-            "&List installed modules",
+            "&List installed packages",
             self,
-            statusTip="List installed modules"
+            statusTip="List installed packages"
         )
-        list_modules_action.triggered.connect(
-            lambda: self.list_modules(event, style=1)
+        list_packages_action.triggered.connect(
+            lambda: self.list_packages(event, style=1)
         )
 
         freeze_action = QAction(
@@ -220,7 +220,7 @@ class VenvTable(QTableView):
 
         # install sub menu
         context_menu.addMenu(install_sub_menu)
-        install_sub_menu.addAction(install_modules_action)
+        install_sub_menu.addAction(install_packages_action)
         install_sub_menu.addAction(install_requires_action)
 
         # editable sub menu
@@ -232,7 +232,7 @@ class VenvTable(QTableView):
 
         # details sub meun
         context_menu.addMenu(details_sub_menu)
-        details_sub_menu.addAction(list_modules_action)
+        details_sub_menu.addAction(list_packages_action)
         details_sub_menu.addAction(freeze_action)
         details_sub_menu.addAction(pipdeptree_action)
 
@@ -316,16 +316,16 @@ class VenvTable(QTableView):
                 self.console.console_window.clear()
 
 
-    def add_modules(self, event):
+    def add_packages(self, event):
         """
-        Install additional modules into the selected environment.
+        Install additional packages into the selected environment.
         """
         pass
 
 
     def install_requires(self, event):
         """
-        Install modules from a requirements file into the
+        Install packages from a requirements file into the
         selected environment.
         """
         active_dir = get_active_dir_str()
@@ -452,26 +452,26 @@ class VenvTable(QTableView):
 
             if save_path != "":
                 # write 'pip freeze' output to selected file
+                print(f"[PROCESS]: Saving '{save_path}'...")
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(cmds[2], [">", save_path])
 
                 # show an info message
-                print(f"[PROCESS]: Saved requirements in {save_path}...")
                 message_txt = (f"Saved requirements in \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
 
 
-    def list_modules(self, event, style):
+    def list_packages(self, event, style):
         """
-        Open console dialog and list the installed modules.
+        Open console dialog and list the installed packages.
         """
         active_dir = get_active_dir_str()
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
-            self.console.setWindowTitle(f"Modules installed in:  {venv}")
+            self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
-            print("[PROCESS]: Listing modules...")
+            print("[PROCESS]: Listing packages...")
             self.manager = PipManager(active_dir, f"'{venv}'")
             self.manager.run_pip(cmds[style])
             self.manager.started.connect(self.console.exec_)
@@ -488,13 +488,13 @@ class VenvTable(QTableView):
         """
         Print `pip freeze` output to console window.
         """
-        self.list_modules(event, style)
+        self.list_packages(event, style)
 
 
     def pipdeptree_output(self, event, style):
         """
         Test if `pipdeptree` is installed and ask user wether to
-        install it if it's not. Then call `self.list_modules()`
+        install it if it's not. Then call `self.list_packages()`
         """
         message_txt = (
             "This requires the pipdeptree package\nto be installed.\n\n"
@@ -506,7 +506,7 @@ class VenvTable(QTableView):
         has_pipdeptree = os.path.exists(pipdeptree_binary)
 
         if has_pipdeptree:
-            self.list_modules(event, style)
+            self.list_packages(event, style)
         else:
             if self.has_pip(active_dir, venv):
                 msg_box_confirm = QMessageBox.question(
@@ -526,7 +526,7 @@ class VenvTable(QTableView):
                     self.manager.started.connect(self.progress_bar.exec_)
                     self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()
-                    self.list_modules(event, style)
+                    self.list_packages(event, style)
 
 
     def open_venv_dir(self, event):
@@ -565,9 +565,7 @@ class VenvTable(QTableView):
 
 
 class ResultsTable(QTableView):
-    """
-    The table that lists the [PyPI](https://pypi.org/pypi) results on
-    the wizard's `Install Modules` page.
+    """Contains the results from PyPI.
     """
     context_triggered = pyqtSignal()
 
@@ -589,7 +587,7 @@ class ResultsTable(QTableView):
             statusTip="Install module"
         )
         self.context_menu.addAction(install_action)
-        # connect to install_module() in InstallModules() in wizard
+        # connect to install_package() in InstallPackages() in wizard
         install_action.triggered.connect(
             lambda: self.context_triggered.emit()
         )

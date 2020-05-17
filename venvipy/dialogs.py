@@ -139,11 +139,11 @@ class ConsoleDialog(QDialog):
 
     def finish_success(self):
         """
-        Show info message when all modules installed successfully.
+        Show info message when all packages installed successfully.
         """
         message_txt = (
             "Environment cloned successfully.\n\n"
-            "All modules have been \ninstalled without errors.\n"
+            "All packages have been \ninstalled without errors.\n"
         )
         print("[PROCESS]: Environment cloned successfully")
         QMessageBox.information(self, "Done", message_txt)

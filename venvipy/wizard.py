@@ -49,7 +49,7 @@ from dialogs import ProgBarDialog, ConsoleDialog
 from manage_pip import PipManager
 from tables import ResultsTable
 from get_data import (
-    get_module_infos,
+    get_package_infos,
     get_python_version,
     get_python_installs
 )
@@ -115,8 +115,8 @@ class VenvWizard(QWizard):
         self.basic_settings = BasicSettings()
         self.basic_settings_id = self.addPage(self.basic_settings)
 
-        self.install_modules = InstallModules()
-        self.install_modules_id = self.addPage(self.install_modules)
+        self.install_packages = InstallPackages()
+        self.install_packages_id = self.addPage(self.install_packages)
 
         self.final_page = FinalPage()
         self.final_page_id = self.addPage(self.final_page)
@@ -130,7 +130,7 @@ class VenvWizard(QWizard):
         if self.currentId() != self.basic_settings_id:
             return super().nextId()
         if self.basic_settings.with_pip_check_box.isChecked():
-            return self.install_modules_id
+            return self.install_packages_id
         return self.final_page_id
 
 
@@ -148,7 +148,8 @@ class VenvWizard(QWizard):
         Stop the thread, then close the wizard.
         """
         if self.basic_settings.thread.isRunning():
-            self.basic_settings.thread.exit()
+            self.basic_settings.thread.quit()
+            self.basic_settings.thread.quit()
 
 
 
@@ -252,7 +253,7 @@ class BasicSettings(QWizardPage):
         self.site_pkgs_check_box = QCheckBox(
             "&Make system (global) site-packages dir available to venv"
         )
-        # since we are on linux we don't really need this :D
+        # since we are on linux we don't really need this setting
         self.symlinks_check_box = QCheckBox(
             "Attempt to &symlink rather than copy files into venv"
         )
@@ -470,18 +471,18 @@ class BasicSettings(QWizardPage):
 
 
 
-class InstallModules(QWizardPage):
+class InstallPackages(QWizardPage):
     """
-    Install modules via Pip into the created virtual environment.
+    Install packages via Pip into the created virtual environment.
     """
     def __init__(self):
         super().__init__()
 
-        self.setTitle("Install Modules")
+        self.setTitle("Install Packages")
         self.setSubTitle(
-            "Specify the modules you want to install into the virtual "
+            "Specify the packages you want to install into the virtual "
             "environment. Right-click on the item you want to install. "
-            "You can install as many modules as you need. When finished "
+            "You can install as many packages as you need. When finished "
             "click next."
         )
 
@@ -492,9 +493,9 @@ class InstallModules(QWizardPage):
 
         grid_layout = QGridLayout(self)
 
-        pkgNameLabel = QLabel("Module &name:")
-        self.pkgNameLineEdit = QLineEdit()
-        pkgNameLabel.setBuddy(self.pkgNameLineEdit)
+        pkg_name_label = QLabel("Package &name:")
+        self.pkg_name_line = QLineEdit()
+        pkg_name_label.setBuddy(self.pkg_name_line)
 
         self.search_button = QPushButton(
             "&Search",
@@ -502,38 +503,35 @@ class InstallModules(QWizardPage):
         )
 
         # results table
-        resultsTable = ResultsTable(
+        self.results_table = ResultsTable(
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            doubleClicked=self.install_module,
-            context_triggered=self.install_module  # signal
+            doubleClicked=self.install_package,
+            context_triggered=self.install_package  # signal
         )
 
         # adjust vertical headers
-        v_Header = resultsTable.verticalHeader()
-        v_Header.setDefaultSectionSize(28)
-        v_Header.hide()
+        v_header = self.results_table.verticalHeader()
+        v_header.setDefaultSectionSize(28)
+        v_header.hide()
 
         # adjust horizontal headers
-        h_Header = resultsTable.horizontalHeader()
-        h_Header.setDefaultAlignment(Qt.AlignLeft)
-        h_Header.setDefaultSectionSize(120)
-        h_Header.setStretchLastSection(True)
-        h_Header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        h_header = self.results_table.horizontalHeader()
+        h_header.setDefaultAlignment(Qt.AlignLeft)
+        h_header.setDefaultSectionSize(120)
+        h_header.setStretchLastSection(True)
+        h_header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # item model
-        self.resultsModel = QStandardItemModel(0, 2, self)
-        resultsTable.setModel(self.resultsModel)
+        self.results_model = QStandardItemModel(0, 2, self)
+        self.results_table.setModel(self.results_model)
 
-        # selection model
-        self.selectionModel = resultsTable.selectionModel()
-
-        grid_layout.addWidget(pkgNameLabel, 0, 0, 1, 1)
-        grid_layout.addWidget(self.pkgNameLineEdit, 0, 1, 1, 1)
+        grid_layout.addWidget(pkg_name_label, 0, 0, 1, 1)
+        grid_layout.addWidget(self.pkg_name_line, 0, 1, 1, 1)
         grid_layout.addWidget(self.search_button, 0, 2, 1, 1)
-        grid_layout.addWidget(resultsTable, 1, 0, 1, 3)
+        grid_layout.addWidget(self.results_table, 1, 0, 1, 3)
 
 
     def initializePage(self):
@@ -544,12 +542,12 @@ class InstallModules(QWizardPage):
         self.requirements = self.field("requirements")
 
         # clear all inputs and contents
-        self.resultsModel.clear()
-        self.pkgNameLineEdit.clear()
-        self.pkgNameLineEdit.setFocus(True)
+        self.results_model.clear()
+        self.pkg_name_line.clear()
+        self.pkg_name_line.setFocus(True)
 
         # set text in column headers
-        self.resultsModel.setHorizontalHeaderLabels(
+        self.results_model.setHorizontalHeaderLabels(
             ["Name", "Version", "Description"]
         )
 
@@ -579,7 +577,7 @@ class InstallModules(QWizardPage):
 
 
     def install_requirements(self):
-        """Install the modules from the specified requirements file.
+        """Install the packages from the specified requirements file.
         """
         self.setEnabled(False)
 
@@ -591,9 +589,8 @@ class InstallModules(QWizardPage):
         # open the console when recieving signal from manager
         self.manager.started.connect(self.console.exec_)
 
-        # start installing modules from requirements file
-        #print("[PROCESS]: Installing Modules from requirements...")
-        #print(f"[PROCESS]: Using file '{self.requirements}'")
+        # start installing packages from requirements file
+        #print(f"[PROCESS]: Installing packages from '{self.requirements}'")
         self.manager.run_pip(cmds[0], [opts[1], f"'{self.requirements}'"])
 
         # display the updated output
@@ -613,19 +610,19 @@ class InstallModules(QWizardPage):
     def pop_results_table(self):
         """Refresh the results table.
         """
-        search_item = self.pkgNameLineEdit.text()
+        search_item = self.pkg_name_line.text()
 
-        self.resultsModel.setRowCount(0)
+        self.results_model.setRowCount(0)
 
-        for info in get_module_infos(search_item):
-            self.resultsModel.insertRow(0)
+        for info in get_package_infos(search_item):
+            self.results_model.insertRow(0)
 
             for i, text in enumerate(
-                (info.mod_name, info.mod_version, info.mod_summary)
+                (info.pkg_name, info.pkg_version, info.pkg_summary)
             ):
-                self.resultsModel.setItem(0, i, QStandardItem(text))
+                self.results_model.setItem(0, i, QStandardItem(text))
 
-        if not get_module_infos(search_item):
+        if not get_package_infos(search_item):
             #print(f"[PIP]: No matches for '{search_item}'")
 
             QMessageBox.information(self,
@@ -634,13 +631,13 @@ class InstallModules(QWizardPage):
             )
 
 
-    def install_module(self):
+    def install_package(self):
         """
         Get the name of the selected item from the results table. Ask user
         for confirmation before installing. If user confirmes, install the
-        selected module into the created virtual environment, else abort.
+        selected package into the created virtual environment, else abort.
         """
-        indexes = self.selectionModel.selectedRows()
+        indexes = self.results_table.selectionModel().selectedRows()
         for index in sorted(indexes):
             self.pkg = index.data()
 
@@ -659,8 +656,8 @@ class InstallModules(QWizardPage):
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
 
-            # start installing the selected module
-            #print(f"[PROCESS]: Installing module '{self.pkg}'...")
+            # start installing the selected package
+            #print(f"[PROCESS]: Installing package '{self.pkg}'...")
             self.manager.run_pip(cmds[0], [opts[0], self.pkg])
 
             # display the updated output
@@ -671,8 +668,8 @@ class InstallModules(QWizardPage):
                 self.console.console_window.clear()
 
                 # clear search input line
-                self.pkgNameLineEdit.clear()
-                self.pkgNameLineEdit.setFocus(True)
+                self.pkg_name_line.clear()
+                self.pkg_name_line.setFocus(True)
 
 
     def save_requirements(self):
@@ -699,7 +696,7 @@ class InstallModules(QWizardPage):
             save_path = save_file[0]
 
             if save_path != "":
-                #print(f"[PROCESS]: Generating '{save_path}'...")
+                print(f"[PROCESS]: Saving '{save_path}'...")
                 self.manager = PipManager(self.venv_location, self.venv_name)
                 self.manager.run_pip(cmds[2], [">", save_path])
 
