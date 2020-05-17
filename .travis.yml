@@ -6,7 +6,7 @@ python:
   - "3.7"
 
 install:
-  - pip isntall -U pip
+  - pip install -U pip
   - pip install -r requirements.txt
   - pip install pylint
 
