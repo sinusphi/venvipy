@@ -618,8 +618,8 @@ class InstallPackages(QWizardPage):
             self.results_model.insertRow(0)
 
             for i, text in enumerate(
-                (info.pkg_name, info.pkg_version, info.pkg_summary)
-            ):
+                    (info.pkg_name, info.pkg_version, info.pkg_summary)
+                ):
                 self.results_model.setItem(0, i, QStandardItem(text))
 
         if not get_package_infos(search_item):

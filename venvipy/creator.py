@@ -111,14 +111,13 @@ class CreationWorker(QObject):
 #]===========================================================================[#
 
 def create_venv(
-    py_vers,
-    env_dir,
-    with_pip=False,
-    system_site_packages=False,
-    symlinks=False
-):
-    """
-    Create a virtual environment in a directory.
+        py_vers,
+        env_dir,
+        with_pip=False,
+        system_site_packages=False,
+        symlinks=False
+    ):
+    """Create a virtual environment in a directory.
     """
     pip = "" if with_pip else " --without-pip"
     ssp = " --system-site-packages" if system_site_packages else ""

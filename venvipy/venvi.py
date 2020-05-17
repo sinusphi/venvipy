@@ -520,8 +520,8 @@ class MainWindow(QMainWindow):
                 for info in reader:
                     self.model_interpreter_table.insertRow(0)
                     for i, text in enumerate(
-                        (info["PYTHON_VERSION"], info["PYTHON_PATH"])
-                    ):
+                            (info["PYTHON_VERSION"], info["PYTHON_PATH"])
+                        ):
                         self.model_interpreter_table.setItem(
                             0, i, QStandardItem(text)
                         )
@@ -535,10 +535,10 @@ class MainWindow(QMainWindow):
         for info in get_active_dir():
             self.model_venv_table.insertRow(0)
             for i, text in enumerate((
-                info.venv_name,
-                info.venv_version,
-                info.site_packages,
-                info.is_installed
+                    info.venv_name,
+                    info.venv_version,
+                    info.site_packages,
+                    info.is_installed
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
 
