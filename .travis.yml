@@ -4,11 +4,13 @@ dist: xenial
 
 python:
   - "3.7"
-  - "3.8"
 
 install:
+  - pip isntall -U pip
   - pip install -r requirements.txt
-  - pip install wheel
+  - pip install pylint
 
 script:
   - pip install git+https://github.com/sinusphi/venvipy.git
+  - cd /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/venvipy
+  - pylint --confidence=INFERENCE --reports=y --verbose --disable=no-name-in-module --ignore=venvipy_rc.py *
