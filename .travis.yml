@@ -10,7 +10,9 @@ install:
   - pip install -r requirements.txt
   - pip install pylint
 
-script:
+before_script:
   - pip install git+https://github.com/sinusphi/venvipy.git
   - cd /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/venvipy
-  - pylint --confidence=INFERENCE --reports=y --verbose --disable=no-name-in-module --ignore=venvipy_rc.py *
+
+script:
+  - pylint --exit-zero --output-format=colorized --reports=y --verbose --disable=no-name-in-module --disable=invalid-name --ignore=venvipy_rc.py *
