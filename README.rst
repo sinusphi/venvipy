@@ -117,39 +117,40 @@ Running from source
 -------------------
 
 If running *VenviPy* from source the recommended way is to use a virtual
-environment. First clone or download the source repository. Then open a
-terminal and run:
+environment. 
 
 .. code-block:: bash
 
-    $ python3.x -m venv [your_env_name]
+    $ python3.x -m venv [your_venv]
+    $ source [your_venv]/bin/activate
 
-Change to the created directory and run:
 
-.. code-block:: bash
-
-    $ source bin/activate
-
-The easiest way to install the required packages is to use the
-`requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__
-from the repository. Navigate to the downloaded repo and run:
+Install the dependencies from 
+`requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__. Cd into the repo folder and run:
 
 .. code-block:: bash
 
-    $ (your_env_name) pip install --requirement requirements.txt
+    $ (your_venv) pip install -r requirements.txt
 
-Or install the `PyQt5 <https://pypi.org/project/PyQt5>`__ package by
-running the following command:
-
-.. code-block:: bash
-
-    $ (your_env_name) pip install PyQt5==5.14.0 PyQt5-sip
-
-Finally inside the repo cd into the ``venvipy/`` folder and run:
+or
 
 .. code-block:: bash
 
-    $ (your_env_name) python venvi.py
+    $ (your_venv) pip install PyQt5==5.14.0 PyQt5-sip
+
+Then you can
+
+- launch the main menu:
+
+  - .. code-block:: bash
+  
+      $ (your_venv) python venvipy/venvi.py
+
+- or run the standalone wizard to create and set up an environment:
+
+  - .. code-block:: bash
+
+        $ (your_venv) python venvipy/wizard.py
 
 
 Known issues
