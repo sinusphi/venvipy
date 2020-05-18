@@ -6,7 +6,6 @@ import webbrowser
 import shutil
 import os
 from functools import partial
-from subprocess import Popen
 
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
@@ -538,7 +537,7 @@ class VenvTable(QTableView):
         venv_dir = os.path.join(active_dir, venv)
 
         if os.path.isdir(venv_dir):
-            Popen(["xdg-open", venv_dir])
+            os.system(f"xdg-open '{venv_dir}'")
 
 
     def delete_venv(self, event):
