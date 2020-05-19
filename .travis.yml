@@ -15,4 +15,5 @@ before_script:
   - cd /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/venvipy
 
 script:
-  - pylint --exit-zero --output-format=colorized --reports=y --verbose --disable=no-name-in-module --disable=invalid-name --disable=missing-function-docstring --ignore=venvipy_rc.py *
+  - venvipy --version
+  - pylint --exit-zero --confidence=HIGH --output-format=colorized --reports=y --verbose --disable=no-name-in-module --disable=invalid-name --disable=missing-function-docstring --ignore=venvipy_rc.py *
