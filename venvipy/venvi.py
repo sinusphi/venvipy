@@ -5,6 +5,7 @@ The main module of VenviPy.
 import sys
 import os
 import csv
+import getopt
 from pathlib import Path
 
 # need to set the correct cwd
@@ -43,16 +44,12 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLineEdit
 )
-import venvipy_rc  # pylint: disable=unused-import
 
-from get_data import (
-    get_active_dir,
-    get_active_dir_str,
-    get_python_installs
-)
+import venvipy_rc  # pylint: disable=unused-import
+import get_data
+import wizard
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable
-import wizard
 
 
 
@@ -532,7 +529,7 @@ class MainWindow(QMainWindow):
         """
         self.model_venv_table.setRowCount(0)
 
-        for info in get_active_dir():
+        for info in get_data.get_active_dir():
             self.model_venv_table.insertRow(0)
             for i, text in enumerate((
                     info.venv_name,
@@ -560,11 +557,11 @@ class MainWindow(QMainWindow):
         )
         with_folder = (
             f'<span style="font-size: 13pt; color: #0059ff;">\
-                {get_active_dir_str()}\
+                {get_data.get_active_dir_str()}\
             </span>'
         )
 
-        if get_active_dir_str() != "":
+        if get_data.get_active_dir_str() != "":
             self.venv_table_label.setText(f"{head}{with_folder}")
         else:
             self.venv_table_label.setText(f"{head}{no_folder}")
@@ -598,12 +595,44 @@ class MainWindow(QMainWindow):
         pass
 
 
+def with_args():
+    """Execute with command-line arguments.
+    """
+    # get full command-line arguments
+    full_cmd_arguments = sys.argv
+
+    # ignore the first
+    argument_list = full_cmd_arguments[1:]
+
+    # tell getopts() the parameters
+    short_options = "V"
+    long_options = ["version"]
+
+    # use try-except to cover errors
+    try:
+        arguments, values = getopt.getopt(
+            argument_list, short_options, long_options
+        )
+    except getopt.error as e:
+        # print error message and return error code
+        print(str(e))
+        sys.exit(2)
+
+    for arg, val in arguments:
+        if arg in ("-V", "--version"):
+            # print version, then exit
+            print(f"VenviPy {get_data.__version__}")
+            sys.exit(0)
+
+
 def main():
+    with_args()
+
     app = QApplication(sys.argv)
     os.system("clear")
 
     main_window = MainWindow()
-    get_python_installs()
+    get_data.get_python_installs()
     main_window.pop_interpreter_table()
     main_window.venv_wizard.basic_settings.pop_combo_box()
     main_window.pop_venv_table()
