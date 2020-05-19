@@ -10,7 +10,7 @@ import os
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
-__version__ = "0.2.9"
+__version__ = "0.2.10"
 
 
 
@@ -147,7 +147,11 @@ def to_path(bin_path, version):
 
 
 def get_pyvenv_cfg(cfg_file, cfg):
-    """Return the values from `pyvenv.cfg` file."""
+    """
+    Return the values as string from a `pyvenv.cfg` file.
+    Values for `cfg` can be strings: `version`, `py_path`,
+    `site_packages` or `installed`.
+    """
     with open(cfg_file, "r") as f:
         lines = f.readlines()
 
