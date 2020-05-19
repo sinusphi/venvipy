@@ -84,15 +84,15 @@ class CreationWorker(QObject):
         self.started.emit()
         print("[PROCESS]: Creating virtual environment...")
 
-        py_vers, name, location, with_pip, site_packages, symlinks = args
+        py_vers, name, location, with_pip, site_packages = args
         env_dir = os.path.join(location, f"'{name}'")
 
         create_venv(
             py_vers,
             env_dir,
             with_pip=with_pip,
-            system_site_packages=site_packages,
-            symlinks=symlinks,
+            system_site_packages=site_packages
+            #symlinks=symlinks
         )
 
         if with_pip:
@@ -114,16 +114,16 @@ def create_venv(
         py_vers,
         env_dir,
         with_pip=False,
-        system_site_packages=False,
-        symlinks=False
+        system_site_packages=False
+        #symlinks=False
     ):
     """Create a virtual environment in a directory.
     """
     pip = "" if with_pip else " --without-pip"
     ssp = " --system-site-packages" if system_site_packages else ""
-    sym = " --symlinks" if symlinks else ""
+    #sym = " --symlinks" if symlinks else ""
 
-    script = f"{py_vers} -m venv {env_dir}{pip}{ssp}{sym};"
+    script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
 
     res = Popen(["bash", "-c", script], stdout=PIPE, text="utf-8")
 
@@ -194,6 +194,6 @@ if __name__ == "__main__":
     env_directory = "[your_test_env_dir]"
     with_pip_opt = None
     with_sys_site_pkgs = None
-    with_symlinks = None
+    #with_symlinks = None
 
     #create_venv(python_version, env_directory)

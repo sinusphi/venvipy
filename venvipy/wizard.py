@@ -149,8 +149,7 @@ class VenvWizard(QWizard):
         """
         if self.basic_settings.thread.isRunning():
             self.basic_settings.thread.quit()
-            self.basic_settings.thread.quit()
-
+            self.basic_settings.thread.wait()
 
 
 class BasicSettings(QWizardPage):
@@ -254,9 +253,9 @@ class BasicSettings(QWizardPage):
             "&Make system (global) site-packages dir available to venv"
         )
         # since we are on linux we don't really need this setting
-        self.symlinks_check_box = QCheckBox(
-            "Attempt to &symlink rather than copy files into venv"
-        )
+        #self.symlinks_check_box = QCheckBox(
+            #"Attempt to &symlink rather than copy files into venv"
+        #)
 
         # register fields
         self.registerField(
@@ -277,7 +276,7 @@ class BasicSettings(QWizardPage):
         self.registerField("venv_location*", self.venv_location_line)
         self.registerField("with_pip", self.with_pip_check_box)
         self.registerField("site_pkgs", self.site_pkgs_check_box)
-        self.registerField("symlinks", self.symlinks_check_box)
+        #self.registerField("symlinks", self.symlinks_check_box)
         self.registerField("requirements", self.requirements_line)
 
         # grid layout
@@ -405,7 +404,7 @@ class BasicSettings(QWizardPage):
         self.venv_location = self.field("venv_location")
         self.with_pip = self.field("with_pip")
         self.site_pkgs = self.field("site_pkgs")
-        self.symlinks = self.field("symlinks")
+        #self.symlinks = self.field("symlinks")
         self.requirements = self.field("requirements")
 
         if self.combo_box and self.venv_name and self.venv_location:
@@ -435,7 +434,7 @@ class BasicSettings(QWizardPage):
             self.venv_location,
             self.with_pip,
             self.site_pkgs,
-            self.symlinks
+            #self.symlinks
         )
 
         wrapper = partial(self.m_install_venv_worker.install_venv, args)
