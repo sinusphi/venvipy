@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QInputDialog
 )
 
-from get_data import get_active_dir_str
+import get_data
 from dialogs import ConsoleDialog, ProgBarDialog
 from manage_pip import PipManager
 from creator import (
@@ -243,6 +243,31 @@ class VenvTable(QTableView):
             context_menu.popup(QCursor.pos())
 
 
+    def valid_version(self, venv_path):
+        """Test wether the Python version required is installed.
+        """
+        cfg_file = os.path.join(venv_path, "pyvenv.cfg")
+
+        is_installed = get_data.get_pyvenv_cfg(cfg_file, "installed")
+        version = get_data.get_pyvenv_cfg(cfg_file, "version")
+        py_path = get_data.get_pyvenv_cfg(cfg_file, "py_path")
+        msg_txt = (
+            f"This environment requires {version} \nfrom {py_path} which is \nnot installed.\n"
+        )
+
+        if is_installed == "no":
+            msg_box = QMessageBox(
+                QMessageBox.Critical,
+                "Error",
+                msg_txt,
+                QMessageBox.Ok,
+                self
+            )
+            msg_box.exec_()
+            return False
+        return True
+
+
     def venv_exists(self, path):
         """
         Test wether the directory of the selected environment actually exists.
@@ -253,7 +278,7 @@ class VenvTable(QTableView):
         msg_box = QMessageBox(
             QMessageBox.Critical,
             "Error",
-            "The selected environment could not be found.",
+            "Selected environment could not be found.",
             QMessageBox.Ok,
             self
         )
@@ -263,20 +288,19 @@ class VenvTable(QTableView):
 
 
     def has_pip(self, venv_dir, venv_name):
-        """
-        Test if `pip` is installed.
+        """Test if `pip` is installed.
         """
         venv_path = os.path.join(venv_dir, venv_name)
         pip_binary = os.path.join(venv_path, "bin", "pip")
         has_pip = os.path.exists(pip_binary)
 
-        if self.venv_exists(venv_path):
+        if self.venv_exists(venv_path) and self.valid_version(venv_path):
             if has_pip:
                 return True
             QMessageBox.information(
                 self,
                 "Info",
-                "Environment has been created without pip."
+                "This environment hasn't Pip installed."
             )
             return False
         return False
@@ -293,10 +317,9 @@ class VenvTable(QTableView):
 
 
     def upgrade_pip(self, event):
+        """Run `pip install --upgrade pip` command.
         """
-        Run `pip install --upgrade pip` command.
-        """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
@@ -327,7 +350,7 @@ class VenvTable(QTableView):
         Install packages from a requirements file into the
         selected environment.
         """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
@@ -355,10 +378,9 @@ class VenvTable(QTableView):
 
 
     def install_local(self, event):
+        """Install from a local project.
         """
-        Install from a local project.
-        """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
         project_dir = QFileDialog.getExistingDirectory(
@@ -385,17 +407,15 @@ class VenvTable(QTableView):
 
 
     def install_vsc(self, event):
-        """
-        Install from a VSC repository.
+        """Install from a VSC repository.
         """
         self.clone_process()
 
 
     def clone_process(self):
+        """Clone the repository.
         """
-        Clone the repository.
-        """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
         venv_bin = os.path.join(active_dir, venv, "bin", "python")
 
@@ -437,7 +457,7 @@ class VenvTable(QTableView):
         """
         Write the requirements of the selected environment to file.
         """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
         venv_dir = os.path.join(active_dir, venv)
 
@@ -461,10 +481,9 @@ class VenvTable(QTableView):
 
 
     def list_packages(self, event, style):
+        """Open console dialog and list the installed packages.
         """
-        Open console dialog and list the installed packages.
-        """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
@@ -484,8 +503,7 @@ class VenvTable(QTableView):
 
 
     def freeze_output(self, event, style):
-        """
-        Print `pip freeze` output to console window.
+        """Print `pip freeze` output to console window.
         """
         self.list_packages(event, style)
 
@@ -499,7 +517,7 @@ class VenvTable(QTableView):
             "This requires the pipdeptree package\nto be installed.\n\n"
             "Do you want to install it?\n"
         )
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
         pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
         has_pipdeptree = os.path.exists(pipdeptree_binary)
@@ -529,10 +547,9 @@ class VenvTable(QTableView):
 
 
     def open_venv_dir(self, event):
+        """Open the selected venv directory.
         """
-        Open the selected venv directory.
-        """
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
         venv_dir = os.path.join(active_dir, venv)
 
@@ -546,7 +563,7 @@ class VenvTable(QTableView):
         delete from the context menu in venv table.
         """
         venv = self.get_selected_item()
-        active_dir = get_active_dir_str()
+        active_dir = get_data.get_active_dir_str()
         venv_path = os.path.join(active_dir, venv)
 
         if self.venv_exists(venv_path):
@@ -608,8 +625,7 @@ class ResultsTable(QTableView):
 
 
     def get_selected_item(self):
-        """
-        Get the venv name of the selected row.
+        """Get the venv name of the selected row.
         """
         listed_items = self.selectionModel().selectedRows()
         for index in listed_items:
