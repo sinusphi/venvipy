@@ -2,8 +2,8 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.2.9-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.2.9/#description
+.. image:: https://img.shields.io/badge/pypi-v0.2.10-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.2.10/#description
 
 .. image:: https://img.shields.io/badge/python-3.7+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
@@ -30,11 +30,11 @@
 Introduction
 ------------
 
-*VenviPy* is a user friendly graphical interface for creating customized
+*VenviPy* is a simple graphical user interface for creating customized
 virtual environments or modifing any existing Python environment (that
-supports the built-in venv) quick and easy.
+supports the built-in ``venv`` module) quick and easy.
 
-It provides useful features like a wizard, that guides the user through
+It provides a set features like a wizard, that guides the user through
 the creation process, a table that shows an overview over installed
 environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
@@ -116,6 +116,13 @@ the wizard standalone:
 Running from source
 -------------------
 
+Clone the repository (use the ``--depth`` option):
+
+.. code-block:: bash
+
+    $ git clone --depth 1 git@github.com:sinusphi/venvipy.git
+
+
 If running *VenviPy* from source the recommended way is to use a virtual
 environment. 
 
@@ -125,14 +132,14 @@ environment.
     $ source [your_venv]/bin/activate
 
 
-Install the dependencies from 
-`requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__. Cd into the repo folder and run:
+Cd into the repo folder and install the dependencies from 
+`requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__:
 
 .. code-block:: bash
 
     $ (your_venv) pip install -r requirements.txt
 
-or
+or run:
 
 .. code-block:: bash
 
