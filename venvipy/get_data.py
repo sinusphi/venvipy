@@ -10,7 +10,11 @@ import os
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
+
 __version__ = "0.2.10"
+
+CFG_DIR = os.path.expanduser("~/.venvipy")
+DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
 
 
 
@@ -23,6 +27,32 @@ class PythonInfo:
     """_"""
     py_version: str
     py_path: str
+
+
+def to_version(value):
+    """Convert a value to a readable version string.
+    """
+    return f"Python {value}"
+
+
+def to_path(bin_path, version):
+    """Return the absolute path to a python binary.
+    """
+    return os.path.join(bin_path, f"python{version}")
+
+
+def ensure_confdir():
+    """Create `~/.venvipy` config directory.
+    """
+    if not os.path.exists(CFG_DIR):
+        os.mkdir(CFG_DIR)
+
+
+def ensure_dbfile():
+    """Create `~/.venvipy/py-installs` csv file with all values.
+    """
+    if not os.path.exists(DB_FILE):
+        get_python_installs()
 
 
 def get_python_version(py_path):
@@ -39,15 +69,14 @@ def get_python_version(py_path):
 
 
 def get_python_installs():
-    """Write the found Python versions to `py-installs` csv file."""
+    """Write the found Python versions to `py-installs` csv file.
+    """
+    ensure_confdir()
+
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
-    csv_file = os.path.expanduser("~/.venvipy/py-installs")
     py_info_list = []
 
-    if not os.path.exists(os.path.expanduser("~/.venvipy")):
-        os.mkdir(os.path.expanduser("~/.venvipy"))
-
-    with open(csv_file, "w", newline="") as cf:
+    with open(DB_FILE, "w", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
             cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
@@ -68,16 +97,14 @@ def get_python_installs():
 
 def add_sys_python():
     """
-    Write the the system Python's version and path to `py-installs`
-    csv file if running VenviPy in a virtual environment.
+    Write the the system Python"s version and path to `py-installs`
+    csv file if running in a virtual environment.
     """
-    csv_file = os.path.expanduser("~/.venvipy/py-installs")
+    ensure_dbfile()
+
     super_python = os.path.realpath(sys.executable)
 
-    if not os.path.isfile(csv_file):
-        get_python_installs()
-
-    with open(csv_file, "a", newline="") as cf:
+    with open(DB_FILE, "a", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
             cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
@@ -86,6 +113,18 @@ def add_sys_python():
             "PYTHON_VERSION": get_python_version(super_python),
             "PYTHON_PATH": super_python
         })
+    rm_duplicates()
+
+
+def rm_duplicates():
+    """Remove duplicates, then save a new copy.
+    """
+    with open(DB_FILE, "r") as f:
+        lines = f.readlines()
+    with open(DB_FILE, "w") as f:
+        for line in lines:
+            if sys.executable not in line.strip("\n"):
+                f.write(line)
 
 
 #]===========================================================================[#
@@ -106,7 +145,7 @@ def get_venvs(path):
     Get the available virtual environments
     from the specified folder.
     """
-    # return an emtpty list if directory doesn't exist
+    # return an emtpty list if directory doesn"t exist
     if not os.path.isdir(path):
         return []
 
@@ -136,16 +175,6 @@ def get_venvs(path):
     return venv_info_list
 
 
-def to_version(value):
-    """Convert a value to a readable version string."""
-    return f"Python {value}"
-
-
-def to_path(bin_path, version):
-    """Return the absolute path to a python binary."""
-    return os.path.join(bin_path, f"python{version}")
-
-
 def get_pyvenv_cfg(cfg_file, cfg):
     """
     Return the values as string from a `pyvenv.cfg` file.
@@ -158,7 +187,6 @@ def get_pyvenv_cfg(cfg_file, cfg):
     version_str = to_version(lines[2][10:].strip())
     binary_path = to_path(lines[0][7:].strip(), lines[2][10:13].strip())
     site_packages = lines[1][31:].strip()
-    csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
     if cfg == "version":
         return version_str
@@ -174,9 +202,8 @@ def get_pyvenv_cfg(cfg_file, cfg):
         return "N/A"
 
     if cfg == "installed":
-        if not os.path.isfile(csv_file):
-            get_python_installs()
-        with open(csv_file, newline="") as cf:
+        ensure_dbfile()
+        with open(DB_FILE, newline="") as cf:
             reader = csv.DictReader(cf, delimiter=",")
             for info in reader:
                 if binary_path == info["PYTHON_PATH"]:
@@ -187,13 +214,11 @@ def get_pyvenv_cfg(cfg_file, cfg):
 
 
 def get_active_dir_str():
-    """
-    Get the default venv directory string from `active` file.
+    """Get the default venv directory string from `active` file.
     """
     active_file = os.path.expanduser("~/.venvipy/active")
 
-    if not os.path.exists(os.path.expanduser("~/.venvipy")):
-        os.mkdir(os.path.expanduser("~/.venvipy"))
+    ensure_confdir()
 
     if os.path.exists(active_file):
         with open(active_file, "r") as f:
@@ -229,7 +254,7 @@ class PackageInfo:
 
 def get_package_infos(name):
     """
-    Get the package's name, version and description
+    Get the package"s name, version and description
     from [PyPI](https://pypi.org/pypi).
     """
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
@@ -250,6 +275,6 @@ def get_package_infos(name):
 
 
 if __name__ == "__main__":
-    pass
+    #pass
 
-    #get_python_installs()
+    get_python_installs()
