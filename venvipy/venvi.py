@@ -53,8 +53,8 @@ from dialogs import InfoAboutVenviPy
 from tables import VenvTable
 
 
-LOG_FORMAT = "%(levelname)s - %(message)s"
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+LOG_FORMAT = "[%(levelname)s] - %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger()
 
 
@@ -454,28 +454,24 @@ class MainWindow(QMainWindow):
         )
 
         # check if any Python is installed
-        csv_file = os.path.expanduser("~/.venvipy/py-installs")
-        if os.path.isfile(csv_file):
-            with open(csv_file, newline="") as cf:
-                reader = csv.DictReader(cf, delimiter=",")
-                if reader is None:
-                    self.launching_without_python()
-
-
-    def info_about_qt(self):
-        """Open the "About Qt" dialog.
-        """
-        QMessageBox.aboutQt(self)
+        if os.path.exists(get_data.DB_FILE):
+            with open(get_data.DB_FILE, "r") as f:
+                lines = f.readlines()
+            if len(lines) < 2:
+                self.launching_without_python()
 
 
     def launching_without_python(self):
-        print("[WARNING]: No suitable Python installation found!")
-        self.enable_features(False)
+        """If no Python was found run with features disabled.
+        """
+        logger.warning("No suitable Python installation found")
         self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
         self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
         if self.msg_box.exec_() == QMessageBox.AcceptRole:
             # let user specify path to an interpreter
             self.add_interpreter()
+        else:
+            self.enable_features(False)
 
 
     def center(self):
@@ -495,28 +491,35 @@ class MainWindow(QMainWindow):
         self.close()
 
 
+    def info_about_qt(self):
+        """Open the "About Qt" dialog.
+        """
+        QMessageBox.aboutQt(self)
+
+
     def add_interpreter(self):
         """Add a custom interpreter.
         """
         if self.venv_wizard.basic_settings.select_python() != "":
             self.enable_features(True)
+        else:
+            self.enable_features(False)
 
 
     def enable_features(self, state):
+        """Enable or disable features.
+        """
+        self.venv_table.setEnabled(state)
         #self.search_pypi_button.setEnabled(state)
         #self.action_search_pypi.setEnabled(state)
-        self.venv_table.setEnabled(state)
 
 
     @pyqtSlot()
     def pop_interpreter_table(self):
         """Populate the interpreter table view.
         """
-        csv_file = os.path.expanduser("~/.venvipy/py-installs")
-
-        if os.path.isfile(csv_file):
-            info = []
-            with open(csv_file, newline="") as cf:
+        if os.path.exists(get_data.DB_FILE):
+            with open(get_data.DB_FILE, newline="") as cf:
                 reader = csv.DictReader(cf, delimiter=",")
                 self.model_interpreter_table.setRowCount(0)
                 for info in reader:

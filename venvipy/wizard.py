@@ -361,6 +361,8 @@ class BasicSettings(QWizardPage):
             self.pop_combo_box()
             # also call pop_interpreter_table() method in venvi.MainWindow
             self.wizard().update_table.emit()
+            return bin_file
+        return ""
 
 
     def select_dir(self):
@@ -622,7 +624,7 @@ class InstallPackages(QWizardPage):
                 self.results_model.setItem(0, i, QStandardItem(text))
 
         if not get_data.get_package_infos(search_item):
-            logger.info(f"No matches for '{search_item}'")
+            logger.debug(f"No matches for '{search_item}'")
             QMessageBox.information(
                 self,
                 "No result",
@@ -656,7 +658,7 @@ class InstallPackages(QWizardPage):
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected package
-            logger.debug(f"Installing '{self.pkg}'...")
+            logger.info(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
 
             # display the updated output
@@ -695,12 +697,12 @@ class InstallPackages(QWizardPage):
             save_path = save_file[0]
 
             if save_path != "":
-                logger.info(f"Saving '{save_path}'...")
                 self.manager = PipManager(self.venv_location, self.venv_name)
                 self.manager.run_pip(creator.cmds[2], [">", save_path])
 
                 msg_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", msg_txt)
+                logger.info(f"Saved '{save_path}'...")
                 self.wizard().next()
         else:
             self.wizard().next()

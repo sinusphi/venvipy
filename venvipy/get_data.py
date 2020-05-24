@@ -100,6 +100,7 @@ def get_python_installs():
     # need to add the system's Python manually
     if "VIRTUAL_ENV" in os.environ:
         add_sys_python()
+    return py_info_list
 
 
 def add_sys_python():
