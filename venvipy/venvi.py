@@ -6,6 +6,7 @@ import sys
 import os
 import csv
 import getopt
+import logging
 from pathlib import Path
 
 # need to set the correct cwd
@@ -45,11 +46,16 @@ from PyQt5.QtWidgets import (
     QLineEdit
 )
 
-from venvipy import venvipy_rc  # pylint: disable=unused-import
-from venvipy import get_data
-from venvipy import wizard
-from venvipy.dialogs import InfoAboutVenviPy
-from venvipy.tables import VenvTable
+import venvipy_rc  # pylint: disable=unused-import
+import get_data
+import wizard
+from dialogs import InfoAboutVenviPy
+from tables import VenvTable
+
+
+LOG_FORMAT = "%(levelname)s - %(message)s"
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+logger = logging.getLogger()
 
 
 

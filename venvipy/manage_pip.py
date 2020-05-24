@@ -3,9 +3,13 @@
 This module manages all pip processes.
 """
 import os
+import logging
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
 from PyQt5.QtWidgets import QApplication
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -93,13 +97,17 @@ class PipManager(QObject):
 
     @pyqtSlot(QProcess.ProcessState)
     def on_state_changed(self, state):
-        """Show the current process state."""
+        """Show the current process state.
+        """
         if state == QProcess.Starting:
-            print("[PROCESS]: Started")
+            #print("[PROCESS]: Started")
+            logger.debug("Started")
         elif state == QProcess.Running:
-            print("[PROCESS]: Running")
+            #print("[PROCESS]: Running")
+            logger.debug("Running")
         elif state == QProcess.NotRunning:
-            print("[PROCESS]: Stopped")
+            #print("[PROCESS]: Stopped")
+            logger.info("Done.")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
             )
@@ -107,28 +115,30 @@ class PipManager(QObject):
 
     @pyqtSlot(int, QProcess.ExitStatus)
     def on_finished(self, exitCode):
-        """Show exit code when finished."""
-        print(f"[PROCESS]: Exit code: {exitCode}")
+        """Show exit code when finished.
+        """
+        #print(f"[PROCESS]: Exit code: {exitCode}")
+        logger.debug(f"Exit code: {exitCode}")
         self._process.kill()
 
 
     @pyqtSlot()
     def on_ready_read_stdout(self):
-        """
-        Read from `stdout` and send the output to `update_status()`.
+        """Read from `stdout` and send the output to `update_status()`.
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
-        print(f"[PIP]: {message}")
+        #print(f"[PIP]: {message}")
+        logger.debug(message)
         self.textChanged.emit(message)
 
 
     @pyqtSlot()
     def on_ready_read_stderr(self):
-        """
-        Read from `stderr`, then kill the process.
+        """Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        print(f"[ERROR]: {message}")
+        #print(f"[ERROR]: {message}")
+        logger.error(message)
         self.textChanged.emit(message)
         self.failed.emit()
         self._process.kill()

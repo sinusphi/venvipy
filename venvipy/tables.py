@@ -5,6 +5,7 @@ This module contains the tables.
 import webbrowser
 import shutil
 import os
+import logging
 from functools import partial
 
 from PyQt5.QtGui import QIcon, QCursor
@@ -19,11 +20,14 @@ from PyQt5.QtWidgets import (
     QInputDialog
 )
 
-from venvipy import get_data
-from venvipy import creator
-from venvipy.dialogs import ConsoleDialog, ProgBarDialog
-from venvipy.creator import CloningWorker
-from venvipy.manage_pip import PipManager
+import get_data
+import creator
+from dialogs import ConsoleDialog, ProgBarDialog
+from creator import CloningWorker
+from manage_pip import PipManager
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -217,11 +221,8 @@ class VenvTable(QTableView):
         context_menu.addMenu(install_sub_menu)
         install_sub_menu.addAction(install_packages_action)
         install_sub_menu.addAction(install_requires_action)
-
-        # editable sub menu
-        install_sub_menu.addMenu(editable_sub_menu)
-        editable_sub_menu.addAction(install_local_action)
-        editable_sub_menu.addAction(install_vsc_action)
+        install_sub_menu.addAction(install_local_action)
+        install_sub_menu.addAction(install_vsc_action)
 
         context_menu.addAction(save_requires_action)
 
@@ -296,7 +297,7 @@ class VenvTable(QTableView):
             QMessageBox.information(
                 self,
                 "Info",
-                "This environment hasn't Pip installed."
+                "This environment has no Pip installed."
             )
             return False
         return False
@@ -320,8 +321,8 @@ class VenvTable(QTableView):
 
         if self.has_pip(active_dir, venv):
             self.console.setWindowTitle("Updating Pip")
+            logger.info("Attempting to update Pip...")
 
-            print("[PROCESS]: Updating Pip to the latest version...")
             self.manager = PipManager(active_dir, venv)
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
             self.manager.started.connect(self.console.exec_)
@@ -358,11 +359,13 @@ class VenvTable(QTableView):
 
             if file_path != "":
                 creator.fix_requirements(file_path)
-                print("[PROCESS]: Installing from requirements...")
                 self.console.setWindowTitle("Installing from requirements")
+                logger.info("Installing from requirements...")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(creator.cmds[0], [creator.opts[1], f"'{file_path}'"])
+                self.manager.run_pip(
+                    creator.cmds[0], [creator.opts[1], f"'{file_path}'"]
+                )
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -387,11 +390,13 @@ class VenvTable(QTableView):
             project_name = os.path.basename(project_dir)
 
             if project_dir != "":
-                print("[PROCESS]: Installing from local project path...")
                 self.console.setWindowTitle(f"Installing {project_name}")
+                logger.info("Installing from local project path...")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(creator.cmds[0], [creator.opts[2], f"'{project_dir}'"])
+                self.manager.run_pip(
+                    creator.cmds[0], [creator.opts[2], f"'{project_dir}'"]
+                )
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -409,23 +414,22 @@ class VenvTable(QTableView):
         venv = self.get_selected_item()
         venv_bin = os.path.join(active_dir, venv, "bin", "python")
 
-        url, ok = QInputDialog.getText(
-            self,
-            "Specify VSC project url",
-            "Enter url to repository:" + " " * 65
-        )
+        if self.has_pip(active_dir, venv):
+            url, ok = QInputDialog.getText(
+                self,
+                "Specify VSC project url",
+                "Enter url to repository:" + " " * 65
+            )
 
-        if url != "":
-            if self.has_pip(active_dir, venv):
+            if url != "":
                 project_name = os.path.basename(url)
                 project_url = f"git+{url}#egg={project_name}"
                 cmd = (
                     f"{venv_bin} -m pip install --no-cache-dir -e {project_url}"
                 )
-
-                print(f"[PROCESS]: Installing {project_name}...")
                 self.progress_bar.setWindowTitle(f"Installing {project_name}")
                 self.progress_bar.status_label.setText("Cloning repository...")
+                logger.info(f"Installing {project_name}...")
 
                 wrapper = partial(
                     self.m_clone_repo_worker.run_process, cmd
@@ -460,8 +464,9 @@ class VenvTable(QTableView):
             save_path = save_file[0]
 
             if save_path != "":
+                logger.info(f"Saving '{save_path}'...")
+
                 # write 'pip freeze' output to selected file
-                print(f"[PROCESS]: Saving '{save_path}'...")
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(creator.cmds[2], [">", save_path])
 
@@ -479,7 +484,6 @@ class VenvTable(QTableView):
         if self.has_pip(active_dir, venv):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
-            print("[PROCESS]: Listing packages...")
             self.manager = PipManager(active_dir, f"'{venv}'")
             self.manager.run_pip(creator.cmds[style])
             self.manager.started.connect(self.console.exec_)
@@ -527,9 +531,12 @@ class VenvTable(QTableView):
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
                     )
-                    print("[PROCESS]: Installing pipdeptree...")
+                    logger.info("Installing pipdeptree...")
+
                     self.manager = PipManager(active_dir, venv)
-                    self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pipdeptree"])
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[0], "pipdeptree"]
+                    )
                     self.manager.started.connect(self.progress_bar.exec_)
                     self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()
@@ -565,7 +572,7 @@ class VenvTable(QTableView):
             )
             if msg_box_critical == QMessageBox.Yes:
                 shutil.rmtree(venv_path)
-                print(f"[PROCESS]: Successfully deleted '{venv_path}'")
+                logging.info(f"Successfully deleted '{venv_path}'")
                 self.refresh.emit()
 
 

@@ -2,15 +2,18 @@
 """
 This module creates all the stuff requested.
 """
-from subprocess import Popen, PIPE
-from random import randint
+import logging
 import shlex
 import os
+from subprocess import Popen, PIPE
+from random import randint
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from venvipy.manage_pip import PipManager
+from manage_pip import PipManager
 
+
+logger = logging.getLogger(__name__)
 
 # commands / options
 cmds = [
@@ -44,7 +47,7 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-        print("[PROCESS]: Installing from VSC url...")
+        logger.info("Installing from VSC url...")
 
         clone_repo(command)
         self.finished.emit()
@@ -68,7 +71,7 @@ def clone_repo(command):
         if output == "" and process.poll() is not None:
             break
         if output:
-            print(f"[PROCESS]: {output.strip()}")
+            logger.info(output.strip())
     rc = process.poll()
     return rc
 
@@ -91,7 +94,7 @@ class CreationWorker(QObject):
         Execute the commands to create the environment.
         """
         self.started.emit()
-        print("[PROCESS]: Creating virtual environment...")
+        logger.info("Creating virtual environment...")
 
         py_vers, name, location, with_pip, site_packages = args
         env_dir = os.path.join(location, f"'{name}'")
@@ -159,7 +162,6 @@ def fix_requirements(require_file):
             pass  # skip if line is already commented
 
         elif "pkg-resources==0.0.0" in content:
-
             content = content.replace(
                 "pkg-resources==0.0.0", "#pkg-resources==0.0.0"
             )
@@ -192,17 +194,17 @@ def random_zen_line():
         "\nIf the implementation is easy to explain,\nit may be a good idea.",
         "\nNamespaces are one honking great idea\n---\nlet's do more of those!"
     ]
-
     return this[randint(0, 14)]
 
 
 
 if __name__ == "__main__":
+    pass
 
-    python_version = "[your_python_version]"
-    env_directory = "[your_test_env_dir]"
-    with_pip_opt = None
-    with_sys_site_pkgs = None
+    #python_version = "[your_python_version]"
+    #env_directory = "[your_test_env_dir]"
+    #with_pip_opt = None
+    #with_sys_site_pkgs = None
     #with_symlinks = None
 
     #create_venv(python_version, env_directory)

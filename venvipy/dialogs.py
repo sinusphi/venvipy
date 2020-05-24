@@ -3,6 +3,7 @@
 This module contains some dialogs.
 """
 import sys
+import logging
 
 from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
@@ -20,8 +21,11 @@ from PyQt5.QtWidgets import (
     QMessageBox
 )
 
-from venvipy import venvipy_rc  # pylint: disable=unused-import
-from venvipy.get_data import __version__
+import venvipy_rc  # pylint: disable=unused-import
+from get_data import __version__
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -136,18 +140,6 @@ class ConsoleDialog(QDialog):
         self.console_window.append(formatted_text)
 
 
-    def finish_success(self):
-        """
-        Show info message when all packages installed successfully.
-        """
-        message_txt = (
-            "Environment cloned successfully.\n\n"
-            "All packages have been \ninstalled without errors.\n"
-        )
-        print("[PROCESS]: Environment cloned successfully")
-        QMessageBox.information(self, "Done", message_txt)
-
-
     def finish_fail(self):
         """
         Show info message when the installation process failed.
@@ -156,7 +148,7 @@ class ConsoleDialog(QDialog):
             "Could not install from requirements.\n\n"
             "File not found.\n"
         )
-        print("[ERROR]: Could not install from requirements")
+        logger.error("Could not install from requirements")
         QMessageBox.critical(self, "Error", message_txt)
 
 

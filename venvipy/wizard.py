@@ -6,6 +6,7 @@ and setting up virtual environments.
 import sys
 import os
 import csv
+import logging
 from functools import partial
 from pathlib import Path
 
@@ -44,13 +45,16 @@ from PyQt5.QtWidgets import (
     QDesktopWidget
 )
 
-from venvipy import venvipy_rc  # pylint: disable=unused-import
-from venvipy import get_data
-from venvipy import creator
-from venvipy.dialogs import ProgBarDialog, ConsoleDialog
-from venvipy.tables import ResultsTable
-from venvipy.creator import CreationWorker
-from venvipy.manage_pip import PipManager
+import venvipy_rc  # pylint: disable=unused-import
+import get_data
+import creator
+from dialogs import ProgBarDialog, ConsoleDialog
+from tables import ResultsTable
+from creator import CreationWorker
+from manage_pip import PipManager
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -178,6 +182,9 @@ class BasicSettings(QWizardPage):
 
         # updated
         self.m_install_venv_worker.updatePipMsg.connect(self.update_pip_msg)
+        self.m_install_venv_worker.updatePipMsg.connect(
+            lambda: logger.info("Updating pip...")
+        )
 
         # finished
         self.m_install_venv_worker.finished.connect(self.progress_bar.close)
@@ -572,7 +579,8 @@ class InstallPackages(QWizardPage):
         """
         self.setEnabled(False)
 
-        self.console.setWindowTitle("Cloning environment")
+        self.console.setWindowTitle("Creating environment")
+        logger.info("Creating environment...")
 
         # open the console when recieving signal from manager
         self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
@@ -580,7 +588,9 @@ class InstallPackages(QWizardPage):
 
         # start installing packages from requirements file
         #print(f"[PROCESS]: Installing packages from '{self.requirements}'")
-        self.manager.run_pip(creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"])
+        self.manager.run_pip(
+            creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"]
+        )
 
         # display the updated output
         self.manager.textChanged.connect(self.console.update_status)
@@ -612,9 +622,9 @@ class InstallPackages(QWizardPage):
                 self.results_model.setItem(0, i, QStandardItem(text))
 
         if not get_data.get_package_infos(search_item):
-            #print(f"[PIP]: No matches for '{search_item}'")
-
-            QMessageBox.information(self,
+            logger.info(f"No matches for '{search_item}'")
+            QMessageBox.information(
+                self,
                 "No result",
                 f"No result matching '{search_item}'.\n"
             )
@@ -646,7 +656,7 @@ class InstallPackages(QWizardPage):
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected package
-            #print(f"[PROCESS]: Installing package '{self.pkg}'...")
+            logger.debug(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
 
             # display the updated output
@@ -685,7 +695,7 @@ class InstallPackages(QWizardPage):
             save_path = save_file[0]
 
             if save_path != "":
-                print(f"[PROCESS]: Saving '{save_path}'...")
+                logger.info(f"Saving '{save_path}'...")
                 self.manager = PipManager(self.venv_location, self.venv_name)
                 self.manager.run_pip(creator.cmds[2], [">", save_path])
 
@@ -789,4 +799,8 @@ def main():
 
 
 if __name__ == "__main__":
+
+    LOG_FORMAT = "%(levelname)s - %(message)s"
+    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+
     main()
