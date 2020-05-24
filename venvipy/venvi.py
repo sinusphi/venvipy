@@ -45,11 +45,11 @@ from PyQt5.QtWidgets import (
     QLineEdit
 )
 
-import venvipy_rc  # pylint: disable=unused-import
-import get_data
-import wizard
-from dialogs import InfoAboutVenviPy
-from tables import VenvTable
+from venvipy import venvipy_rc  # pylint: disable=unused-import
+from venvipy import get_data
+from venvipy import wizard
+from venvipy.dialogs import InfoAboutVenviPy
+from venvipy.tables import VenvTable
 
 
 

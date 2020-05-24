@@ -4,6 +4,8 @@ This module contains some dialogs.
 """
 import sys
 
+from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
+from PyQt5.QtCore import Qt, QSize, pyqtSlot
 from PyQt5.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -17,12 +19,9 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QMessageBox
 )
-from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
-from PyQt5.QtCore import Qt, QSize, pyqtSlot
 
-import venvipy_rc  # pylint: disable=unused-import
-
-from get_data import __version__
+from venvipy import venvipy_rc  # pylint: disable=unused-import
+from venvipy.get_data import __version__
 
 
 

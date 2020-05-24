@@ -19,15 +19,11 @@ from PyQt5.QtWidgets import (
     QInputDialog
 )
 
-import get_data
-from dialogs import ConsoleDialog, ProgBarDialog
-from manage_pip import PipManager
-from creator import (
-    CloningWorker,
-    fix_requirements,
-    cmds,
-    opts
-)
+from venvipy import get_data
+from venvipy import creator
+from venvipy.dialogs import ConsoleDialog, ProgBarDialog
+from venvipy.creator import CloningWorker
+from venvipy.manage_pip import PipManager
 
 
 
@@ -327,7 +323,7 @@ class VenvTable(QTableView):
 
             print("[PROCESS]: Updating Pip to the latest version...")
             self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(cmds[0], [opts[0], "pip"])
+            self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -361,12 +357,12 @@ class VenvTable(QTableView):
             file_path = file_name[0]
 
             if file_path != "":
-                fix_requirements(file_path)
+                creator.fix_requirements(file_path)
                 print("[PROCESS]: Installing from requirements...")
                 self.console.setWindowTitle("Installing from requirements")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(cmds[0], [opts[1], f"'{file_path}'"])
+                self.manager.run_pip(creator.cmds[0], [creator.opts[1], f"'{file_path}'"])
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -395,7 +391,7 @@ class VenvTable(QTableView):
                 self.console.setWindowTitle(f"Installing {project_name}")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(cmds[0], [opts[2], f"'{project_dir}'"])
+                self.manager.run_pip(creator.cmds[0], [creator.opts[2], f"'{project_dir}'"])
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -467,7 +463,7 @@ class VenvTable(QTableView):
                 # write 'pip freeze' output to selected file
                 print(f"[PROCESS]: Saving '{save_path}'...")
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(cmds[2], [">", save_path])
+                self.manager.run_pip(creator.cmds[2], [">", save_path])
 
                 # show an info message
                 message_txt = (f"Saved requirements in \n{save_path}")
@@ -485,7 +481,7 @@ class VenvTable(QTableView):
 
             print("[PROCESS]: Listing packages...")
             self.manager = PipManager(active_dir, f"'{venv}'")
-            self.manager.run_pip(cmds[style])
+            self.manager.run_pip(creator.cmds[style])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -533,7 +529,7 @@ class VenvTable(QTableView):
                     )
                     print("[PROCESS]: Installing pipdeptree...")
                     self.manager = PipManager(active_dir, venv)
-                    self.manager.run_pip(cmds[0], [opts[0], "pipdeptree"])
+                    self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pipdeptree"])
                     self.manager.started.connect(self.progress_bar.exec_)
                     self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()

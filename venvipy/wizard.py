@@ -43,23 +43,14 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QDesktopWidget
 )
-import venvipy_rc  # pylint: disable=unused-import
 
-from dialogs import ProgBarDialog, ConsoleDialog
-from manage_pip import PipManager
-from tables import ResultsTable
-from get_data import (
-    get_package_infos,
-    get_python_version,
-    get_python_installs
-)
-from creator import (
-    CreationWorker,
-    fix_requirements,
-    random_zen_line,
-    cmds,
-    opts
-)
+from venvipy import venvipy_rc  # pylint: disable=unused-import
+from venvipy import get_data
+from venvipy import creator
+from venvipy.dialogs import ProgBarDialog, ConsoleDialog
+from venvipy.tables import ResultsTable
+from venvipy.creator import CreationWorker
+from venvipy.manage_pip import PipManager
 
 
 
@@ -318,7 +309,7 @@ class BasicSettings(QWizardPage):
     def pop_combo_box(self):
         """Add the selected Python version to combo box.
         """
-        get_python_installs()
+        get_data.get_python_installs()
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
 
         if os.path.isfile(csv_file):
@@ -346,7 +337,7 @@ class BasicSettings(QWizardPage):
         bin_file = file_name[0]
 
         if bin_file != "":
-            custom_version = get_python_version(bin_file)
+            custom_version = get_data.get_python_version(bin_file)
             csv_file = os.path.expanduser("~/.venvipy/py-installs")
             with open(csv_file, "a", newline="") as cf:
                 fields = ["PYTHON_VERSION", "PYTHON_PATH"]
@@ -485,6 +476,7 @@ class InstallPackages(QWizardPage):
             "click next."
         )
 
+        self.console = ConsoleDialog()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -569,7 +561,7 @@ class InstallPackages(QWizardPage):
         # run the installer if self.requirements holds a str
         if len(self.requirements) > 0:
             try:
-                fix_requirements(self.requirements)
+                creator.fix_requirements(self.requirements)
             except FileNotFoundError:
                 pass  # the gui will show an error message
             self.install_requirements()
@@ -580,17 +572,15 @@ class InstallPackages(QWizardPage):
         """
         self.setEnabled(False)
 
-        self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
-        self.console = ConsoleDialog()
-
         self.console.setWindowTitle("Cloning environment")
 
         # open the console when recieving signal from manager
+        self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
         self.manager.started.connect(self.console.exec_)
 
         # start installing packages from requirements file
         #print(f"[PROCESS]: Installing packages from '{self.requirements}'")
-        self.manager.run_pip(cmds[0], [opts[1], f"'{self.requirements}'"])
+        self.manager.run_pip(creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"])
 
         # display the updated output
         self.manager.textChanged.connect(self.console.update_status)
@@ -613,7 +603,7 @@ class InstallPackages(QWizardPage):
 
         self.results_model.setRowCount(0)
 
-        for info in get_package_infos(search_item):
+        for info in get_data.get_package_infos(search_item):
             self.results_model.insertRow(0)
 
             for i, text in enumerate(
@@ -621,7 +611,7 @@ class InstallPackages(QWizardPage):
                 ):
                 self.results_model.setItem(0, i, QStandardItem(text))
 
-        if not get_package_infos(search_item):
+        if not get_data.get_package_infos(search_item):
             #print(f"[PIP]: No matches for '{search_item}'")
 
             QMessageBox.information(self,
@@ -646,18 +636,18 @@ class InstallPackages(QWizardPage):
         )
 
         if msg_box_question == QMessageBox.Yes:
-            self.manager = PipManager(
-                self.venv_location, f"'{self.venv_name}'"
-            )
-            self.console = ConsoleDialog()
             self.console.setWindowTitle(f"Installing {self.pkg}")
 
+            self.manager = PipManager(
+                self.venv_location,
+                f"'{self.venv_name}'"
+            )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected package
             #print(f"[PROCESS]: Installing package '{self.pkg}'...")
-            self.manager.run_pip(cmds[0], [opts[0], self.pkg])
+            self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
 
             # display the updated output
             self.manager.textChanged.connect(self.console.update_status)
@@ -697,7 +687,7 @@ class InstallPackages(QWizardPage):
             if save_path != "":
                 print(f"[PROCESS]: Saving '{save_path}'...")
                 self.manager = PipManager(self.venv_location, self.venv_name)
-                self.manager.run_pip(cmds[2], [">", save_path])
+                self.manager.run_pip(creator.cmds[2], [">", save_path])
 
                 msg_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", msg_txt)
@@ -757,7 +747,7 @@ class FinalPage(QWizardPage):
         """
         Set lebel text with a random line from the Zen of Python.
         """
-        self.zen_line.setText(random_zen_line())
+        self.zen_line.setText(creator.random_zen_line())
 
 
     def initializePage(self):
