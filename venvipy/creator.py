@@ -12,9 +12,18 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from manage_pip import PipManager
 
 
-# pip commands and options
-cmds = ["install --no-cache-dir", "list", "freeze", "pipdeptree"]
-opts = ["--upgrade", "--requirement", "--editable"]
+# commands / options
+cmds = [
+    "install --no-cache-dir",  # 0
+    "list",  # 1
+    "freeze",  # 2
+    "pipdeptree",  # 3
+]
+opts = [
+    "--upgrade",  # 0
+    "--requirement",  # 1
+    "--editable",  # 2
+]
 
 
 

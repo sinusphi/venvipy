@@ -383,14 +383,14 @@ class VenvTable(QTableView):
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
-        project_dir = QFileDialog.getExistingDirectory(
-            self,
-            "Select project directory"
-        )
-        project_name = os.path.basename(project_dir)
+        if self.has_pip(active_dir, venv):
+            project_dir = QFileDialog.getExistingDirectory(
+                self,
+                "Select project directory"
+            )
+            project_name = os.path.basename(project_dir)
 
-        if project_dir != "":
-            if self.has_pip(active_dir, venv):
+            if project_dir != "":
                 print("[PROCESS]: Installing from local project path...")
                 self.console.setWindowTitle(f"Installing {project_name}")
 
@@ -408,12 +408,6 @@ class VenvTable(QTableView):
 
     def install_vsc(self, event):
         """Install from a VSC repository.
-        """
-        self.clone_process()
-
-
-    def clone_process(self):
-        """Clone the repository.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
