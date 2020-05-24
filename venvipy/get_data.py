@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.10"
+__version__ = "0.2.11"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -24,7 +24,7 @@ DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
 
 @dataclass
 class PythonInfo:
-    """_"""
+    """Info about Python installs."""
     py_version: str
     py_path: str
 
@@ -49,7 +49,7 @@ def ensure_confdir():
 
 
 def ensure_dbfile():
-    """Create `~/.venvipy/py-installs` csv file with all values.
+    """Create the database in `~/.venvipy/py-installs`.
     """
     if not os.path.exists(DB_FILE):
         get_python_installs()
@@ -69,19 +69,22 @@ def get_python_version(py_path):
 
 
 def get_python_installs():
-    """Write the found Python versions to `py-installs` csv file.
+    """Write the found Python versions to `py-installs`.
     """
     ensure_confdir()
-
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
 
     with open(DB_FILE, "w", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
-            cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
+            cf,
+            fieldnames=fields,
+            delimiter=",",
+            quoting=csv.QUOTE_ALL
         )
         writer.writeheader()
+
         for i, version in enumerate(versions):
             python_path = shutil.which(f"python{version}")
             if python_path is not None:
@@ -92,32 +95,43 @@ def get_python_installs():
                     "PYTHON_VERSION": py_info.py_version,
                     "PYTHON_PATH": py_info.py_path
                 })
-    add_sys_python()
+
+    # if we're running in a virtual environment we
+    # need to add the system's Python manually
+    if "VIRTUAL_ENV" in os.environ:
+        add_sys_python()
 
 
 def add_sys_python():
     """
-    Write the the system Python"s version and path to `py-installs`
-    csv file if running in a virtual environment.
+    Write (append) the system's Python version and path to
+    `py-installs` csv file if running in a virtual environment.
     """
     ensure_dbfile()
-
-    super_python = os.path.realpath(sys.executable)
+    system_python = os.path.realpath(sys.executable)
 
     with open(DB_FILE, "a", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
-            cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
+            cf,
+            fieldnames=fields,
+            quoting=csv.QUOTE_ALL,
+            delimiter=","
         )
         writer.writerow({
-            "PYTHON_VERSION": get_python_version(super_python),
-            "PYTHON_PATH": super_python
+            "PYTHON_VERSION": get_python_version(system_python),
+            "PYTHON_PATH": system_python
         })
-    rm_duplicates()
+
+    # if in a virtual env we need to remove our Python
+    # from the database (we don't want it anyway)
+    remove_env()
 
 
-def rm_duplicates():
-    """Remove duplicates, then save a new copy.
+def remove_env():
+    """
+    Remove our env if we're running in a virtual
+    environment, then save a new copy of `py-installs`.
     """
     with open(DB_FILE, "r") as f:
         lines = f.readlines()
@@ -275,6 +289,5 @@ def get_package_infos(name):
 
 
 if __name__ == "__main__":
-    #pass
 
     get_python_installs()
