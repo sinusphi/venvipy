@@ -450,7 +450,6 @@ class MainWindow(QMainWindow):
         # check if any Python is installed
         csv_file = os.path.expanduser("~/.venvipy/py-installs")
         if os.path.isfile(csv_file):
-            info = []
             with open(csv_file, newline="") as cf:
                 reader = csv.DictReader(cf, delimiter=",")
                 if reader is None:
