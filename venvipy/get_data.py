@@ -75,57 +75,58 @@ def get_python_installs():
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
 
-    with open(DB_FILE, "w", newline="") as cf:
-        fields = ["PYTHON_VERSION", "PYTHON_PATH"]
-        writer = csv.DictWriter(
-            cf,
-            fieldnames=fields,
-            delimiter=",",
-            quoting=csv.QUOTE_ALL
-        )
-        writer.writeheader()
+    if not os.path.exists(DB_FILE):
+        with open(DB_FILE, "w", newline="") as cf:
+            fields = ["PYTHON_VERSION", "PYTHON_PATH"]
+            writer = csv.DictWriter(
+                cf,
+                delimiter=",",
+                quoting=csv.QUOTE_ALL,
+                fieldnames=fields
+            )
+            writer.writeheader()
 
-        for i, version in enumerate(versions):
-            python_path = shutil.which(f"python{version}")
-            if python_path is not None:
-                python_version = get_python_version(python_path)
-                py_info = PythonInfo(python_version, python_path)
-                py_info_list.append(py_info)
-                writer.writerow({
-                    "PYTHON_VERSION": py_info.py_version,
-                    "PYTHON_PATH": py_info.py_path
-                })
+            for i, version in enumerate(versions):
+                python_path = shutil.which(f"python{version}")
+                if python_path is not None:
+                    python_version = get_python_version(python_path)
 
-    # if we're running in a virtual environment we
-    # need to add the system's Python manually
-    if "VIRTUAL_ENV" in os.environ:
-        add_sys_python()
-    return py_info_list
+                    py_info = PythonInfo(python_version, python_path)
+                    py_info_list.append(py_info)
+                    writer.writerow({
+                        "PYTHON_VERSION": py_info.py_version,
+                        "PYTHON_PATH": py_info.py_path
+                    })
+        # if we're running in a virtual environment we
+        # need to add the system's Python manually
+        if "VIRTUAL_ENV" in os.environ:
+            system_python = os.path.realpath(sys.executable)
+            add_python(system_python)
+        return py_info_list[::-1]
+    return False
 
 
-def add_sys_python():
+def add_python(py_path):
     """
-    Write (append) the system's Python version and path to
-    `py-installs` csv file if running in a virtual environment.
+    Write (append) a Python version and it's path to
+    `py-installs` if running in a virtual environment.
     """
     ensure_dbfile()
-    system_python = os.path.realpath(sys.executable)
 
     with open(DB_FILE, "a", newline="") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
             cf,
-            fieldnames=fields,
+            delimiter=",",
             quoting=csv.QUOTE_ALL,
-            delimiter=","
+            fieldnames=fields
         )
         writer.writerow({
-            "PYTHON_VERSION": get_python_version(system_python),
-            "PYTHON_PATH": system_python
+            "PYTHON_VERSION": get_python_version(py_path),
+            "PYTHON_PATH": py_path
         })
-
-    # if in a virtual env we need to remove our Python
-    # from the database (we don't want it anyway)
+    # if in a virtual env we will remove our Python
+    # from the database (we don't need it anyway)
     remove_env()
 
 
@@ -187,7 +188,7 @@ def get_venvs(path):
         )
         venv_info_list.append(venv_info)
 
-    return venv_info_list
+    return venv_info_list[::-1]
 
 
 def get_pyvenv_cfg(cfg_file, cfg):
