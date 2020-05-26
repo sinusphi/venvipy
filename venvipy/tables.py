@@ -33,8 +33,7 @@ logger = logging.getLogger(__name__)
 
 class VenvTable(QTableView):
     """
-    The table that lists the virtual environments
-    found in the specified folder.
+    List the virtual environments found.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
@@ -73,6 +72,10 @@ class VenvTable(QTableView):
         self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
         self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
         self.m_clone_repo_worker.finished.connect(self.finish_info)
+
+        # perform a proper stop using quit() and wait()
+        self.thread.finished.connect(self.thread.quit)
+        self.thread.finished.connect(self.thread.wait)
 
 
     def contextMenuEvent(self, event):
@@ -244,7 +247,6 @@ class VenvTable(QTableView):
         """Test wether the Python version required is installed.
         """
         cfg_file = os.path.join(venv_path, "pyvenv.cfg")
-
         is_installed = get_data.get_pyvenv_cfg(cfg_file, "installed")
         version = get_data.get_pyvenv_cfg(cfg_file, "version")
         py_path = get_data.get_pyvenv_cfg(cfg_file, "py_path")
@@ -305,12 +307,12 @@ class VenvTable(QTableView):
 
     def get_selected_item(self):
         """
-        Get the venv name of the selected row.
+        Get the item name of the selected row (index 0).
         """
-        listed_venvs = self.selectionModel().selectedRows()
-        for index in listed_venvs:
-            selected_venv = index.data()
-            return selected_venv
+        listed_items = self.selectionModel().selectedRows()
+        for index in listed_items:
+            selected_item = index.data()
+            return selected_item
 
 
     def upgrade_pip(self, event):
@@ -577,7 +579,7 @@ class VenvTable(QTableView):
 
 
 
-class ResultsTable(QTableView):
+class ResultsTable(VenvTable):
     """Contains the results from PyPI.
     """
     context_triggered = pyqtSignal()
@@ -589,9 +591,12 @@ class ResultsTable(QTableView):
             self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
 
-
     def contextMenuEvent(self, event):
-        self.context_menu = QMenu(self)
+        context_menu = QMenu(self)
+
+        # pop up only if clicking on a row
+        if self.indexAt(event.pos()).isValid():
+            context_menu.popup(QCursor.pos())
 
         install_action = QAction(
             QIcon.fromTheme("software-install"),
@@ -599,7 +604,7 @@ class ResultsTable(QTableView):
             self,
             statusTip="Install module"
         )
-        self.context_menu.addAction(install_action)
+        context_menu.addAction(install_action)
         # connect to install_package() in InstallPackages() in wizard
         install_action.triggered.connect(
             lambda: self.context_triggered.emit()
@@ -611,23 +616,10 @@ class ResultsTable(QTableView):
             self,
             statusTip="Open on Python Package Index"
         )
-        self.context_menu.addAction(open_pypi_action)
+        context_menu.addAction(open_pypi_action)
         open_pypi_action.triggered.connect(
             lambda: self.open_on_pypi(event)
         )
-
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            self.context_menu.popup(QCursor.pos())
-
-
-    def get_selected_item(self):
-        """Get the venv name of the selected row.
-        """
-        listed_items = self.selectionModel().selectedRows()
-        for index in listed_items:
-            selected_item = index.data()
-            return selected_item
 
 
     def open_on_pypi(self, event):
@@ -637,3 +629,59 @@ class ResultsTable(QTableView):
         """
         package = self.get_selected_item()
         webbrowser.open(f"pypi.org/project/{package}/#description")
+
+
+
+class InterpreterTable(VenvTable):
+    """
+    List the Python installs found.
+    """
+    drop_item = pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.delete_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_TrashIcon)
+        )
+
+    def contextMenuEvent(self, event):
+        context_menu = QMenu(self)
+
+        # pop up only if clicking on a row
+        if self.indexAt(event.pos()).isValid():
+            context_menu.popup(QCursor.pos())
+
+        remove_py_action = QAction(
+            self.delete_icon,
+            "&Remove from list",
+            self,
+            statusTip="Remove this item from the table"
+        )
+        context_menu.addAction(remove_py_action)
+        remove_py_action.triggered.connect(
+            lambda: self.remove_python(event)
+        )
+
+
+    def remove_python(self, event):
+        """Remove a Python version from the table.
+        """
+        item = self.get_selected_item()
+
+        msg_box_warning = QMessageBox.warning(
+            self,
+            "Confirm",
+            "Remove this item from list.     \nAre you sure?",
+            QMessageBox.Yes | QMessageBox.Cancel
+        )
+        if msg_box_warning == QMessageBox.Yes:
+            with open(get_data.DB_FILE, "r") as f:
+                lines = f.readlines()
+            with open(get_data.DB_FILE, "w") as f:
+                for line in lines:
+                    if item not in line:
+                        f.write(line)
+
+            logging.info(f"Removed '{item}'' from database")
+            self.drop_item.emit()
