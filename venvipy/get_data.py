@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.13"
+__version__ = "0.2.14"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -129,7 +129,8 @@ def add_python(py_path):
         })
     # if in a virtual env we will remove our Python
     # from the database (we don't need it anyway)
-    remove_env()
+    if "VIRTUAL_ENV" in os.environ:
+        remove_env()
 
 
 def remove_env():
