@@ -68,14 +68,16 @@ def get_python_version(py_path):
     return python_version
 
 
-def get_python_installs():
-    """Write the found Python versions to `py-installs`.
+def get_python_installs(relaunching=False):
+    """
+    Write the found Python versions to `py-installs`. Create
+    a new database if `relaunching=True`.
     """
     ensure_confdir()
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
 
-    if not os.path.exists(DB_FILE):
+    if not os.path.exists(DB_FILE) or relaunching:
         with open(DB_FILE, "w", newline="") as cf:
             fields = ["PYTHON_VERSION", "PYTHON_PATH"]
             writer = csv.DictWriter(
