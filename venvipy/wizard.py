@@ -316,17 +316,14 @@ class BasicSettings(QWizardPage):
     def pop_combo_box(self):
         """Add the selected Python version to combo box.
         """
-        get_data.get_python_installs()
-        csv_file = os.path.expanduser("~/.venvipy/py-installs")
-
-        if os.path.isfile(csv_file):
-            with open(csv_file, newline="") as cf:
-                reader = csv.DictReader(cf, delimiter=",")
-                for info in reader:
-                    self.interpreter_combo_box.addItem(
-                        f'{info["PYTHON_VERSION"]}  ->  {info["PYTHON_PATH"]}',
-                        info["PYTHON_PATH"]
-                    )
+        get_data.ensure_dbfile()
+        with open(get_data.DB_FILE, newline="") as cf:
+            reader = csv.DictReader(cf, delimiter=",")
+            for info in reader:
+                self.interpreter_combo_box.addItem(
+                    f'{info["PYTHON_VERSION"]}  ->  {info["PYTHON_PATH"]}',
+                    info["PYTHON_PATH"]
+                )
 
 
     def select_python(self):
@@ -344,17 +341,8 @@ class BasicSettings(QWizardPage):
         bin_file = file_name[0]
 
         if bin_file != "":
-            custom_version = get_data.get_python_version(bin_file)
-            csv_file = os.path.expanduser("~/.venvipy/py-installs")
-            with open(csv_file, "a", newline="") as cf:
-                fields = ["PYTHON_VERSION", "PYTHON_PATH"]
-                writer = csv.DictWriter(
-                    cf, delimiter=",", quoting=csv.QUOTE_ALL, fieldnames=fields
-                )
-                writer.writerow({
-                    "PYTHON_VERSION": custom_version,
-                    "PYTHON_PATH": bin_file
-                })
+            get_data.add_python(bin_file)
+
             # clear combo box content and call pop_combo_box()
             self.interpreter_combo_box.clear()
             self.interpreter_combo_box.addItem("---")

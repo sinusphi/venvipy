@@ -35,7 +35,6 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QSpacerItem,
     QSizePolicy,
-    QTableView,
     QMenuBar,
     QMenu,
     QStatusBar,
@@ -50,10 +49,10 @@ import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
 from dialogs import InfoAboutVenviPy
-from tables import VenvTable
+from tables import VenvTable, InterpreterTable
 
 
-LOG_FORMAT = "[%(levelname)s] - %(message)s"
+LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger()
 
@@ -122,10 +121,10 @@ class MainWindow(QMainWindow):
         self.info_about_venvipy = InfoAboutVenviPy()
         self.venv_wizard = wizard.VenvWizard()
 
-        # refresh venv table when wizard closed
+        # refresh venv table on wizard close
         self.venv_wizard.refresh.connect(self.pop_venv_table)
 
-        # refresh interpreter table when selecting a custom one in wizard menu
+        # refresh interpreter table if 'py-installs' changes
         self.venv_wizard.update_table.connect(self.pop_interpreter_table)
 
 
@@ -263,12 +262,13 @@ class MainWindow(QMainWindow):
         )
 
         # interpreter table
-        self.interpreter_table = QTableView(
+        self.interpreter_table = InterpreterTable(
             centralwidget,
             selectionBehavior=QAbstractItemView.SelectRows,
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
-            sortingEnabled=True
+            sortingEnabled=True,
+            drop_item=self.pop_interpreter_table
         )
 
         # hide vertical header
@@ -518,18 +518,24 @@ class MainWindow(QMainWindow):
     def pop_interpreter_table(self):
         """Populate the interpreter table view.
         """
-        if os.path.exists(get_data.DB_FILE):
-            with open(get_data.DB_FILE, newline="") as cf:
-                reader = csv.DictReader(cf, delimiter=",")
-                self.model_interpreter_table.setRowCount(0)
-                for info in reader:
-                    self.model_interpreter_table.insertRow(0)
-                    for i, text in enumerate(
-                            (info["PYTHON_VERSION"], info["PYTHON_PATH"])
-                        ):
-                        self.model_interpreter_table.setItem(
-                            0, i, QStandardItem(text)
-                        )
+        get_data.ensure_dbfile()
+
+        with open(get_data.DB_FILE, newline="") as cf:
+            reader = csv.DictReader(cf, delimiter=",")
+            self.model_interpreter_table.setRowCount(0)
+            for info in reader:
+                self.model_interpreter_table.insertRow(0)
+                for i, text in enumerate(
+                        (info["PYTHON_VERSION"], info["PYTHON_PATH"])
+                    ):
+                    self.model_interpreter_table.setItem(
+                        0, i, QStandardItem(text)
+                    )
+
+        # clear combo box content and call pop_combo_box()
+        self.venv_wizard.basic_settings.interpreter_combo_box.clear()
+        self.venv_wizard.basic_settings.interpreter_combo_box.addItem("---")
+        self.venv_wizard.basic_settings.pop_combo_box()
 
 
     def pop_venv_table(self):
@@ -640,7 +646,7 @@ def main():
     os.system("clear")
 
     main_window = MainWindow()
-    get_data.get_python_installs()
+    get_data.get_python_installs(True)
     main_window.pop_interpreter_table()
     main_window.venv_wizard.basic_settings.pop_combo_box()
     main_window.pop_venv_table()
