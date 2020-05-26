@@ -12,8 +12,8 @@ install:
 
 before_script:
   - pip install --no-cache-dir -e git+https://github.com/sinusphi/venvipy#egg=venvipy
-  - cd /home/travis/virtualenv/python3.7.1/lib/python3.7/site-packages/venvipy
-  - venvipy --version
+  - cd /home/travis/virtualenv/python3.7.1/src/venvipy/venvipy
+  - python venvi.py --version
 
 script:
   - pylint --exit-zero --confidence=INFERENCE --reports=y --verbose --disable=no-name-in-module --disable=invalid-name --disable=missing-function-docstring --ignore=venvipy_rc.py *
