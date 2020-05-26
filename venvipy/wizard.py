@@ -317,6 +317,11 @@ class BasicSettings(QWizardPage):
         """Add the selected Python version to combo box.
         """
         get_data.ensure_dbfile()
+
+        # clear combo box content
+        self.interpreter_combo_box.clear()
+        self.interpreter_combo_box.addItem("---")
+
         with open(get_data.DB_FILE, newline="") as cf:
             reader = csv.DictReader(cf, delimiter=",")
             for info in reader:
@@ -342,12 +347,8 @@ class BasicSettings(QWizardPage):
 
         if bin_file != "":
             get_data.add_python(bin_file)
-
-            # clear combo box content and call pop_combo_box()
-            self.interpreter_combo_box.clear()
-            self.interpreter_combo_box.addItem("---")
             self.pop_combo_box()
-            # also call pop_interpreter_table() method in venvi.MainWindow
+            # also call pop_interpreter_table() method in venvi.MainWindow()
             self.wizard().update_table.emit()
             return bin_file
         return ""
