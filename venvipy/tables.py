@@ -31,9 +31,32 @@ logger = logging.getLogger(__name__)
 
 
 
-class VenvTable(QTableView):
+class BaseTable(QTableView):
+    """The base table for all tables.
     """
-    List the virtual environments found.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.delete_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_TrashIcon)
+        )
+        self.info_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+        )
+
+    def get_selected_item(self):
+        """
+        Get the item name of the selected row (index 0).
+        """
+        listed_items = self.selectionModel().selectedRows()
+        for index in listed_items:
+            selected_item = index.data()
+            return selected_item
+
+
+
+class VenvTable(BaseTable):
+    """List the virtual environments found.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
@@ -44,9 +67,6 @@ class VenvTable(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
-        )
         self.drive_icon = QIcon(
             self.style().standardIcon(QStyle.SP_DriveHDIcon)
         )
@@ -81,6 +101,10 @@ class VenvTable(QTableView):
     def contextMenuEvent(self, event):
         context_menu = QMenu(self)
 
+        # pop up only if clicking on a row
+        if self.indexAt(event.pos()).isValid():
+            context_menu.popup(QCursor.pos())
+
         # sub menus
         details_sub_menu = QMenu(
             "Det&ails",
@@ -114,8 +138,7 @@ class VenvTable(QTableView):
         )
 
         install_packages_action = QAction(
-            QIcon.fromTheme("list-add"),
-            "&Install additional packages",
+            "Install &additional packages",
             self,
             statusTip="Install additional packages"
         )
@@ -124,7 +147,6 @@ class VenvTable(QTableView):
         )
 
         install_requires_action = QAction(
-            QIcon.fromTheme("list-add"),
             "Install from &requirements",
             self,
             statusTip="Install packages from requirements"
@@ -134,7 +156,6 @@ class VenvTable(QTableView):
         )
 
         install_local_action = QAction(
-            self.drive_icon,
             "Install &local project",
             self,
             statusTip="Install a local project"
@@ -144,7 +165,6 @@ class VenvTable(QTableView):
         )
 
         install_vsc_action = QAction(
-            QIcon.fromTheme("software-install"),
             "Install from &repository",
             self,
             statusTip="Install from VSC repository"
@@ -164,7 +184,6 @@ class VenvTable(QTableView):
         )
 
         list_packages_action = QAction(
-            self.info_icon,
             "&List installed packages",
             self,
             statusTip="List installed packages"
@@ -173,24 +192,22 @@ class VenvTable(QTableView):
             lambda: self.list_packages(event, style=1)
         )
 
-        freeze_action = QAction(
-            self.info_icon,
+        list_freeze_action = QAction(
             "Show &freeze output",
             self,
             statusTip="List the output of 'pip freeze'"
         )
-        freeze_action.triggered.connect(
-            lambda: self.freeze_output(event, style=2)
+        list_freeze_action.triggered.connect(
+            lambda: self.freeze_packages(event, style=2)
         )
 
-        pipdeptree_action = QAction(
-            self.info_icon,
-            "Show &dependencie tree",
+        list_deptree_action = QAction(
+            "Display &dependency tree",
             self,
             statusTip="List dependencies with 'pipdeptree'"
         )
-        pipdeptree_action.triggered.connect(
-            lambda: self.pipdeptree_output(event, style=3)
+        list_deptree_action.triggered.connect(
+            lambda: self.deptree_packages(event, style=3)
         )
 
         open_venv_dir_action = QAction(
@@ -215,7 +232,7 @@ class VenvTable(QTableView):
 
 
         #]===================================================================[#
-        #] ADD ACTIONS [#====================================================[#
+        #] MENUS [#==========================================================[#
         #]===================================================================[#
 
         context_menu.addAction(upgrade_pip_action)
@@ -227,20 +244,15 @@ class VenvTable(QTableView):
         install_sub_menu.addAction(install_local_action)
         install_sub_menu.addAction(install_vsc_action)
 
-        context_menu.addAction(save_requires_action)
-
         # details sub meun
         context_menu.addMenu(details_sub_menu)
         details_sub_menu.addAction(list_packages_action)
-        details_sub_menu.addAction(freeze_action)
-        details_sub_menu.addAction(pipdeptree_action)
+        details_sub_menu.addAction(list_freeze_action)
+        details_sub_menu.addAction(list_deptree_action)
 
+        context_menu.addAction(save_requires_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
-
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
 
 
     def valid_version(self, venv_path):
@@ -303,16 +315,6 @@ class VenvTable(QTableView):
             )
             return False
         return False
-
-
-    def get_selected_item(self):
-        """
-        Get the item name of the selected row (index 0).
-        """
-        listed_items = self.selectionModel().selectedRows()
-        for index in listed_items:
-            selected_item = index.data()
-            return selected_item
 
 
     def upgrade_pip(self, event):
@@ -478,7 +480,11 @@ class VenvTable(QTableView):
 
 
     def list_packages(self, event, style):
-        """Open console dialog and list the installed packages.
+        """
+        Open console dialog and list the installed packages. The argument
+        `style` controls which style the output should have: `style=1` for
+        `pip list`, `style=2` for `pip freeze` and style=3 for a dependency
+        output via `pipdeptree`.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
@@ -498,13 +504,13 @@ class VenvTable(QTableView):
                 self.console.console_window.clear()
 
 
-    def freeze_output(self, event, style):
+    def freeze_packages(self, event, style):
         """Print `pip freeze` output to console window.
         """
         self.list_packages(event, style)
 
 
-    def pipdeptree_output(self, event, style):
+    def deptree_packages(self, event, style):
         """
         Test if `pipdeptree` is installed and ask user wether to
         install it if it's not. Then call `self.list_packages()`
@@ -579,7 +585,7 @@ class VenvTable(QTableView):
 
 
 
-class ResultsTable(VenvTable):
+class ResultsTable(BaseTable):
     """Contains the results from PyPI.
     """
     context_triggered = pyqtSignal()
@@ -632,7 +638,7 @@ class ResultsTable(VenvTable):
 
 
 
-class InterpreterTable(VenvTable):
+class InterpreterTable(BaseTable):
     """
     List the Python installs found.
     """
@@ -641,9 +647,6 @@ class InterpreterTable(VenvTable):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
-        )
 
     def contextMenuEvent(self, event):
         context_menu = QMenu(self)
