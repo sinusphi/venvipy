@@ -502,8 +502,6 @@ class MainWindow(QMainWindow):
         """
         if self.venv_wizard.basic_settings.select_python() != "":
             self.enable_features(True)
-        else:
-            self.enable_features(False)
 
 
     def enable_features(self, state):
