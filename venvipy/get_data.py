@@ -11,10 +11,11 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.14"
+__version__ = "0.2.15"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
+ACTIVE_FILE = os.path.expanduser("~/.venvipy/active")
 
 
 
@@ -53,6 +54,13 @@ def ensure_dbfile():
     """
     if not os.path.exists(DB_FILE):
         get_python_installs()
+
+
+def ensure_active_file():
+    """Create the file holding the selected path to venvs.
+    """
+    if not os.path.exists(ACTIVE_FILE):
+        get_active_dir_str()
 
 
 def get_python_version(py_path):
@@ -110,8 +118,7 @@ def get_python_installs(relaunching=False):
 
 def add_python(py_path):
     """
-    Write (append) a Python version and it's path to
-    `py-installs` if running in a virtual environment.
+    Write (append) a Python version and its path to `py-installs`.
     """
     ensure_dbfile()
 
@@ -235,19 +242,11 @@ def get_pyvenv_cfg(cfg_file, cfg):
 def get_active_dir_str():
     """Get the default venv directory string from `active` file.
     """
-    active_file = os.path.expanduser("~/.venvipy/active")
-
     ensure_confdir()
-
-    if os.path.exists(active_file):
-        with open(active_file, "r") as f:
-            active_dir = f.read()
-            return active_dir
-    else:
-        with open(active_file, "w+") as f:
-            active_dir = f.write("")
-            return active_dir
-    return []
+    with open(ACTIVE_FILE, "r") as f:
+        active_dir = f.read()
+        return active_dir
+    return ""
 
 
 def get_active_dir():
