@@ -57,10 +57,12 @@ def ensure_dbfile():
 
 
 def ensure_active_file():
-    """Create the file holding the selected path to venvs.
+    """Create the file that holds the selected path to venvs.
     """
+    ensure_confdir()
     if not os.path.exists(ACTIVE_FILE):
-        get_active_dir_str()
+        with open(ACTIVE_FILE, "w+") as f:
+            f.write("")
 
 
 def get_python_version(py_path):
@@ -81,9 +83,9 @@ def get_python_installs(relaunching=False):
     Write the found Python versions to `py-installs`. Create
     a new database if `relaunching=True`.
     """
-    ensure_confdir()
     versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
     py_info_list = []
+    ensure_confdir()
 
     if not os.path.exists(DB_FILE) or relaunching:
         with open(DB_FILE, "w", newline="") as cf:
@@ -242,7 +244,7 @@ def get_pyvenv_cfg(cfg_file, cfg):
 def get_active_dir_str():
     """Get the default venv directory string from `active` file.
     """
-    ensure_confdir()
+    ensure_active_file()
     with open(ACTIVE_FILE, "r") as f:
         active_dir = f.read()
         return active_dir
