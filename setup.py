@@ -6,7 +6,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 
 
-if sys.version_info < (3, 7, 0):
+if sys.version_info < (3, 6, 0):
     sys.exit("Sorry, VenviPy requires at least Python 3.7")
 
 
@@ -40,7 +40,7 @@ install_requires = [
 
 setup(
     name="venvipy",
-    python_requires=">=3.7",
+    python_requires=">=3.6",
     packages=find_packages(),
     include_package_data=True,
     version=version,
@@ -48,9 +48,9 @@ setup(
     description="A GUI for managing Python virtual environments.",
     long_description=long_desc,
     author="Youssef Serestou",
-    author_email="youssef.serestou.83@gmail.com",
+    author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.14.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.15.tar.gz",
     keywords=[
         "python",
         "python3",
