@@ -2,10 +2,10 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.2.14-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.2.14/#description
+.. image:: https://img.shields.io/badge/pypi-v0.2.15-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.2.15/#description
 
-.. image:: https://img.shields.io/badge/python-3.7+-blue?logo=python&logoColor=FFE873
+.. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
 
 .. image:: https://img.shields.io/badge/pyqt-5.14.0-darkgreen
@@ -34,7 +34,7 @@ Introduction
 virtual environments or modifing any existing Python environment (that
 supports the built-in ``venv`` module) quick and easy.
 
-It provides a set features like a wizard, that guides the user through
+It provides a set of features like a wizard, that guides the user through
 the creation process, a table that shows an overview over installed
 environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
@@ -53,8 +53,8 @@ more.
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-3.png
 
 
-Features
---------
+Key Features
+------------
 
 *  Create virtual environments from any Python version (3.3+) which is
    properly build or installed on your system
@@ -78,7 +78,7 @@ Prerequisits
 Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
 come sometime in the future)
 
-If you want to run *VenviPy* using your operating system's Python (3.7+)
+If you want to run *VenviPy* using your operating system's Python (3.6+)
 you will have to make sure that the two packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
 venv and pip will be used to perform the commands.
