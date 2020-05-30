@@ -99,18 +99,20 @@ or:
 
     $ pip install git+https://github.com/sinusphi/venvipy.git
 
-Now you can launch the main menu via:
+Now you can launch 
 
-.. code-block:: bash
+- the main menu via:
 
-    $ venvipy
+  - .. code-block:: bash
 
-Or if you just want to quickly create a new virtual environment use
-the wizard standalone:
+        $ venvipy
 
-.. code-block:: bash
+- or if you just want to quickly create a virtual environment 
+  run the wizard standalone:
 
-    $ venvipy-wizard
+  - .. code-block:: bash
+
+        $ venvipy-wizard
 
 
 Running from source
@@ -151,7 +153,7 @@ Then you can
 
   - .. code-block:: bash
   
-      $ (your_venv) python venvipy/venvi.py
+        $ (your_venv) python venvipy/venvi.py
 
 - or run the standalone wizard to create and set up an environment:
 
