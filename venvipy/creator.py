@@ -200,11 +200,3 @@ def random_zen_line():
 
 if __name__ == "__main__":
     pass
-
-    #python_version = "[your_python_version]"
-    #env_directory = "[your_test_env_dir]"
-    #with_pip_opt = None
-    #with_sys_site_pkgs = None
-    #with_symlinks = None
-
-    #create_venv(python_version, env_directory)
