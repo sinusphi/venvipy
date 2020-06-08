@@ -20,7 +20,7 @@
 .. image:: https://img.shields.io/badge/code%20style-black-000000
     :target: https://github.com/psf/black
 
-.. image:: https://img.shields.io/badge/license-MIT-darkviolet
+.. image:: https://img.shields.io/badge/license-GPL%203.0-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
 
 .. image:: https://img.shields.io/travis/sinusphi/venvipy/master?label=Travis%20CI&logo=travis
