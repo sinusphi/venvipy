@@ -529,10 +529,7 @@ class MainWindow(QMainWindow):
                     self.model_interpreter_table.setItem(
                         0, i, QStandardItem(text)
                     )
-
-        # clear combo box content and call pop_combo_box()
-        self.venv_wizard.basic_settings.interpreter_combo_box.clear()
-        self.venv_wizard.basic_settings.interpreter_combo_box.addItem("---")
+        # also populate the combo box in wizard
         self.venv_wizard.basic_settings.pop_combo_box()
 
 
