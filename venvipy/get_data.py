@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.17"
+__version__ = "0.2.18"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -71,7 +71,7 @@ def get_python_version(py_path):
     res = Popen(
         [py_path, "-V"],
         stdout=PIPE,
-        universal_newlines="utf-8"
+        universal_newlines=True
     )
     out, _ = res.communicate()
     python_version = out.strip()
@@ -291,9 +291,3 @@ def get_package_infos(name):
         package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
-
-
-
-if __name__ == "__main__":
-
-    get_python_installs()

@@ -62,7 +62,7 @@ def clone_repo(command):
     Clone a repository and install it into a virtual environment.
     """
     process = Popen(
-        shlex.split(command), stdout=PIPE, universal_newlines="utf-8"
+        shlex.split(command), stdout=PIPE, universal_newlines=True
     )
     while True:
         output = process.stdout.readline()
@@ -138,7 +138,7 @@ def create_venv(
     res = Popen(
         ["bash", "-c", script],
         stdout=PIPE,
-        universal_newlines="utf-8"
+        universal_newlines=True
     )
     out, _ = res.communicate()
     output = out.strip()
