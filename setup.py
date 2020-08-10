@@ -1,13 +1,13 @@
+import sys
+
+if sys.version_info < (3, 6, 0):
+    sys.exit("Sorry, VenviPy requires at least Python 3.6")
+
 import codecs
 import ast
-import sys
 import re
 from pathlib import Path
 from setuptools import setup, find_packages
-
-
-if sys.version_info < (3, 6, 0):
-    sys.exit("Sorry, VenviPy requires at least Python 3.7")
 
 
 CURRENT_DIR = Path(__file__).parent
@@ -37,6 +37,7 @@ core_requires = [
     "PyQt5-sip"
 ]
 
+# prevent an install of dataclasses into 3.7+
 if (3, 6, 0) <= sys.version_info < (3, 7, 0):
     install_requires = core_requires + py36_requires
 else:
