@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.16"
+__version__ = "0.2.17"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -71,7 +71,7 @@ def get_python_version(py_path):
     res = Popen(
         [py_path, "-V"],
         stdout=PIPE,
-        text="utf-8"
+        universal_newlines="utf-8"
     )
     out, _ = res.communicate()
     python_version = out.strip()
