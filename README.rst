@@ -2,17 +2,17 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.2.16-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.2.16/#description
+.. image:: https://img.shields.io/badge/pypi-v0.2.17-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.2.17/#description
 
-.. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
+.. image:: https://img.shields.io/badge/python-3.7+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
 
 .. image:: https://img.shields.io/badge/pyqt-5.14.0-darkgreen
     :target: https://pypi.org/project/PyQt5
 
-.. image:: https://img.shields.io/pypi/dm/venvipy?color=brightgreen
-    :target: https://pypistats.org/packages/venvipy
+.. image:: https://pepy.tech/badge/venvipy
+    :target: https://pepy.tech/project/venvipy
 
 .. image:: https://img.shields.io/badge/platform-linux-darkblue?logo=linux&logoColor=FFE873
     :target: https://www.linux.org/pages/download
