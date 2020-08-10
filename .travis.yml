@@ -3,16 +3,18 @@ os: linux
 dist: xenial
 
 python:
-  - "3.7"
+  - "3.6"
+# - "3.7"
 
 install:
   - pip install -U pip
   - pip install -r requirements.txt
-  - pip install pylint
-
-before_script:
-  - pip install --no-cache-dir -e git+https://github.com/sinusphi/venvipy#egg=venvipy
-  - cd /home/travis/virtualenv/python3.7.1/src/venvipy/venvipy
+  - pip install dataclasses
+#  - pip install pylint
 
 script:
-  - pylint --disable=no-name-in-module --disable=invalid-name --disable=missing-function-docstring --exit-zero --reports=y --verbose --ignore=venvipy_rc.py * && python venvi.py --version
+ - pip install --no-cache-dir -e git+https://github.com/sinusphi/venvipy#egg=venvipy
+# - cd /home/travis/virtualenv/python3.7.1/src/venvipy/venvipy
+
+#script:
+# - pylint --disable=no-name-in-module --disable=invalid-name --disable=missing-function-docstring --exit-zero --reports=y --verbose --ignore=venvipy_rc.py * && python venvi.py --version
