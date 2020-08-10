@@ -9,11 +9,12 @@ python:
 install:
   - pip install -U pip
   - pip install -r requirements.txt
-  - pip install dataclasses
+#  - pip install dataclasses
 #  - pip install pylint
 
 script:
- - pip install --no-cache-dir -e git+https://github.com/sinusphi/venvipy#egg=venvipy
+  - pip install -U --no-cache-dir venvipy
+# - pip install --no-cache-dir -e git+https://github.com/sinusphi/venvipy#egg=venvipy
 # - cd /home/travis/virtualenv/python3.7.1/src/venvipy/venvipy
 
 #script:
