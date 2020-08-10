@@ -20,7 +20,6 @@ try:
 except FileNotFoundError:
     long_desc = ""
 
-
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 try:
     with open(CURRENT_DIR / "venvipy/get_data.py", "rb") as f:
@@ -32,11 +31,16 @@ try:
 except FileNotFoundError:
     version = "latest"
 
-
-install_requires = [
+py36_requires = ["dataclasses"]
+core_requires = [
     "PyQt5==5.14.0",
-    "PyQt5-sip",
+    "PyQt5-sip"
 ]
+
+if (3, 6, 0) <= sys.version_info < (3, 7, 0):
+    install_requires = core_requires + py36_requires
+else:
+    install_requires = core_requires
 
 setup(
     name="venvipy",
@@ -51,7 +55,7 @@ setup(
     author="sinusphi",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.16.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.2.17.tar.gz",
     keywords=[
         "python",
         "python3",
