@@ -632,8 +632,9 @@ class ResultsTable(BaseTable):
         Open pypi.org and show the project description
         of the selected package.
         """
+        url = "https://pypi.org/project"
         package = self.get_selected_item()
-        webbrowser.open(f"pypi.org/project/{package}/#description")
+        webbrowser.open("/".join([url, package, "#description"]))
 
 
 
@@ -685,5 +686,5 @@ class InterpreterTable(BaseTable):
                     if item not in line:
                         f.write(line)
 
-            logging.info(f"Removed '{item}'' from database")
+            logging.info(f"Removed '{item}' from database")
             self.drop_item.emit()
