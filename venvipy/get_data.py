@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.2.18"
+__version__ = "0.2.19"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
