@@ -105,15 +105,19 @@ def get_python_installs(relaunching=False):
 
                     py_info = PythonInfo(python_version, python_path)
                     py_info_list.append(py_info)
+
                     writer.writerow({
                         "PYTHON_VERSION": py_info.py_version,
                         "PYTHON_PATH": py_info.py_path
                     })
-        # if we're running in a virtual environment we
-        # need to add the system's Python manually
-        if "VIRTUAL_ENV" in os.environ:
-            system_python = os.path.realpath(sys.executable)
-            add_python(system_python)
+
+                    # if we're running in a virtual environment we might
+                    # need to add the system's Python manually
+                    if "VIRTUAL_ENV" in os.environ:
+                        system_python = os.path.realpath(sys.executable)
+                        if py_info.py_path != system_python:
+                            add_python(system_python)
+
         return py_info_list[::-1]
     return False
 
