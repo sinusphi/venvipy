@@ -226,7 +226,7 @@ class BasicSettings(QWizardPage):
         )
         self.select_dir_button.setFixedSize(26, 27)
 
-        requirements_label = QLabel("Requirements &fiile:")
+        requirements_label = QLabel("Requirements &file:")
         self.requirements_line = QLineEdit()
         requirements_label.setBuddy(self.requirements_line)
 
