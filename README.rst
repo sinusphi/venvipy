@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/cover_slim.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/cover_slim.png
 
 **A GUI for managing multiple Python virtual environments**
 
@@ -21,9 +21,9 @@
     :target: https://github.com/psf/black
 
 .. image:: https://img.shields.io/badge/license-GPL%203.0-darkviolet
-    :target: https://github.com/sinusphi/venvipy/blob/master/LICENSE
+    :target: https://github.com/sinusphi/venvipy/blob/main/LICENSE
 
-.. image:: https://img.shields.io/travis/sinusphi/venvipy/master?label=Travis%20CI&logo=travis
+.. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
     :target: https://travis-ci.org/sinusphi/venvipy
 
 
@@ -42,15 +42,15 @@ more.
 
 **The main menu:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-1.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
 
 **The wizard:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-2.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2.png
 
 **Output when running pip commands:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/master/img/screen-3.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
 
 
 Key Features
@@ -135,7 +135,7 @@ environment.
 
 
 Cd into the repo folder and install the dependencies from 
-`requirements.txt <https://github.com/sinusphi/venvipy/blob/master/requirements.txt>`__:
+`requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
 
 .. code-block:: bash
 
