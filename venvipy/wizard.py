@@ -181,9 +181,13 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.started.connect(self.progress_bar.exec_)
 
         # updated
-        self.m_install_venv_worker.updatePipMsg.connect(self.update_pip_msg)
-        self.m_install_venv_worker.updatePipMsg.connect(
-            lambda: logger.info("Updating pip...")
+        self.m_install_venv_worker.updating_pip.connect(self.update_pip_msg)
+        self.m_install_venv_worker.updating_pip.connect(
+            lambda: logger.debug("Updating pip...")
+        )
+        self.m_install_venv_worker.installing_wheel.connect(self.install_wheel_msg)
+        self.m_install_venv_worker.installing_wheel.connect(
+            lambda: logger.debug("Installing wheel...")
         )
 
         # finished
@@ -247,13 +251,12 @@ class BasicSettings(QWizardPage):
             checked=True,
             stateChanged=self.pip_enabled
         )
-        self.site_pkgs_check_box = QCheckBox(
-            "&Make system (global) site-packages dir available to venv"
+        self.with_wheel_check_box = QCheckBox(
+            "Install &Wheel"
         )
-        # since we are on linux we don't really need this setting
-        #self.symlinks_check_box = QCheckBox(
-            #"Attempt to &symlink rather than copy files into venv"
-        #)
+        self.site_pkgs_check_box = QCheckBox(
+            "&Make system (global) site-packages available to venv"
+        )
 
         # register fields
         self.registerField(
@@ -273,8 +276,8 @@ class BasicSettings(QWizardPage):
         self.registerField("venv_name*", self.venv_name_line)
         self.registerField("venv_location*", self.venv_location_line)
         self.registerField("with_pip", self.with_pip_check_box)
+        self.registerField("with_wheel", self.with_wheel_check_box)
         self.registerField("site_pkgs", self.site_pkgs_check_box)
-        #self.registerField("symlinks", self.symlinks_check_box)
         self.registerField("requirements", self.requirements_line)
 
         # grid layout
@@ -301,8 +304,8 @@ class BasicSettings(QWizardPage):
         # options group box
         group_box_layout = QVBoxLayout()
         group_box_layout.addWidget(self.with_pip_check_box)
+        group_box_layout.addWidget(self.with_wheel_check_box)
         group_box_layout.addWidget(self.site_pkgs_check_box)
-        #group_box_layout.addWidget(self.symlinks_check_box)
         group_box.setLayout(group_box_layout)
 
 
@@ -372,15 +375,17 @@ class BasicSettings(QWizardPage):
 
     def pip_enabled(self, state):
         """
-        Enable input line for specifying a requirements file
-        only if `self.with_pip_check_box` is checked, else disable it.
+        Enable or disable input line for requirements
+        and checkbox for installing wheel.
         """
         if self.with_pip_check_box.isChecked():
             self.requirements_line.setEnabled(True)
             self.select_file_button.setEnabled(True)
+            self.with_wheel_check_box.setEnabled(True)
         else:
             self.requirements_line.setEnabled(False)
             self.select_file_button.setEnabled(False)
+            self.with_wheel_check_box.setEnabled(False)
 
 
     def execute_venv_create(self):
@@ -392,8 +397,8 @@ class BasicSettings(QWizardPage):
         self.venv_name = self.field("venv_name")
         self.venv_location = self.field("venv_location")
         self.with_pip = self.field("with_pip")
+        self.with_wheel = self.field("with_wheel")
         self.site_pkgs = self.field("site_pkgs")
-        #self.symlinks = self.field("symlinks")
         self.requirements = self.field("requirements")
 
         if self.combo_box and self.venv_name and self.venv_location:
@@ -422,8 +427,8 @@ class BasicSettings(QWizardPage):
             self.venv_name,
             self.venv_location,
             self.with_pip,
-            self.site_pkgs,
-            #self.symlinks
+            self.with_wheel,
+            self.site_pkgs
         )
 
         wrapper = partial(self.m_install_venv_worker.install_venv, args)
@@ -437,6 +442,14 @@ class BasicSettings(QWizardPage):
         self.progress_bar.status_label.setText("Updating Pip...")
 
 
+    def install_wheel_msg(self):
+        """
+        Set the text in status label to show that Pip is being updated
+        and Wheel is being installed.
+        """
+        self.progress_bar.status_label.setText("Updating Pip and installing Wheel...")
+
+
     def finish_info(self):
         """
         Show info message when the creation process has finished successfully.
@@ -447,8 +460,11 @@ class BasicSettings(QWizardPage):
             f"'{self.venv_location}/{self.venv_name}/bin'. \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
+        with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
 
-        if self.with_pip_check_box.isChecked():
+        if self.with_wheel_check_box.isChecked():
+            msg_txt = default_msg + with_wheel_msg
+        elif self.with_pip_check_box.isChecked():
             msg_txt = default_msg + with_pip_msg
         else:
             msg_txt = default_msg
@@ -571,7 +587,7 @@ class InstallPackages(QWizardPage):
         self.setEnabled(False)
 
         self.console.setWindowTitle("Creating environment")
-        logger.info("Creating environment...")
+        logger.debug("Creating environment...")
 
         # open the console when recieving signal from manager
         self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
@@ -647,7 +663,7 @@ class InstallPackages(QWizardPage):
             self.manager.started.connect(self.console.exec_)
 
             # start installing the selected package
-            logger.info(f"Installing '{self.pkg}'...")
+            logger.debug(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
 
             # display the updated output
@@ -691,7 +707,7 @@ class InstallPackages(QWizardPage):
 
                 msg_txt = (f"Saved requirements in: \n{save_path}")
                 QMessageBox.information(self, "Saved", msg_txt)
-                logger.info(f"Saved '{save_path}'...")
+                logger.debug(f"Saved '{save_path}'...")
                 self.wizard().next()
         else:
             self.wizard().next()

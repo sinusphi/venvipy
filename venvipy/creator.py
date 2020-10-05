@@ -47,7 +47,7 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-        logger.info("Installing from VSC url...")
+        logger.debug("Installing from VSC url...")
 
         clone_repo(command)
         self.finished.emit()
@@ -69,7 +69,7 @@ def clone_repo(command):
         if output == "" and process.poll() is not None:
             break
         if output:
-            logger.info(output.strip())
+            logger.debug(output.strip())
     rc = process.poll()
     return rc
 
@@ -84,7 +84,8 @@ class CreationWorker(QObject):
     """
     started = pyqtSignal()
     finished = pyqtSignal()
-    updatePipMsg = pyqtSignal()
+    updating_pip = pyqtSignal()
+    installing_wheel = pyqtSignal()
 
     @pyqtSlot(tuple)
     def install_venv(self, args):
@@ -92,9 +93,9 @@ class CreationWorker(QObject):
         Execute the commands to create the environment.
         """
         self.started.emit()
-        logger.info("Creating virtual environment...")
+        logger.debug("Creating virtual environment...")
 
-        py_vers, name, location, with_pip, site_packages = args
+        py_vers, name, location, with_pip, with_wheel, site_packages = args
         env_dir = os.path.join(location, f"'{name}'")
 
         create_venv(
@@ -102,16 +103,18 @@ class CreationWorker(QObject):
             env_dir,
             with_pip=with_pip,
             system_site_packages=site_packages
-            #symlinks=symlinks
         )
 
-        if with_pip:
-            # update pip to the latest version
+        if with_pip and not with_wheel:
             self.manager = PipManager(location, f"'{name}'")
-            self.updatePipMsg.emit()
+            self.updating_pip.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
             self.manager.finished.connect(self.finished.emit)
-
+        elif with_pip and with_wheel:
+            self.manager = PipManager(location, f"'{name}'")
+            self.installing_wheel.emit()
+            self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
+            self.manager.finished.connect(self.finished.emit)
         else:
             self.finished.emit()
 
@@ -125,13 +128,11 @@ def create_venv(
         env_dir,
         with_pip=False,
         system_site_packages=False
-        #symlinks=False
     ):
     """Create a virtual environment in a directory.
     """
-    pip = "" if with_pip else " --without-pip"
+    pip = " --without-pip" if not with_pip else ""
     ssp = " --system-site-packages" if system_site_packages else ""
-    #sym = " --symlinks" if symlinks else ""
 
     script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
 
