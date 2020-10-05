@@ -107,7 +107,7 @@ class PipManager(QObject):
             logger.debug("Running")
         elif state == QProcess.NotRunning:
             #print("[PROCESS]: Stopped")
-            logger.info("Done.")
+            logger.debug("Done.")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
             )

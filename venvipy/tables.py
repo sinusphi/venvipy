@@ -324,7 +324,7 @@ class VenvTable(BaseTable):
 
         if self.has_pip(active_dir, venv):
             self.console.setWindowTitle("Updating Pip")
-            logger.info("Attempting to update Pip...")
+            logger.debug("Attempting to update Pip...")
 
             self.manager = PipManager(active_dir, venv)
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
@@ -363,7 +363,7 @@ class VenvTable(BaseTable):
             if file_path != "":
                 creator.fix_requirements(file_path)
                 self.console.setWindowTitle("Installing from requirements")
-                logger.info("Installing from requirements...")
+                logger.debug("Installing from requirements...")
 
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(
@@ -394,7 +394,7 @@ class VenvTable(BaseTable):
 
             if project_dir != "":
                 self.console.setWindowTitle(f"Installing {project_name}")
-                logger.info("Installing from local project path...")
+                logger.debug("Installing from local project path...")
 
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(
@@ -432,7 +432,7 @@ class VenvTable(BaseTable):
                 )
                 self.progress_bar.setWindowTitle(f"Installing {project_name}")
                 self.progress_bar.status_label.setText("Cloning repository...")
-                logger.info(f"Installing {project_name}...")
+                logger.debug(f"Installing {project_name}...")
 
                 wrapper = partial(
                     self.m_clone_repo_worker.run_process, cmd
@@ -467,7 +467,7 @@ class VenvTable(BaseTable):
             save_path = save_file[0]
 
             if save_path != "":
-                logger.info(f"Saving '{save_path}'...")
+                logger.debug(f"Saving '{save_path}'...")
 
                 # write 'pip freeze' output to selected file
                 self.manager = PipManager(active_dir, venv)
@@ -538,7 +538,7 @@ class VenvTable(BaseTable):
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
                     )
-                    logger.info("Installing pipdeptree...")
+                    logger.debug("Installing pipdeptree...")
 
                     self.manager = PipManager(active_dir, venv)
                     self.manager.run_pip(
@@ -579,7 +579,7 @@ class VenvTable(BaseTable):
             )
             if msg_box_critical == QMessageBox.Yes:
                 shutil.rmtree(venv_path)
-                logging.info(f"Successfully deleted '{venv_path}'")
+                logger.debug(f"Successfully deleted '{venv_path}'")
                 self.refresh.emit()
 
 
@@ -686,5 +686,5 @@ class InterpreterTable(BaseTable):
                     if item not in line:
                         f.write(line)
 
-            logging.info(f"Removed '{item}' from database")
+            logger.debug(f"Removed '{item}' from database")
             self.drop_item.emit()
