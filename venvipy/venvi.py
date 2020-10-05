@@ -51,9 +51,7 @@ import wizard
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable, InterpreterTable
 
-
 LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger()
 
 
@@ -614,8 +612,8 @@ def with_args():
     argument_list = full_cmd_arguments[1:]
 
     # tell getopts() the parameters
-    short_options = "V"
-    long_options = ["version"]
+    short_options = "Vd"
+    long_options = ["version", "debug"]
 
     # use try-except to cover errors
     try:
@@ -632,6 +630,10 @@ def with_args():
             # print version, then exit
             print(f"VenviPy {get_data.__version__}")
             sys.exit(0)
+
+        if arg in ("-d", "--debug"):
+            # verbose output for debugging
+            logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
 
 def main():
