@@ -640,7 +640,10 @@ def main():
     with_args()
 
     app = QApplication(sys.argv)
-    os.system("clear")
+    if os.name == 'nt':
+        os.system("cls")
+    else:
+        os.system("clear")
 
     main_window = MainWindow()
     get_data.get_python_installs(True)

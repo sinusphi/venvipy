@@ -337,15 +337,23 @@ class BasicSettings(QWizardPage):
     def select_python(self):
         """Specify path to a custom interpreter.
         """
-        file_name = QFileDialog.getOpenFileName(
-            self,
-            "Select Python Interpreter",
-            "/usr/local/bin",
-            "Python binary (\
-                python3.3 python3.4 python3.5 python3.6 \
-                python3.7 python3.8 python3.9 \
-            )"
-        )
+        if os.name == 'nt':
+            file_name = QFileDialog.getOpenFileName(
+                self,
+                "Select Python Interpreter",
+                "C:/",
+                "Python binary (*.exe)"
+            )
+        else:
+            file_name = QFileDialog.getOpenFileName(
+                self,
+                "Select Python Interpreter",
+                "/usr/local/bin",
+                "Python binary (\
+                    python3.3 python3.4 python3.5 python3.6 \
+                    python3.7 python3.8 python3.9 \
+                )"
+            )
         bin_file = file_name[0]
 
         if bin_file != "":
@@ -595,9 +603,14 @@ class InstallPackages(QWizardPage):
 
         # start installing packages from requirements file
         #print(f"[PROCESS]: Installing packages from '{self.requirements}'")
-        self.manager.run_pip(
-            creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"]
-        )
+        if os.name == 'nt':
+            self.manager.run_pip(
+                    creator.cmds[0], [creator.opts[1], f"{self.requirements}"]
+                )
+        else:
+            self.manager.run_pip(
+                creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"]
+            )
 
         # display the updated output
         self.manager.textChanged.connect(self.console.update_status)

@@ -96,7 +96,10 @@ class CreationWorker(QObject):
         logger.debug("Creating virtual environment...")
 
         py_vers, name, location, with_pip, with_wheel, site_packages = args
-        env_dir = os.path.join(location, f"'{name}'")
+        if os.name == 'nt':
+            env_dir = os.path.join(location, f"{name}")
+        else:
+            env_dir = os.path.join(location, f"'{name}'")
 
         create_venv(
             py_vers,
@@ -106,12 +109,18 @@ class CreationWorker(QObject):
         )
 
         if with_pip and not with_wheel:
-            self.manager = PipManager(location, f"'{name}'")
+            if os.name == 'nt':
+                self.manager = PipManager(location, f"{name}")
+            else:
+                self.manager = PipManager(location, f"'{name}'")
             self.updating_pip.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
             self.manager.finished.connect(self.finished.emit)
         elif with_pip and with_wheel:
-            self.manager = PipManager(location, f"'{name}'")
+            if os.name == 'nt':
+                self.manager = PipManager(location, f"{name}")
+            else:
+                self.manager = PipManager(location, f"'{name}'")
             self.installing_wheel.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
             self.manager.finished.connect(self.finished.emit)
@@ -134,13 +143,21 @@ def create_venv(
     pip = " --without-pip" if not with_pip else ""
     ssp = " --system-site-packages" if system_site_packages else ""
 
-    script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
-
-    res = Popen(
-        ["bash", "-c", script],
-        stdout=PIPE,
-        universal_newlines=True
-    )
+    if os.name == 'nt':
+        script = f"{py_vers} -m venv {env_dir}{pip}{ssp}"
+        print(script)
+        res = Popen(
+            script,
+            stdout=PIPE,
+            universal_newlines=True
+        )
+    else:
+        script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
+        res = Popen(
+            ["bash", "-c", script],
+            stdout=PIPE,
+            universal_newlines=True
+        )
     out, _ = res.communicate()
     output = out.strip()
     return output

@@ -366,9 +366,14 @@ class VenvTable(BaseTable):
                 logger.debug("Installing from requirements...")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(
-                    creator.cmds[0], [creator.opts[1], f"'{file_path}'"]
-                )
+                if os.name == 'nt':
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[1], f"{file_path}"]
+                    )
+                else:
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[1], f"'{file_path}'"]
+                    )
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -397,9 +402,14 @@ class VenvTable(BaseTable):
                 logger.debug("Installing from local project path...")
 
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(
-                    creator.cmds[0], [creator.opts[2], f"'{project_dir}'"]
-                )
+                if os.name == 'nt':
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[2], f"{project_dir}"]
+                    )
+                else:
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[2], f"'{project_dir}'"]
+                    )
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
@@ -491,7 +501,10 @@ class VenvTable(BaseTable):
         if self.has_pip(active_dir, venv):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
-            self.manager = PipManager(active_dir, f"'{venv}'")
+            if os.name == 'nt':
+                self.manager = PipManager(active_dir, f"{venv}")
+            else:
+                self.manager = PipManager(active_dir, f"'{venv}'")
             self.manager.run_pip(creator.cmds[style])
             self.manager.started.connect(self.console.exec_)
 

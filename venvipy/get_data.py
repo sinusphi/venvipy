@@ -109,6 +109,24 @@ def get_python_installs(relaunching=False):
                         "PYTHON_PATH": py_info.py_path
                     })
 
+            try:
+                py_installs = os.environ['PYTHON_INSTALLS']
+            except:
+                py_installs = None
+
+            if py_installs:
+                py_installs = py_installs.split(';')
+                for py_install in py_installs:
+                    python_path = shutil.which("python", path=py_install)
+                    if python_path is not None:
+                        python_version = get_python_version(python_path)
+                        py_info = PythonInfo(python_version, python_path)
+                        py_info_list.append(py_info)
+                        writer.writerow({
+                            "PYTHON_VERSION": py_info.py_version,
+                            "PYTHON_PATH": py_info.py_path
+                        })
+
             cf.close()
 
             # add the system's Python manually if running in a virtual env
