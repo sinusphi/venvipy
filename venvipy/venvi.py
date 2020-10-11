@@ -518,10 +518,11 @@ class MainWindow(QMainWindow):
         self.move(qr.topLeft())
 
     def closeEvent(self, event):
-        """This gets called when the window manager closes the window.
+        """
+        This gets called when the OS window manager closes the window.
         Handling this event will eliminate the console message:
             QThread: Destroyed while thread is still running
-        Because self.on_close() was never being called.
+        because self.on_close() was never being called.
         """
         self.on_close()
 

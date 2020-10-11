@@ -19,7 +19,6 @@ from PyQt5.QtWidgets import (
     QApplication,
     QGridLayout,
     QMessageBox,
-
     QDialogButtonBox,
     QComboBox,
 )
@@ -251,7 +250,9 @@ class InfoAboutVenviPy(QDialog):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-
+#]===========================================================================[#
+#] LOGGING LEVEL DIALOG [#===================================================[#
+#]===========================================================================[#
 class LoggingLevelDialog(QDialog):
     
     level_names = list()

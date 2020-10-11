@@ -41,9 +41,6 @@ class PipManager(QObject):
     failed = pyqtSignal()
     textChanged = pyqtSignal(str)
 
-    test = pyqtSignal()
-
-
     def __init__(self, venv_dir, venv_name, parent=None):
         super().__init__(parent)
 

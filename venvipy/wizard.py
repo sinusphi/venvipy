@@ -313,7 +313,7 @@ class BasicSettings(QWizardPage):
         next_button.disconnect()
         next_button.clicked.connect(self.execute_venv_create)
 
-        # We do this after the field has been registered and at 
+        # We do this after the fields have been registered and at 
         # the end of initializePage call, so that the Wizard's 
         # Next button will be enabled without having to edit
         # the venv_location_line.
@@ -471,17 +471,16 @@ class BasicSettings(QWizardPage):
         Show info message when the creation process has finished successfully.
         """
         if os.name == 'nt':
-            default_msg = (
-                f"Virtual environment created \nsuccessfully. \n\n"
-                f"New Python {self.python_version[7:10]} executable in \n"
-                f"'{self.venv_location}/{self.venv_name}/Scripts'. \n"
-            )
+            loc = "Scripts"
         else:
-            default_msg = (
-                f"Virtual environment created \nsuccessfully. \n\n"
-                f"New Python {self.python_version[7:10]} executable in \n"
-                f"'{self.venv_location}/{self.venv_name}/bin'. \n"
-            )
+            loc = "bin"
+
+        default_msg = (
+            f"Virtual environment created \nsuccessfully. \n\n"
+            f"New Python {self.python_version[7:10]} executable in \n"
+            f"'{self.venv_location}/{self.venv_name}/{loc}'. \n"
+        )
+
         with_pip_msg = ("Installed Pip and Setuptools.\n")
         with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
 

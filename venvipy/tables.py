@@ -62,7 +62,6 @@ class VenvTable(BaseTable):
     finished = pyqtSignal()
     text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
-
     add_pkgs = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
@@ -342,7 +341,13 @@ class VenvTable(BaseTable):
             logger.debug("Attempting to update Pip...")
 
             self.manager = PipManager(active_dir, venv)
+
+            # On Windows this call to run_pip BEFORE doing the connect calls
+            # below is problematic, though it works fine on Ubuntu.
+            # Have to move the run_pip call until AFTER the connect calls
+            # for the connect slots to work on Windows.
             #self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
+            
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -494,7 +499,7 @@ class VenvTable(BaseTable):
 
     def finish_info_2(self):
         """
-        Show an info message when the cloning process has finished successfully.
+        Show an info message when bootstrap installing pip has finished successfully.
         """
         msg_txt = (
             "Successfully installed pip, setuptools, and wheel.\n"
