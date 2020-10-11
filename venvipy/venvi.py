@@ -538,7 +538,6 @@ class MainWindow(QMainWindow):
         if lld.exec_():
             #logger.setLevel(lld.level)
             # Get the root logger
-            print(f"{lld.level}")
             logging.getLogger(name=None).setLevel(lld.level)
         else:
             # Make no change to logging level
