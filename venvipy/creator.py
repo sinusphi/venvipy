@@ -84,7 +84,9 @@ def clone_repo(command):
     rc = process.poll()
     return rc
 
-
+#]===========================================================================[#
+#] CUSTOM WORKER TO BOOTSTRAP PIP [#=========================================[#
+#]===========================================================================[#
 class InstallPipWorker(QObject):
     """
     This worker performs package install in develp mode via subprocess.
@@ -103,6 +105,9 @@ class InstallPipWorker(QObject):
         install_pip(venv_location, venv_name)
         self.finished.emit()
 
+#]===========================================================================[#
+#] INSTALL PIP VIA CURL & BOOTSTRAP INSTALLER [#=============================[#
+#]===========================================================================[#
 def install_pip(venv_location, venv_name):
     """
     Its possible to create an virtual env that has no pip installed.
