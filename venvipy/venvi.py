@@ -48,7 +48,7 @@ from PyQt5.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
-from dialogs import InfoAboutVenviPy
+from dialogs import InfoAboutVenviPy, LoggingLevelDialog
 from tables import VenvTable, InterpreterTable
 
 LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
@@ -193,7 +193,8 @@ class MainWindow(QMainWindow):
             "&New Venv",
             centralwidget,
             statusTip="Create a new virtual environment",
-            clicked=self.venv_wizard.exec_
+            #clicked=self.venv_wizard.exec_
+            clicked=self.invoke_venv_wizard
         )
         self.new_venv_button.setMinimumSize(QSize(135, 0))
 
@@ -213,8 +214,8 @@ class MainWindow(QMainWindow):
 
         self.active_dir_button = QToolButton(
             icon=folder_icon,
-            toolTip="Switch directory",
-            statusTip="Select another directory",
+            toolTip="Switch active venv directory",
+            statusTip="Select active venv directory",
             clicked=self.select_active_dir
         )
         self.active_dir_button.setFixedSize(30, 30)
@@ -302,8 +303,10 @@ class MainWindow(QMainWindow):
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            refresh=self.pop_venv_table
+            refresh=self.pop_venv_table,
         )
+
+        self.venv_table.add_pkgs.connect(self.install_packages_wizard_page)
 
         # hide vertical header
         self.venv_table.verticalHeader().hide()
@@ -375,9 +378,9 @@ class MainWindow(QMainWindow):
 
         self.action_select_active_dir = QAction(
             folder_icon,
-            "Change active &directory",
+            "Change active venv &directory",
             self,
-            statusTip="Change active directory",
+            statusTip="Change active venv directory",
             shortcut="Ctrl+D",
             triggered=self.select_active_dir
         )
@@ -390,6 +393,15 @@ class MainWindow(QMainWindow):
             shortcut="Ctrl+Q",
             triggered=self.on_close
         )
+
+        self.action_change_logging_level = QAction(
+            info_icon,
+            "Change &Logging Level",
+            self,
+            statusTip="Change Logging Level",
+            shortcut="Ctrl+L",
+            triggered=self.change_logging_level
+            )
 
         self.action_about_venvipy = QAction(
             info_icon,
@@ -434,6 +446,8 @@ class MainWindow(QMainWindow):
         #menu_bar.addAction(menu_extras.menuAction())
 
         menu_help = QMenu("&Help", menu_bar)
+        menu_help.addAction(self.action_change_logging_level)
+        menu_help.addSeparator()
         menu_help.addAction(self.action_about_venvipy)
         menu_help.addAction(self.action_about_qt)
 
@@ -458,6 +472,29 @@ class MainWindow(QMainWindow):
             if len(lines) < 2:
                 self.launching_without_python()
 
+    def invoke_venv_wizard(self):
+        """
+        Added this because under certain failure situations,
+        the venv_wizard.exec_ call would start on the second
+        page, rather than the first. This could be because we
+        have now added the install_packages_wizard_page which
+        inits the wizard to start on page 2. This method 
+        always forces the wizard to start on page 1 as per
+        original intent.
+        """
+        self.venv_wizard.setStartId(self.venv_wizard.basic_settings_id)
+        self.venv_wizard.exec_()
+
+    @pyqtSlot(str)
+    def install_packages_wizard_page(self, venv_name):
+        venv_loc = get_data.get_active_dir_str()
+        if len(venv_loc) > 0:
+            self.venv_wizard.setField('venv_name', venv_name)
+            self.venv_wizard.setField('venv_location', venv_loc)    
+            self.venv_wizard.setStartId(self.venv_wizard.install_packages_id)
+            self.venv_wizard.exec_()
+        else:
+            logger.warning("There is no Venv Active Directory defined")
 
     def launching_without_python(self):
         """If no Python was found run with features disabled.
@@ -480,14 +517,32 @@ class MainWindow(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def closeEvent(self, event):
+        """This gets called when the window manager closes the window.
+        Handling this event will eliminate the console message:
+            QThread: Destroyed while thread is still running
+        Because self.on_close() was never being called.
+        """
+        self.on_close()
 
     def on_close(self):
         """Stop all threads, then close the application.
         """
         self.venv_wizard.basic_settings.thread.exit()
         self.venv_table.thread.exit()
+        self.venv_table.thread2.exit()
         self.close()
 
+    def change_logging_level(self):
+        lld = LoggingLevelDialog(icon=":/img/profile.png")
+        if lld.exec_():
+            #logger.setLevel(lld.level)
+            # Get the root logger
+            print(f"{lld.level}")
+            logging.getLogger(name=None).setLevel(lld.level)
+        else:
+            # Make no change to logging level
+            pass
 
     def info_about_qt(self):
         """Open the "About Qt" dialog.

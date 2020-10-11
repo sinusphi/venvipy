@@ -47,7 +47,7 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-        logger.debug("Installing from VSC url...")
+        logger.debug(f"Installing from VSC url '{command}'")
 
         clone_repo(command)
         self.finished.emit()
@@ -61,9 +61,20 @@ def clone_repo(command):
     """
     Clone a repository and install it into a virtual environment.
     """
-    process = Popen(
-        shlex.split(command), stdout=PIPE, universal_newlines=True
-    )
+    if os.name == 'nt':
+        split_cmd = shlex.split(command)
+        logger.debug(split_cmd)
+        cmds = command.split(' ')
+
+        split_cmd[0] = cmds[0]
+
+        process = Popen(
+            split_cmd, stdout=PIPE, universal_newlines=True
+        )
+    else:
+        process = Popen(
+            shlex.split(command), stdout=PIPE, universal_newlines=True
+        )
     while True:
         output = process.stdout.readline()
         if output == "" and process.poll() is not None:
@@ -73,6 +84,73 @@ def clone_repo(command):
     rc = process.poll()
     return rc
 
+
+class InstallPipWorker(QObject):
+    """
+    This worker performs package install in develp mode via subprocess.
+    """
+    started = pyqtSignal()
+    finished = pyqtSignal()
+
+    @pyqtSlot(str)
+    def run_process(self, venv_location, venv_name):
+        """
+        Run the process.
+        """
+        self.started.emit()
+        logger.debug(f"Installing pip with curl to '{venv_name}'")
+
+        install_pip(venv_location, venv_name)
+        self.finished.emit()
+
+def install_pip(venv_location, venv_name):
+    """
+    Its possible to create an virtual env that has no pip installed.
+    In which case venvi offered no solution via the UI to install pip.
+    So this is an attempt to provide a pip bootstrap installer via:
+
+    https://pip.pypa.io/en/stable/installing/
+        curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+        python get-pip.py
+    """
+    if os.name == 'nt':
+        subdir = 'Scripts'
+    else:
+        subdir = 'bin'
+
+    pip_lives_here = os.path.join(venv_location, venv_name, subdir)
+    curdir = os.getcwd()
+    os.chdir(pip_lives_here)
+    down_load_pip_installer = "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py"
+    process = Popen(
+        shlex.split(down_load_pip_installer), stdout=PIPE, universal_newlines=True
+    )
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            logger.debug(output.strip())
+    rc = process.poll()
+
+    if os.path.exists('get-pip.py'):
+        command = list()
+        command.append(os.path.join(pip_lives_here, "python"))
+        command.append('get-pip.py')
+
+        process = Popen(
+            command, stdout=PIPE, universal_newlines=True
+        )
+        while True:
+            output = process.stdout.readline()
+            if output == "" and process.poll() is not None:
+                break
+            if output:
+                logger.debug(output.strip())
+        rc = process.poll()
+        return(rc)
+    else:
+        return(-1)
 
 #]===========================================================================[#
 #] WORKER (CREATE VIRTUAL ENVIRONMENT) [#====================================[#
@@ -122,7 +200,15 @@ class CreationWorker(QObject):
             else:
                 self.manager = PipManager(location, f"'{name}'")
             self.installing_wheel.emit()
-            self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
+            if os.name == 'nt':
+                # Stupid Windows is giving us an error about not
+                # having privilege to remove pip for its upgrade;
+                # this works when we are not doing both pip and
+                # wheel together, so we will separate them 
+                self.manager.run_pip(cmds[0], [opts[0], "pip"])
+                self.manager.run_pip(cmds[0], [opts[0], "wheel"])
+            else:
+                self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
             self.manager.finished.connect(self.finished.emit)
         else:
             self.finished.emit()
@@ -145,7 +231,7 @@ def create_venv(
 
     if os.name == 'nt':
         script = f"{py_vers} -m venv {env_dir}{pip}{ssp}"
-        print(script)
+        logger.debug(script)
         res = Popen(
             script,
             stdout=PIPE,

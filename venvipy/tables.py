@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
 import get_data
 import creator
 from dialogs import ConsoleDialog, ProgBarDialog
-from creator import CloningWorker
+from creator import CloningWorker, InstallPipWorker
 from manage_pip import PipManager
 
 
@@ -63,6 +63,7 @@ class VenvTable(BaseTable):
     text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
 
+    add_pkgs = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,6 +97,17 @@ class VenvTable(BaseTable):
         self.thread.finished.connect(self.thread.quit)
         self.thread.finished.connect(self.thread.wait)
 
+        self.thread2 = QThread(self)
+        self.m_install_pip_worker = InstallPipWorker()
+        
+        self.thread2.start()
+        self.m_install_pip_worker.moveToThread(self.thread2)
+        self.m_install_pip_worker.started.connect(self.progress_bar.exec_)
+        self.m_install_pip_worker.finished.connect(self.progress_bar.close)
+        self.m_install_pip_worker.finished.connect(self.finish_info_2)
+
+        self.thread2.finished.connect(self.thread2.quit)
+        self.thread2.finished.connect(self.thread2.wait)
 
     def contextMenuEvent(self, event):
         context_menu = QMenu(self)
@@ -301,7 +313,10 @@ class VenvTable(BaseTable):
         """Test if `pip` is installed.
         """
         venv_path = os.path.join(venv_dir, venv_name)
-        pip_binary = os.path.join(venv_path, "bin", "pip")
+        if os.name == 'nt':
+            pip_binary = os.path.join(venv_path, "Scripts", "pip.exe")
+        else:
+            pip_binary = os.path.join(venv_path, "bin", "pip")
         has_pip = os.path.exists(pip_binary)
 
         if self.venv_exists(venv_path) and self.valid_version(venv_path):
@@ -327,22 +342,35 @@ class VenvTable(BaseTable):
             logger.debug("Attempting to update Pip...")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
+            #self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
             self.manager.textChanged.connect(self.console.update_status)
 
+            self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
+
             # clear the content on window close
             if self.console.close:
                 self.console.console_window.clear()
+
+        else:
+            # no pip, ask to install it
+            response = QMessageBox.question(self, 'Need Pip?', "Would you like to install pip?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if response == QMessageBox.Yes:
+                wrapper = partial(
+                    self.m_install_pip_worker.run_process, active_dir, venv
+                )
+                QTimer.singleShot(0, wrapper)
+                
+
 
 
     def add_packages(self, event):
         """
         Install additional packages into the selected environment.
         """
-        pass
+        self.add_pkgs.emit(self.get_selected_item())
 
 
     def install_requires(self, event):
@@ -424,8 +452,13 @@ class VenvTable(BaseTable):
         """Install from a VSC repository.
         """
         active_dir = get_data.get_active_dir_str()
+        if os.name == 'nt':
+            active_dir = active_dir.replace('/', '\\')
         venv = self.get_selected_item()
-        venv_bin = os.path.join(active_dir, venv, "bin", "python")
+        if os.name == 'nt':
+            venv_bin = os.path.join(active_dir, venv, "Scripts", "python.exe")
+        else:
+            venv_bin = os.path.join(active_dir, venv, "bin", "python")
 
         if self.has_pip(active_dir, venv):
             url, ok = QInputDialog.getText(
@@ -459,6 +492,14 @@ class VenvTable(BaseTable):
         )
         QMessageBox.information(self, "Done", msg_txt)
 
+    def finish_info_2(self):
+        """
+        Show an info message when the cloning process has finished successfully.
+        """
+        msg_txt = (
+            "Successfully installed pip, setuptools, and wheel.\n"
+        )
+        QMessageBox.information(self, "Done", msg_txt)
 
     def save_requires(self, event):
         """
@@ -505,8 +546,16 @@ class VenvTable(BaseTable):
                 self.manager = PipManager(active_dir, f"{venv}")
             else:
                 self.manager = PipManager(active_dir, f"'{venv}'")
+            
+            # We have to do the connect BEFORE we run_pip on Windows 10,
+            # else the console never is displayed. However, this works
+            # fine as originally coded on Ubuntu.
+            #self.manager.run_pip(creator.cmds[style])
+
+            #self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.raise_console_dialog)
+
             self.manager.run_pip(creator.cmds[style])
-            self.manager.started.connect(self.console.exec_)
 
             # display the updated output
             self.manager.textChanged.connect(self.console.update_status)
@@ -515,6 +564,17 @@ class VenvTable(BaseTable):
             if self.console.close:
                 self.console.console_window.clear()
 
+    def raise_console_dialog(self):
+        """
+        On Windows 10, if we raise the console via self.console.exec_ as originally
+        coded (and which does work on Ubuntu), the self.manager.textChanged.connect() 
+        slots are not called eventhough the corresponding emits are happening in the 
+        self.manager object. This method should work on both Windows & Ubuntu since
+        it is doing essentially what the exec_ call does interms of displaying a modal
+        dialog while not inhibiting the textChanged connect slots from being invoked.
+        """
+        self.console.setModal(True)
+        self.console.show()
 
     def freeze_packages(self, event, style):
         """Print `pip freeze` output to console window.
@@ -529,7 +589,13 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
+        if os.name == 'nt':
+            pipdeptree_loc = "Scripts"
+            pipdeptree_exe = "pipdeptree.exe"
+        else:
+            pipdeptree_loc = "bin"
+            pipdeptree_exe = "pipdeptree"
+        pipdeptree_binary = os.path.join(active_dir, venv, pipdeptree_loc, pipdeptree_exe)
         has_pipdeptree = os.path.exists(pipdeptree_binary)
         message_txt = (
             "This requires the pipdeptree package\nto be installed.\n\n"
@@ -554,11 +620,13 @@ class VenvTable(BaseTable):
                     logger.debug("Installing pipdeptree...")
 
                     self.manager = PipManager(active_dir, venv)
+                    self.manager.started.connect(self.progress_bar.exec_)
+                    self.manager.finished.connect(self.progress_bar.close)
                     self.manager.run_pip(
                         creator.cmds[0], [creator.opts[0], "pipdeptree"]
                     )
-                    self.manager.started.connect(self.progress_bar.exec_)
-                    self.manager.finished.connect(self.progress_bar.close)
+                    #self.manager.started.connect(self.progress_bar.exec_)
+                    #self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()
                     self.list_packages(event, style)
 
@@ -571,7 +639,15 @@ class VenvTable(BaseTable):
         venv_dir = os.path.join(active_dir, venv)
 
         if os.path.isdir(venv_dir):
-            os.system(f"xdg-open '{venv_dir}'")
+            if os.name == 'nt':
+                starting_dir = f"{venv_dir}"
+                _ = QFileDialog.getExistingDirectory(
+                    self,
+                    f"Virtual Env Directory for {venv}",
+                    starting_dir
+                )
+            else:
+                os.system(f"xdg-open '{venv_dir}'")
 
 
     def delete_venv(self, event):

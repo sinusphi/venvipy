@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -39,7 +39,10 @@ def to_version(value):
 def to_path(bin_path, version):
     """Return the absolute path to a python binary.
     """
-    return os.path.join(bin_path, f"python{version}")
+    if os.name == 'nt':
+        return os.path.join(bin_path, f"python.exe")
+    else:
+        return os.path.join(bin_path, f"python{version}")
 
 
 def ensure_confdir():
@@ -101,6 +104,12 @@ def get_python_installs(relaunching=False):
             for i, version in enumerate(versions):
                 python_path = shutil.which(f"python{version}")
                 if python_path is not None:
+                    # For some reason, on windows, shutil.which() upper cases
+                    # the python interpreter's extension, as in EXE, when in 
+                    # the file system, it is lower case. This causes issues
+                    # later when we do string compares in the py_installs CSV DB
+                    if os.name == 'nt':
+                        python_path = python_path[:-3] + python_path[-3:].lower()
                     python_version = get_python_version(python_path)
                     py_info = PythonInfo(python_version, python_path)
                     py_info_list.append(py_info)
@@ -110,6 +119,8 @@ def get_python_installs(relaunching=False):
                     })
 
             try:
+                # Short of searching the registry (shudder), I thought
+                # this might be a good compromise
                 py_installs = os.environ['PYTHON_INSTALLS']
             except:
                 py_installs = None
@@ -119,6 +130,12 @@ def get_python_installs(relaunching=False):
                 for py_install in py_installs:
                     python_path = shutil.which("python", path=py_install)
                     if python_path is not None:
+                        # For some reason, on windows, shutil.which() upper cases
+                        # the python interpreter's extension, as in EXE, when in 
+                        # the file system, it is lower case. This causes issues
+                        # later when we do string compares in the py_installs CSV DB
+                        if os.name == 'nt':
+                            python_path = python_path[:-3] + python_path[-3:].lower()
                         python_version = get_python_version(python_path)
                         py_info = PythonInfo(python_version, python_path)
                         py_info_list.append(py_info)

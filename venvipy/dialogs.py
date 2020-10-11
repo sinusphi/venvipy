@@ -18,7 +18,10 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QApplication,
     QGridLayout,
-    QMessageBox
+    QMessageBox,
+
+    QDialogButtonBox,
+    QComboBox,
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -216,6 +219,9 @@ class InfoAboutVenviPy(QDialog):
         copyright_label = QLabel(
             '<p><span style="font-size:10pt;">\
                 Copyright © 2019-2020 Youssef Serestou\
+            </span></p>\
+            <p><span style="font-size:10pt;">\
+                Windows Port, Oct 2020, by E.R. Uber\
             </span></p>'
         )
 
@@ -245,6 +251,83 @@ class InfoAboutVenviPy(QDialog):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+
+class LoggingLevelDialog(QDialog):
+    
+    level_names = list()
+
+    def __init__(self, parent=None, level_limit=100, icon=None):
+        """
+        A simple dialog that allows user to select a logging level.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            This dialog's parent widget, if any
+        level_limit : int, optional
+            The number of logging levels to search for logging level names.
+            The default value finds all the standard Python logging levels
+            and supports discovering custom logging levels within the first
+            100 logging levels. Change this limit if your application defines
+            logging levels above 100.
+        icon : str, optional
+            Provide a path to an icon image to change this dialog's icon.
+        """
+        super(LoggingLevelDialog, self).__init__(parent)
+
+        self.level_limit = level_limit
+        self.icon = icon
+
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(f"Set Logging Level")
+        self.setFixedSize(250, 150)
+        self.center()
+        if self.icon:
+            self.setWindowIcon(QIcon(self.icon))
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowSystemMenuHint, True)
+        self.setWindowFlag(Qt.WindowTitleHint, True)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+        if not len(self.level_names) > 0:
+            for i in range(self.level_limit):
+                if not logging.getLevelName(i).startswith('Level'):
+                    self.level_names.append((logging.getLevelName(i), i))
+
+        # self.level_names if no custom levels added
+        # [('NOTSET', 0), ('DEBUG', 10), ('INFO', 20), ('WARNING', 30), ('ERROR', 40), ('CRITICAL', 50)]
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.vlayout = QVBoxLayout()
+
+        self.combobox = QComboBox()
+
+        for level_name, level_number in self.level_names:
+            self.combobox.addItem(level_name)
+
+        self.combobox.currentIndexChanged.connect(self.updatelogginglevel)
+
+        self.vlayout.addWidget(self.combobox)
+        self.vlayout.addWidget(self.buttonBox)
+        self.setLayout(self.vlayout)
+
+    def center(self):
+        """Center Dialog."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    def updatelogginglevel(self, i):
+        self.level = self.combobox.currentText()
 
 
 if __name__ == "__main__":

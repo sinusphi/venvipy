@@ -53,7 +53,6 @@ from tables import ResultsTable
 from creator import CreationWorker
 from manage_pip import PipManager
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -308,13 +307,19 @@ class BasicSettings(QWizardPage):
         group_box_layout.addWidget(self.site_pkgs_check_box)
         group_box.setLayout(group_box_layout)
 
-
     def initializePage(self):
         # connect 'next' button to self.execute_venv_create()
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.disconnect()
         next_button.clicked.connect(self.execute_venv_create)
 
+        # We do this after the field has been registered and at 
+        # the end of initializePage call, so that the Wizard's 
+        # Next button will be enabled without having to edit
+        # the venv_location_line.
+        active_dir = get_data.get_active_dir_str()
+        if active_dir != "":
+            self.venv_location_line.setText(active_dir)
 
     def pop_combo_box(self):
         """Add the selected Python version to combo box.
@@ -341,7 +346,7 @@ class BasicSettings(QWizardPage):
             file_name = QFileDialog.getOpenFileName(
                 self,
                 "Select Python Interpreter",
-                "C:/",
+                "C:\\",
                 "Python binary (*.exe)"
             )
         else:
@@ -355,6 +360,9 @@ class BasicSettings(QWizardPage):
                 )"
             )
         bin_file = file_name[0]
+
+        if os.name == 'nt':
+            bin_file = bin_file.replace("/", "\\")
 
         if bin_file != "":
             get_data.add_python(bin_file)
@@ -462,11 +470,18 @@ class BasicSettings(QWizardPage):
         """
         Show info message when the creation process has finished successfully.
         """
-        default_msg = (
-            f"Virtual environment created \nsuccessfully. \n\n"
-            f"New Python {self.python_version[7:10]} executable in \n"
-            f"'{self.venv_location}/{self.venv_name}/bin'. \n"
-        )
+        if os.name == 'nt':
+            default_msg = (
+                f"Virtual environment created \nsuccessfully. \n\n"
+                f"New Python {self.python_version[7:10]} executable in \n"
+                f"'{self.venv_location}/{self.venv_name}/Scripts'. \n"
+            )
+        else:
+            default_msg = (
+                f"Virtual environment created \nsuccessfully. \n\n"
+                f"New Python {self.python_version[7:10]} executable in \n"
+                f"'{self.venv_location}/{self.venv_name}/bin'. \n"
+            )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
         with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
 
@@ -667,13 +682,21 @@ class InstallPackages(QWizardPage):
 
         if msg_box_question == QMessageBox.Yes:
             self.console.setWindowTitle(f"Installing {self.pkg}")
-
-            self.manager = PipManager(
-                self.venv_location,
-                f"'{self.venv_name}'"
-            )
+            self.console.update_status(f"Installing into venv {self.venv_name}...")
+            if os.name == 'nt':
+                self.manager = PipManager(
+                    self.venv_location,
+                    f"{self.venv_name}"
+                )
+            else:
+                self.manager = PipManager(
+                    self.venv_location,
+                    f"'{self.venv_name}'"
+                )
             # open the console when recieving signal from manager
-            self.manager.started.connect(self.console.exec_)
+
+            #self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.raise_console_dialog)
 
             # start installing the selected package
             logger.debug(f"Installing '{self.pkg}'...")
@@ -690,6 +713,17 @@ class InstallPackages(QWizardPage):
                 self.pkg_name_line.clear()
                 self.pkg_name_line.setFocus(True)
 
+    def raise_console_dialog(self):
+        """
+        On Windows 10, if we raise the console via self.console.exec_ as originally
+        coded (and which does work on Ubuntu), the self.manager.textChanged.connect() 
+        slots are not called eventhough the corresponding emits are happening in the 
+        self.manager object. This method should work on both Windows & Ubuntu since
+        it is doing essentially what the exec_ call does interms of displaying a modal
+        dialog while not inhibiting the textChanged connect slots from being invoked.
+        """
+        self.console.setModal(True)
+        self.console.show()
 
     def save_requirements(self):
         """
