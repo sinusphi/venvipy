@@ -140,6 +140,8 @@ def get_python_installs(relaunching=False):
                 pass
 
             for path in PATHS:
+                if not os.path.exists(path):
+                    continue
                 # Looking for a directory that starts with 'python'
                 for item in os.listdir(path):
                     item_full_path = os.path.join(path, item)
