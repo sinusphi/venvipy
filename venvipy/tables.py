@@ -646,7 +646,7 @@ class VenvTable(BaseTable):
         if os.path.isdir(venv_dir):
             if os.name == 'nt':
                 starting_dir = f"{venv_dir}"
-                _ = QFileDialog.getExistingDirectory(
+                _ = QFileDialog.getOpenFileName(
                     self,
                     f"Virtual Env Directory for {venv}",
                     starting_dir
