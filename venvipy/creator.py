@@ -209,9 +209,8 @@ class CreationWorker(QObject):
                 # Stupid Windows is giving us an error about not
                 # having privilege to remove pip for its upgrade;
                 # this works when we are not doing both pip and
-                # wheel together, so we will separate them 
-                self.manager.run_pip(cmds[0], [opts[0], "pip"])
-                self.manager.run_pip(cmds[0], [opts[0], "wheel"])
+                # wheel together, so we reverse the order
+                self.manager.run_pip(cmds[0], [opts[0], "wheel pip"])
             else:
                 self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
             self.manager.finished.connect(self.finished.emit)

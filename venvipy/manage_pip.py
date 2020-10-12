@@ -40,6 +40,7 @@ class PipManager(QObject):
     finished = pyqtSignal()
     failed = pyqtSignal()
     textChanged = pyqtSignal(str)
+    failed_msg = pyqtSignal(str)
 
     def __init__(self, venv_dir, venv_name, parent=None):
         super().__init__(parent)
@@ -139,6 +140,34 @@ class PipManager(QObject):
                 self._process.start("bash", ["-c", script])
 
 
+    def run_pip_import(self):
+        """Attempt to import the pip module to determine 
+           if pip is viable in this venv
+        """
+        if os.name == 'nt':
+            venv_path = os.path.join(self._venv_dir, self._venv_name).replace('/', '\\')
+            prefix = os.path.join(venv_path, 'Scripts', 'python.exe')
+            task = f"{prefix} -m pip"
+
+            script = f'{venv_path}\\Scripts\\activate.bat && {task} && {venv_path}\\Scripts\\deactivate.bat'
+            
+            logger.debug(f"run_pip_import script: '{script}'")
+            self._process.start("cmd.exe", ["/c", script])
+        else:    
+            if has_bash():
+                venv_path = os.path.join(self._venv_dir, self._venv_name)
+                prefix = os.path.join(venv_path, 'bin', 'python')
+                task = f"{prefix} -m pip"
+
+                script = (
+                    f"source {venv_path}/bin/activate;"
+                    f"{task}"
+                    "deactivate;"
+                )
+                self._process.start("bash", ["-c", script])
+
+        self._process.waitForFinished()
+
     def process_stop(self):
         """Stop the process."""
         self._process.close()
@@ -190,6 +219,8 @@ class PipManager(QObject):
         self.textChanged.emit(message)
 
         self.failed.emit()
+        logger.debug("failed_msg signal emitted")
+        self.failed_msg.emit(message)
         self._process.kill()
 
 

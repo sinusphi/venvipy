@@ -7,6 +7,7 @@ import shutil
 import os
 import logging
 from functools import partial
+from importlib import import_module
 
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
@@ -107,6 +108,8 @@ class VenvTable(BaseTable):
 
         self.thread2.finished.connect(self.thread2.quit)
         self.thread2.finished.connect(self.thread2.wait)
+
+        self.pip_mgr_fail_msg = None
 
     def contextMenuEvent(self, event):
         context_menu = QMenu(self)
@@ -307,6 +310,55 @@ class VenvTable(BaseTable):
         self.refresh.emit()
         return False
 
+    def check_venv_for_importable_pip(self, venv_dir, venv_name):
+        """For pip to truly be installed and usable, not only does
+        the pip executable need to exist, so too does the pip
+        python module need to be importable. 
+
+        This method returns True if the pip module can be imported 
+        from inside the venv, False otherwise.
+
+        This check is required, because if a previous pip installation
+        fails, rather than removing itself, it seems that pip simply
+        disables its module by renaming the pip module "~ip" and 
+        leaving the pip executable file in place. This behavior,
+        was causing the has_pip() module below to return true just
+        because the pip executable existed, eventhough the pip module
+        was not importable; thus causing the subsequent upgrade_pip()
+        call to fail.
+        """
+        pip_importable = False
+
+        self.manager = PipManager(venv_dir, venv_name)
+
+        #self.manager.started.connect(self.console.exec_)
+
+        # display the updated output
+        #self.manager.textChanged.connect(self.console.update_status)
+        
+        self.manager.failed_msg.connect(self.process_pip_mgr_fail_msg)
+
+        self.manager.run_pip_import()
+
+        if self.pip_mgr_fail_msg:
+            logger.debug(f"PIP MGR FAIL MSG: '{self.pip_mgr_fail_msg}'")
+            s = self.pip_mgr_fail_msg.replace("'", "")
+            s = s.replace('"', '')
+            s = s.lower()
+            if s.find("no module named pip") != -1:
+                pip_importable = False
+            else:
+                pip_importable = True
+        else:
+            pip_importable = True
+
+        self.pip_mgr_fail_msg = None
+        logger.debug(f"PIP IMPORTABLE: {pip_importable}")
+        return(pip_importable)
+
+    def process_pip_mgr_fail_msg(self, fail_msg):
+        print(f"process_pip_mgr_fail_msg: '{fail_msg}'")
+        self.pip_mgr_fail_msg = fail_msg
 
     def has_pip(self, venv_dir, venv_name):
         """Test if `pip` is installed.
@@ -317,6 +369,19 @@ class VenvTable(BaseTable):
         else:
             pip_binary = os.path.join(venv_path, "bin", "pip")
         has_pip = os.path.exists(pip_binary)
+
+        # The above is not sufficient, because the pip executable can
+        # be installed, but the python pip module may not be, or may
+        # be incorrectly installed in site-packages as "~ip" which would
+        # be "pip" if the pip module had been correctly installed. This
+        # situation will cause the upgrade_pip() call below to fail
+        # because python cannot find the pip module since its named "~ip".
+        # However, we cannot simply attempt to import pip here because 
+        # the venv has not yet been activated. We need to activate the 
+        # venv and try then try and import pip...
+        if has_pip:
+            # The pip executable exists, but can be import the pip module?
+            has_pip = self.check_venv_for_importable_pip(venv_dir, venv_name)
 
         if self.venv_exists(venv_path) and self.valid_version(venv_path):
             if has_pip:
