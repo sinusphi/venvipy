@@ -157,7 +157,7 @@ class PipManager(QObject):
             if has_bash():
                 venv_path = os.path.join(self._venv_dir, self._venv_name)
                 prefix = os.path.join(venv_path, 'bin', 'python')
-                task = f"{prefix} -m pip"
+                task = f"{prefix} -m pip;"
 
                 script = (
                     f"source {venv_path}/bin/activate;"
