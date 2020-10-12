@@ -164,6 +164,7 @@ class PipManager(QObject):
                     f"{task}"
                     "deactivate;"
                 )
+                logger.debug(f"run_pip_import script: '{script}'")
                 self._process.start("bash", ["-c", script])
 
         self._process.waitForFinished()

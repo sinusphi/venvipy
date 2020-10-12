@@ -357,7 +357,7 @@ class VenvTable(BaseTable):
         return(pip_importable)
 
     def process_pip_mgr_fail_msg(self, fail_msg):
-        print(f"process_pip_mgr_fail_msg: '{fail_msg}'")
+        logger.debug(f"process_pip_mgr_fail_msg: '{fail_msg}'")
         self.pip_mgr_fail_msg = fail_msg
 
     def has_pip(self, venv_dir, venv_name):
