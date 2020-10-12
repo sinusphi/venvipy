@@ -17,7 +17,17 @@ CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
 ACTIVE_FILE = os.path.expanduser("~/.venvipy/active")
 
-
+if os.name == 'nt':
+    USER_HOME = os.environ['USERPROFILE']
+    USER_LOCAL = os.path.join(USER_HOME, 'AppData', 'Local', 'Programs', 'Python')
+    ROOT_LOCAL = "C:\\"
+    PATHS = [ROOT_LOCAL, USER_LOCAL]
+else:
+    USER_HOME = os.environ['HOME']
+    USER_LOCAL = os.path.join(USER_HOME, '.local', 'bin', 'python')
+    USER_LOCAL_2 = os.path.join(USER_HOME, 'bin', 'python')
+    USER_LOCAL_3 = os.path.join(USER_HOME, 'python')
+    PATHS = [USER_HOME, USER_LOCAL, USER_LOCAL_2, USER_LOCAL_3]
 
 #]===========================================================================[#
 #] FIND PYTHON 3 INSTALLATIONS [#============================================[#
@@ -118,31 +128,43 @@ def get_python_installs(relaunching=False):
                         "PYTHON_PATH": py_info.py_path
                     })
 
+            # The above code finds python interpreters that are in the execution
+            # path; some systems have python interpreters installed that are not
+            # in the execution path, by would like to be used for venv creation.
             try:
                 # Short of searching the registry (shudder), I thought
                 # this might be a good compromise
                 py_installs = os.environ['PYTHON_INSTALLS']
+                PATHS.extend(py_installs.split(';'))
             except:
-                py_installs = None
+                pass
 
-            if py_installs:
-                py_installs = py_installs.split(';')
-                for py_install in py_installs:
-                    python_path = shutil.which("python", path=py_install)
-                    if python_path is not None:
-                        # For some reason, on windows, shutil.which() upper cases
-                        # the python interpreter's extension, as in EXE, when in 
-                        # the file system, it is lower case. This causes issues
-                        # later when we do string compares in the py_installs CSV DB
-                        if os.name == 'nt':
-                            python_path = python_path[:-3] + python_path[-3:].lower()
-                        python_version = get_python_version(python_path)
-                        py_info = PythonInfo(python_version, python_path)
-                        py_info_list.append(py_info)
-                        writer.writerow({
-                            "PYTHON_VERSION": py_info.py_version,
-                            "PYTHON_PATH": py_info.py_path
-                        })
+            for path in PATHS:
+                # Looking for a directory that starts with 'python'
+                for item in os.listdir(path):
+                    item_full_path = os.path.join(path, item)
+                    if os.path.isdir(item_full_path):
+                        if item.lower().startswith('python'):
+                            python_path = shutil.which("python", path=item_full_path)
+                            if python_path is not None:
+                                if os.name == 'nt':
+                                    # For some reason, on windows, shutil.which() upper cases
+                                    # the python interpreter's extension, as in EXE, when in 
+                                    # the file system, it is lower case. This causes issues
+                                    # later when we do string compares against the file system.
+                                    python_path = python_path[:-3] + python_path[-3:].lower()   
+
+                                python_version = get_python_version(python_path)
+                                if python_version:
+                                    # It seems that on Windows, the Python 2.7 interpreter
+                                    # returns an empty version string to stdout, None to stderr
+                                    # and yet the console shows the -V output, go figure.
+                                    py_info = PythonInfo(python_version, python_path)
+                                    py_info_list.append(py_info)
+                                    writer.writerow({
+                                        "PYTHON_VERSION": py_info.py_version,
+                                        "PYTHON_PATH": py_info.py_path
+                                    })
 
             cf.close()
 
