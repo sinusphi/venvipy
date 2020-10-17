@@ -28,7 +28,7 @@ except FileNotFoundError:
     version = "latest"
 
 install_requires = [
-    "PyQt5==5.14.0",
+    "PyQt5>=5.14.0",
     "PyQt5-sip",
     "dataclasses ; python_version<'3.7'"
 ]
