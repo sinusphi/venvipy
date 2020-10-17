@@ -10,7 +10,7 @@ from functools import partial
 from importlib import import_module
 
 from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtCore import pyqtSignal, QThread, QTimer
+from PyQt5.QtCore import pyqtSignal, QThread, QTimer, QUrl
 from PyQt5.QtWidgets import (
     QStyle,
     QAction,
@@ -196,6 +196,16 @@ class VenvTable(BaseTable):
             lambda: self.save_requires(event)
         )
 
+        generate_scripts_action = QAction(
+            self.save_icon,
+            "Generate venv access scripts",
+            self,
+            statusTip="Write venv access scripts to project dir"
+        )
+        generate_scripts_action.triggered.connect(
+            lambda: self.generate_scripts(event)
+        )
+
         list_packages_action = QAction(
             "&List installed packages",
             self,
@@ -264,6 +274,7 @@ class VenvTable(BaseTable):
         details_sub_menu.addAction(list_deptree_action)
 
         context_menu.addAction(save_requires_action)
+        context_menu.addAction(generate_scripts_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
 
@@ -598,6 +609,56 @@ class VenvTable(BaseTable):
                 message_txt = (f"Saved requirements in \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
 
+
+    def generate_scripts(self, event):
+        """
+        Generates an activate and deactive script in the chosen
+        project directory for the venv selected in the table.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_dir = os.path.join(active_dir, venv)
+
+        if os.name == 'nt':
+            ext = ".bat"
+            fs_sep = "\\"
+            scripts_dir = 'Scripts'
+            prefix = ""
+            project_dir = "D:\\Devel\\_python\\dev\\projects"
+            eol = "\r\n"
+        else:
+            ext = ""
+            fs_sep = "/"
+            scripts_dir = 'bin'
+            prefix = "source "
+            project_dir = "~/"
+            eol = "\n"
+
+        script_file_1 = f"start_venv{ext}"
+        script_file_2 = f"stop_venv{ext}"
+        script_file_1_contents = f"{prefix}{venv_dir}{fs_sep}{scripts_dir}{fs_sep}activate{ext}{eol}"
+        if os.name == 'nt':
+            script_file_2_contents = f"{prefix}{venv_dir}{fs_sep}{scripts_dir}{fs_sep}deactivate{ext}{eol}"
+        else:
+            script_file_2_contents = f"deactivate{eol}"
+
+        scripts = list()
+        scripts.append((script_file_1, script_file_1_contents))
+        scripts.append((script_file_2, script_file_2_contents))
+
+        dialog = QFileDialog(self, 'Choose a Project Directory to Generate Venv Access Files', project_dir, filter=None)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        if dialog.exec_():
+            project_dir = dialog.selectedFiles()[0]
+            logger.debug(f"Project Dir: {project_dir}")
+
+            if os.path.exists(project_dir):
+                for script_file, script_file_contents in scripts:
+                    script_file = os.path.join(project_dir, script_file)
+                    logger.debug(f"Script File to write: {script_file}")
+                    with open(script_file, "w") as sf:
+                        sf.write(script_file_contents)
+                        logger.debug(f"Script contents: {script_file_contents}")
 
     def list_packages(self, event, style):
         """
