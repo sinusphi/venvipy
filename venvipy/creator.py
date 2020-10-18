@@ -12,6 +12,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from manage_pip import PipManager
 
+from venvi_cfg import VenvConfigMgr
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +179,7 @@ class CreationWorker(QObject):
         self.started.emit()
         logger.debug("Creating virtual environment...")
 
-        py_vers, name, location, with_pip, with_wheel, site_packages = args
+        py_vers, name, comment, location, with_pip, with_wheel, site_packages = args
         if os.name == 'nt':
             env_dir = os.path.join(location, f"{name}")
         else:
@@ -217,6 +218,10 @@ class CreationWorker(QObject):
         else:
             self.finished.emit()
 
+        # Create our own config for comment and tracking projects
+        logger.debug("Writing venvipy config file...")
+        vcf = VenvConfigMgr(location, name, comment)
+        vcf.write()
 
 #]===========================================================================[#
 #] CREATE A VIRTUAL ENVIRONMENT [#===========================================[#

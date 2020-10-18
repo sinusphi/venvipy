@@ -319,7 +319,7 @@ class MainWindow(QMainWindow):
         # set table view model
         self.model_venv_table = QStandardItemModel(0, 3, centralwidget)
         self.model_venv_table.setHorizontalHeaderLabels(
-            ["Venv", "Version", "Packages", "installed"]
+            ["Venv", "Version", "Packages", "installed", "Comment"]
         )
         self.venv_table.setModel(self.model_venv_table)
 
@@ -328,6 +328,8 @@ class MainWindow(QMainWindow):
         self.venv_table.setColumnWidth(1, 120)
         self.venv_table.setColumnWidth(2, 100)
         self.venv_table.setColumnWidth(3, 80)
+        self.venv_table.setColumnWidth(4, 180)
+
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
@@ -597,7 +599,8 @@ class MainWindow(QMainWindow):
                     info.venv_name,
                     info.venv_version,
                     info.site_packages,
-                    info.is_installed
+                    info.is_installed,
+                    info.comment
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
 

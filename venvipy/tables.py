@@ -23,10 +23,10 @@ from PyQt5.QtWidgets import (
 
 import get_data
 import creator
-from dialogs import ConsoleDialog, ProgBarDialog
+from dialogs import ConsoleDialog, ProgBarDialog, ProjectsDialog
 from creator import CloningWorker, InstallPipWorker
 from manage_pip import PipManager
-
+from venvi_cfg import VenvConfigMgr
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +206,16 @@ class VenvTable(BaseTable):
             lambda: self.generate_scripts(event)
         )
 
+        list_projects_action = QAction(
+            #self.save_icon,
+            "List dev project dirs that access this venv",
+            self,
+            statusTip="List dev project dirs that access this venv"
+        )
+        list_projects_action.triggered.connect(
+            lambda: self.list_projects(event, style=1)
+        )
+
         list_packages_action = QAction(
             "&List installed packages",
             self,
@@ -275,6 +285,7 @@ class VenvTable(BaseTable):
 
         context_menu.addAction(save_requires_action)
         context_menu.addAction(generate_scripts_action)
+        context_menu.addAction(list_projects_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
 
@@ -660,6 +671,15 @@ class VenvTable(BaseTable):
                         sf.write(script_file_contents)
                         logger.debug(f"Script contents: {script_file_contents}")
 
+        # Update the venvi config
+        vcm = VenvConfigMgr(active_dir, venv)
+        if vcm.read():
+            logger.debug(f"Dev Project dir written to venvi cfg file: '{project_dir}'")
+            vcm.vc.projects.append(project_dir)
+            vcm.write()
+        else:
+            logger.debug("No valid venvi config file found")
+
     def list_packages(self, event, style):
         """
         Open console dialog and list the installed packages. The argument
@@ -694,6 +714,31 @@ class VenvTable(BaseTable):
             # clear the content on window close
             if self.console.close:
                 self.console.console_window.clear()
+
+    def list_projects(self, event, style):
+        """
+        Open console dialog and list the development projects that have
+        had venv access scripts created in their project root dir. The argument
+        `style` controls which style the output should have: `style=1` for
+        `pip list`, `style=2` for `pip freeze` and style=3 for a dependency
+        output via `pipdeptree`.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+
+        self.projects = ProjectsDialog(venv, self)
+
+        vcm = VenvConfigMgr(active_dir, venv)
+        if vcm.read():
+            logger.debug("Read a valid venvipy cfg file")
+            for projdir in vcm.vc.projects:
+                logger.debug(f"Proj Dir: '{projdir}'")
+                self.projects.update(projdir)
+        else:
+            logger.debug("No valid venvipy cfg file to read")
+            self.projects.update(f"There are no dev project references to venv {venv}")
+
+        self.projects.exec_()
 
     def raise_console_dialog(self):
         """

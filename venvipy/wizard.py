@@ -218,6 +218,12 @@ class BasicSettings(QWizardPage):
         self.venv_name_line = QLineEdit()
         venv_name_label.setBuddy(self.venv_name_line)
 
+
+        venv_comment_label = QLabel("Venv &comment:")
+        self.venv_comment_line = QLineEdit()
+        venv_comment_label.setBuddy(self.venv_comment_line)
+
+
         venv_location_label = QLabel("&Location:")
         self.venv_location_line = QLineEdit()
         venv_location_label.setBuddy(self.venv_location_line)
@@ -273,6 +279,7 @@ class BasicSettings(QWizardPage):
             "currentData"
         )
         self.registerField("venv_name*", self.venv_name_line)
+        self.registerField("venv_comment*", self.venv_comment_line)
         self.registerField("venv_location*", self.venv_location_line)
         self.registerField("with_pip", self.with_pip_check_box)
         self.registerField("with_wheel", self.with_wheel_check_box)
@@ -288,16 +295,19 @@ class BasicSettings(QWizardPage):
         grid_layout.addWidget(venv_name_label, 1, 0, 1, 1)
         grid_layout.addWidget(self.venv_name_line, 1, 1, 1, 1)
 
-        grid_layout.addWidget(venv_location_label, 2, 0, 1, 1)
-        grid_layout.addWidget(self.venv_location_line, 2, 1, 1, 1)
-        grid_layout.addWidget(self.select_dir_button, 2, 2, 1, 1)
+        grid_layout.addWidget(venv_comment_label, 2, 0, 1, 1)
+        grid_layout.addWidget(self.venv_comment_line, 2, 1, 1, 1)
 
-        grid_layout.addWidget(requirements_label, 3, 0, 1, 1)
-        grid_layout.addWidget(self.requirements_line, 3, 1, 1, 1)
-        grid_layout.addWidget(self.select_file_button, 3, 2, 1, 1)
+        grid_layout.addWidget(venv_location_label, 3, 0, 1, 1)
+        grid_layout.addWidget(self.venv_location_line, 3, 1, 1, 1)
+        grid_layout.addWidget(self.select_dir_button, 3, 2, 1, 1)
 
-        grid_layout.addWidget(place_holder, 4, 0, 1, 2)
-        grid_layout.addWidget(group_box, 5, 0, 1, 3)
+        grid_layout.addWidget(requirements_label, 4, 0, 1, 1)
+        grid_layout.addWidget(self.requirements_line, 4, 1, 1, 1)
+        grid_layout.addWidget(self.select_file_button, 4, 2, 1, 1)
+
+        grid_layout.addWidget(place_holder, 5, 0, 1, 2)
+        grid_layout.addWidget(group_box, 6, 0, 1, 3)
         self.setLayout(grid_layout)
 
         # options group box
@@ -411,6 +421,7 @@ class BasicSettings(QWizardPage):
         self.python_version = self.field("python_version")
         self.python_path = self.field("python_path")
         self.venv_name = self.field("venv_name")
+        self.venv_comment = self.field("venv_comment")
         self.venv_location = self.field("venv_location")
         self.with_pip = self.field("with_pip")
         self.with_wheel = self.field("with_wheel")
@@ -441,6 +452,7 @@ class BasicSettings(QWizardPage):
         args = (
             self.python_path,
             self.venv_name,
+            self.venv_comment,
             self.venv_location,
             self.with_pip,
             self.with_wheel,

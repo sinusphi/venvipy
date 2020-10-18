@@ -7,6 +7,7 @@ import logging
 
 from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -21,6 +22,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QDialogButtonBox,
     QComboBox,
+    QSizePolicy,
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -141,6 +143,16 @@ class ConsoleDialog(QDialog):
         )
         self.console_window.append(formatted_text)
 
+    def append(self, message):
+        """
+        Print the output from stdin/ stderr to `console_window`.
+        """
+        # metrix = QFontMetrics(self.console_window.font())
+        # formatted_text = metrix.elidedText(
+        #     message, Qt.ElideNone, self.console_window.width()
+        # )
+        formatted_text = message
+        self.console_window.append(formatted_text)
 
     def finish_fail(self):
         """
@@ -329,6 +341,72 @@ class LoggingLevelDialog(QDialog):
 
     def updatelogginglevel(self, i):
         self.level = self.combobox.currentText()
+
+#]===========================================================================[#
+#] Projects List DIALOG [#===================================================[#
+#]===========================================================================[#
+class ProjectsDialog(QDialog):
+    def __init__(self, venv, parent=None,):
+        super(ProjectsDialog, self).__init__(parent)
+
+        self.venv = venv
+
+        self.initUI()
+
+    def initUI(self):
+
+        self.setWindowTitle(f"Dev Projects that reference venv {self.venv}")
+        self.setFixedSize(880, 510)
+        self.center()
+        self.setWindowIcon(QIcon(":/img/profile.png"))
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowSystemMenuHint, True)
+        self.setWindowFlag(Qt.WindowTitleHint, True)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+
+        self.setStyleSheet(
+            """
+            QTextEdit {
+                background-color: black;
+                color: lightgrey;
+                selection-background-color: rgb(50, 50, 60);
+                selection-color: rgb(0, 255, 0)
+            }
+            """
+        )
+
+        self.projects_list = QTextEdit()
+        self.projects_list.setReadOnly(True)
+        self.projects_list.setFontFamily("Monospace")
+        self.projects_list.setFontPointSize(11)
+
+        self.close = QPushButton('Close', self)
+        #sizePolicy = QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # sizePolicy.setHorizontalStretch(1)
+        # sizePolicy.setVerticalStretch(1)
+        #self.close.setSizePolicy(sizePolicy)
+        self.close.setToolTip("Close this dialog...")
+        self.close.clicked.connect(self.close_clicked)
+
+        v_layout = QVBoxLayout(self)
+        v_layout.addWidget(self.projects_list)
+        v_layout.addWidget(self.close)
+
+    def center(self):
+        """Center Dialog."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+    def update(self, text):
+        self.projects_list.append(text)
+
+    def close_clicked(self):
+        self.accept()
+
 
 
 if __name__ == "__main__":

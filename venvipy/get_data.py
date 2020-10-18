@@ -10,8 +10,9 @@ import os
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
+from venvi_cfg import VenvConfigMgr
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -228,6 +229,7 @@ class VenvInfo:
     venv_version: str
     site_packages: str
     is_installed: str
+    comment: str
 
 
 def get_venvs(path):
@@ -257,12 +259,16 @@ def get_venvs(path):
         site_packages = get_pyvenv_cfg(cfg_file, "site_packages")
         is_installed = get_pyvenv_cfg(cfg_file, "installed")
 
+        vcf = VenvConfigMgr(path, venv)
+        vcf.read()
+        comment = vcf.vc.comment
+
         venv_info = VenvInfo(
-            venv_name, venv_version, site_packages, is_installed
+            venv_name, venv_version, site_packages, is_installed, comment
         )
         venv_info_list.append(venv_info)
 
-    return venv_info_list[::-1]
+    return venv_info_list[::-1]   # This reverses the list
 
 
 def get_pyvenv_cfg(cfg_file, cfg):
