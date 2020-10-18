@@ -674,14 +674,14 @@ class VenvTable(BaseTable):
                         sf.write(script_file_contents)
                         logger.debug(f"Script contents: {script_file_contents}")
 
-        # Update the venvi config
-        vcm = VenvConfigMgr(active_dir, venv)
-        if vcm.read():
-            logger.debug(f"Dev Project dir written to venvi cfg file: '{project_dir}'")
-            vcm.vc.projects.append(project_dir)
-            vcm.write()
-        else:
-            logger.debug("No valid venvi config file found")
+                # Update the venvi config
+                vcm = VenvConfigMgr(active_dir, venv)
+                if vcm.read():
+                    logger.debug(f"Dev Project dir written to venvi cfg file: '{project_dir}'")
+                    vcm.vc.projects.append(project_dir)
+                    vcm.write()
+                else:
+                    logger.debug("No valid venvi config file found")
 
     def list_packages(self, event, style):
         """

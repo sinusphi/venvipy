@@ -42,19 +42,19 @@ more.
 
 **The main menu:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
+.. image:: https://raw.githubusercontent.com/eruber/venvipy/main/img/screen-1.png
 
 **The wizard:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2.png
+.. image:: https://raw.githubusercontent.com/eruber/venvipy/main/img/screen-2.png
 
 **Output when running pip commands:**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
+.. image:: https://raw.githubusercontent.com/eruber/venvipy/main/img/screen-3.png
 
 
-Key Features
-------------
+Key Features of Original Repo
+-----------------------------
 
 *  Create virtual environments from any Python version (3.3+) which is
    properly build or installed on your system
@@ -68,16 +68,26 @@ Key Features
 *  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
 *  Install packages from local projects and from repository urls 
    *(currently git only)*
-*  Modify any environment by adding or removing packages *(comming
-   soon)*
+
+Key Features of This Fork
+-------------------------
+*  Works on Windows 10 platforms
+*  Finds python interpreters that are not necessarily on the exeuction path.
+   Looks in a few OS specific installation locations, but also will use a 
+   semi-colon delimite list of install directories defined in the ENV VAR
+   named PYTHON_INSTALLS
+*  Modify any environment by adding packages
+*  Generate venv access scripts to development project root dir
+*  List development projects that use a particular venv if access scripts were
+   generated for it. If your Python dev projects are in one location, use the 
+   ENV VAR named PYTHON_DEV_PROJECTS as a hint the file browser when generating
+   venv access scripts.
+*  Menu control of logging level
+*  Can bootstrap a pip installation into a venv that does not have pip installed using curl.
 
 
-Prerequisits
-------------
-
-Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
-come sometime in the future)
-
+Prerequisites
+-------------
 If you want to run *VenviPy* using your operating system's Python (3.6+)
 you will have to make sure that the two packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
