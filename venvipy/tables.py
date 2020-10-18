@@ -635,15 +635,18 @@ class VenvTable(BaseTable):
             fs_sep = "\\"
             scripts_dir = 'Scripts'
             prefix = ""
-            project_dir = "D:\\Devel\\_python\\dev\\projects"
             eol = "\r\n"
         else:
             ext = ""
             fs_sep = "/"
             scripts_dir = 'bin'
             prefix = "source "
-            project_dir = "~/"
+            
             eol = "\n"
+
+        project_dir = os.getenv("PYTHON_DEV_PROJECTS")
+        if not project_dir:
+            project_dir = os.path.expanduser("~/")
 
         script_file_1 = f"start_venv{ext}"
         script_file_2 = f"stop_venv{ext}"
