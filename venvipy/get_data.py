@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 from venvi_cfg import VenvConfigMgr
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -230,6 +230,7 @@ class VenvInfo:
     site_packages: str
     is_installed: str
     comment: str
+    refs: int
 
 
 def get_venvs(path):
@@ -262,9 +263,10 @@ def get_venvs(path):
         vcf = VenvConfigMgr(path, venv)
         vcf.read()
         comment = vcf.vc.comment
+        refs = str(len(vcf.vc.projects))
 
         venv_info = VenvInfo(
-            venv_name, venv_version, site_packages, is_installed, comment
+            venv_name, venv_version, site_packages, is_installed, comment, refs
         )
         venv_info_list.append(venv_info)
 

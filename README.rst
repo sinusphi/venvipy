@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/cover_slim.png
+.. image:: https://raw.githubusercontent.com/eruber/venvipy/main/img/cover_slim_win_logo.png
 
 **A GUI for managing multiple Python virtual environments**
 
@@ -84,6 +84,7 @@ Key Features of This Fork
    venv access scripts.
 *  Menu control of logging level
 *  Can bootstrap a pip installation into a venv that does not have pip installed using curl.
+*  Refs Column in Venv Table displays how many projects references a particular venv
 
 
 Prerequisites
