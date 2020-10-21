@@ -678,7 +678,12 @@ class VenvTable(BaseTable):
                 vcm = VenvConfigMgr(active_dir, venv)
                 if vcm.read():
                     logger.debug(f"Dev Project dir written to venvi cfg file: '{project_dir}'")
-                    vcm.vc.projects.append(project_dir)
+                    # Only append if project_dir is not in the projects directory list
+                    check_set = set(vcm.vc.projects)
+                    if project_dir in check_set:
+                        logger.info(f"Project Dir: '{project_dir}' already in Project Directory List...")
+                    else:
+                        vcm.vc.projects.append(project_dir)
                     vcm.write()
                 else:
                     logger.debug("No valid venvi config file found")
