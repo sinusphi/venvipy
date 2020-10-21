@@ -688,6 +688,8 @@ class VenvTable(BaseTable):
                 else:
                     logger.debug("No valid venvi config file found")
 
+                self.refresh.emit()
+
     def list_packages(self, event, style):
         """
         Open console dialog and list the installed packages. The argument
