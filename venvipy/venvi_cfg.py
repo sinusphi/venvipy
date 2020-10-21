@@ -12,6 +12,9 @@ The data in this config file is primarily used to:
 import os
 import sys
 import json	  # unfortunately, trying to keep our package dependency count low
+import logging 
+
+logger = logging.getLogger(__name__)
 
 # https://docs.python.org/3/library/dataclasses.html
 from dataclasses import dataclass
@@ -48,8 +51,11 @@ class VenvConfigMgr:
 		self.serialized = None
 		if os.path.exists(self.cfgfile):
 
-			with open(self.cfgfile, 'r') as jfp:
-				self.serialized = json.load(jfp)
+			try:
+				with open(self.cfgfile, 'r') as jfp:
+					self.serialized = json.load(jfp)
+			except Exception:
+				logger.exception(f"Exception reading Venvipy.cfg file at '{self.cfgfile}'")
 
 			# De-Serialize
 			self.vc.venvdir  = self.serialized['venvdir'] 
