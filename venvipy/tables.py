@@ -648,8 +648,8 @@ class VenvTable(BaseTable):
         if not project_dir:
             project_dir = os.path.expanduser("~/")
 
-        script_file_1 = f"start_venv{ext}"
-        script_file_2 = f"stop_venv{ext}"
+        script_file_1 = f"start_{venv}{ext}"
+        script_file_2 = f"stop_{venv}{ext}"
         script_file_1_contents = f"{prefix}{venv_dir}{fs_sep}{scripts_dir}{fs_sep}activate{ext}{eol}"
         if os.name == 'nt':
             script_file_2_contents = f"{prefix}{venv_dir}{fs_sep}{scripts_dir}{fs_sep}deactivate{ext}{eol}"
