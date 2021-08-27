@@ -679,9 +679,9 @@ class InterpreterTable(BaseTable):
             QMessageBox.Yes | QMessageBox.Cancel
         )
         if msg_box_warning == QMessageBox.Yes:
-            with open(get_data.DB_FILE, "r") as f:
+            with open(get_data.DB_FILE, "r", encoding="utf-8") as f:
                 lines = f.readlines()
-            with open(get_data.DB_FILE, "w") as f:
+            with open(get_data.DB_FILE, "w", encoding="utf-8") as f:
                 for line in lines:
                     if item not in line:
                         f.write(line)
