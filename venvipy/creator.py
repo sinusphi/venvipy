@@ -156,7 +156,7 @@ def fix_requirements(require_file):
     a `pkg-resources==0.0.0` entry, then comment this line
     to prevent pip from crashing.
     """
-    with open(require_file, "r+") as f:
+    with open(require_file, "r+", encoding="utf-8") as f:
         content = f.read()
 
         if "#pkg-resources==0.0.0" in content:
