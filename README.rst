@@ -35,7 +35,7 @@ virtual environments or modifing any existing Python environment (that
 supports the built-in ``venv`` module) quick and easy.
 
 It provides a set of features like a wizard, that guides the user through
-the creation process, a table that shows an overview over installed
+the creation process, a table that shows an overview of installed
 environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
 more.
@@ -60,7 +60,6 @@ Key Features
    properly build or installed on your system
 *  Install and update Pip with one click
 *  Clone an environment from a requirements file
-*  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Generate requirements from an existing environment
 *  List detailed information about installed packages
 *  Show dependency tree (using
@@ -79,7 +78,7 @@ Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
 come sometime in the future)
 
 If you want to run *VenviPy* using your operating system's Python (3.6+)
-you will have to make sure that the two packages ``python3-venv`` and
+you will have to make sure that the packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
 venv and pip will be used to perform the commands.
 
@@ -166,7 +165,7 @@ Known issues
 ------------
 
 Sometimes it might happen that the wizard page freezes when starting 
-the creation process. Restarting *VenviPy* fixes this. 
+the creation process. In this case just restart *VenviPy*. 
 
 
 Contributing
