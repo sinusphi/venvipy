@@ -124,8 +124,12 @@ class VenvWizard(QWizard):
         # process the flow only if the current page is BasicSettings()
         if self.currentId() != self.basic_settings_id:
             return super().nextId()
-        if self.basic_settings.with_pip_check_box.isChecked():
-            return self.install_packages_id
+        # remove the InstallPackages() page as long as the `pip search`
+        # command doesn't work (PyPI's XMLRPC API is currently disabled
+        # due to unmanageable load and will be deprecated in the near
+        # future. See https://status.python.org/ for more information)
+        #if self.basic_settings.with_pip_check_box.isChecked():
+            #return self.install_packages_id
         return self.final_page_id
 
 
@@ -325,7 +329,7 @@ class BasicSettings(QWizardPage):
         self.interpreter_combo_box.clear()
         self.interpreter_combo_box.addItem("---")
 
-        with open(get_data.DB_FILE, newline="") as cf:
+        with open(get_data.DB_FILE, newline="", encoding="utf-8") as cf:
             reader = csv.DictReader(cf, delimiter=",")
             for info in reader:
                 self.interpreter_combo_box.addItem(
@@ -342,8 +346,9 @@ class BasicSettings(QWizardPage):
             "Select Python Interpreter",
             "/usr/local/bin",
             "Python binary (\
-                python3.3 python3.4 python3.5 python3.6 \
-                python3.7 python3.8 python3.9 \
+                python3.3 python3.4 python3.5 \
+                python3.6 python3.7 python3.8 \
+                python3.9 python3.10 python3.11 \
             )"
         )
         bin_file = file_name[0]
@@ -457,7 +462,7 @@ class BasicSettings(QWizardPage):
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
             f"New Python {self.python_version[7:10]} executable in \n"
-            f"'{self.venv_location}/{self.venv_name}/bin'. \n"
+            f"'{self.venv_location}/{self.venv_name}/bin'.         \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
         with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
@@ -726,8 +731,8 @@ class FinalPage(QWizardPage):
 
         self.setTitle("Finished")
         self.setSubTitle(
-            "All Tasks have been completed successfully. Click Finish "
-            "to close the wizard and return back to the main menu."
+            "All Tasks have been completed successfully. Click the Finish "
+            "Button to close the wizard."
         )
 
         h_layout = QHBoxLayout(self)
@@ -788,7 +793,7 @@ class FinalPage(QWizardPage):
         if __name__ == "__main__":
             finish_button.clicked.connect(self.wizard().force_exit)
 
-        # call update_zen_line to get a different line every new session
+        # call update_zen_line() to get a different line every on new session
         self.wizard().refresh.connect(self.update_zen_line)
         self.wizard().refresh.emit()
 
