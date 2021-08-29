@@ -1,5 +1,5 @@
 # pyqt
-PyQt5==5.14.0
+PyQt5==5.15.4
 PyQt5-sip
 
 # dataclasses
