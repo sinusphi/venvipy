@@ -61,7 +61,7 @@ def ensure_active_file():
     """
     ensure_confdir()
     if not os.path.exists(ACTIVE_FILE):
-        with open(ACTIVE_FILE, "w+") as f:
+        with open(ACTIVE_FILE, "w+", encoding="utf-8") as f:
             f.write("")
 
 
@@ -83,12 +83,14 @@ def get_python_installs(relaunching=False):
     Write the found Python versions to `py-installs`. Create
     a new database if `relaunching=True`.
     """
-    versions = ["3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"]
+    versions = [
+        "3.11", "3.10", "3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"
+    ]
     py_info_list = []
     ensure_confdir()
 
     if not os.path.exists(DB_FILE) or relaunching:
-        with open(DB_FILE, "w", newline="") as cf:
+        with open(DB_FILE, "w", newline="", encoding="utf-8") as cf:
             fields = ["PYTHON_VERSION", "PYTHON_PATH"]
             writer = csv.DictWriter(
                 cf,
@@ -126,7 +128,7 @@ def add_python(py_path):
     """
     ensure_dbfile()
 
-    with open(DB_FILE, "a", newline="") as cf:
+    with open(DB_FILE, "a", newline="", encoding="utf-8") as cf:
         fields = ["PYTHON_VERSION", "PYTHON_PATH"]
         writer = csv.DictWriter(
             cf,
@@ -150,9 +152,9 @@ def remove_env():
     Remove our interpreter if we're running in a virtual
     environment.
     """
-    with open(DB_FILE, "r") as f:
+    with open(DB_FILE, "r", encoding="utf-8") as f:
         lines = f.readlines()
-    with open(DB_FILE, "w") as f:
+    with open(DB_FILE, "w", encoding="utf-8") as f:
         for line in lines:
             if sys.executable not in line.strip("\n"):
                 f.write(line)
@@ -212,11 +214,16 @@ def get_pyvenv_cfg(cfg_file, cfg):
     Values for `cfg` can be strings: `version`, `py_path`,
     `site_packages` or `installed`.
     """
-    with open(cfg_file, "r") as f:
+    with open(cfg_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
+    if lines[2][13] == ".":
+        version = lines[2][10:13].strip()  # python 3.x
+    else:
+        version = lines[2][10:14].strip()  # python 3.10+
+
     version_str = to_version(lines[2][10:].strip())
-    binary_path = to_path(lines[0][7:].strip(), lines[2][10:13].strip())
+    binary_path = to_path(lines[0][7:].strip(), version)
     site_packages = lines[1][31:].strip()
 
     if cfg == "version":
@@ -234,7 +241,7 @@ def get_pyvenv_cfg(cfg_file, cfg):
 
     if cfg == "installed":
         ensure_dbfile()
-        with open(DB_FILE, newline="") as cf:
+        with open(DB_FILE, newline="", encoding="utf-8") as cf:
             reader = csv.DictReader(cf, delimiter=",")
             for info in reader:
                 if binary_path == info["PYTHON_PATH"]:
@@ -248,7 +255,7 @@ def get_active_dir_str():
     """Get the default venv directory string from `active` file.
     """
     ensure_active_file()
-    with open(ACTIVE_FILE, "r") as f:
+    with open(ACTIVE_FILE, "r", encoding="utf-8") as f:
         active_dir = f.read()
         return active_dir
     return ""
