@@ -4,6 +4,7 @@ This module contains some dialogs.
 """
 import sys
 import logging
+from datetime import date
 
 from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, pyqtSlot
@@ -213,9 +214,10 @@ class InfoAboutVenviPy(QDialog):
         )
 
         # copyright
+        current_year = str(date.today().year)
         copyright_label = QLabel(
-            '<p><span style="font-size:10pt;">\
-                Copyright © 2019-2020 Youssef Serestou\
+            f'<p><span style="font-size:10pt;">\
+                Copyright © 2019-{current_year} Youssef Serestou\
             </span></p>'
         )
 
