@@ -453,7 +453,7 @@ class MainWindow(QMainWindow):
 
         # check if any Python is installed
         if os.path.exists(get_data.DB_FILE):
-            with open(get_data.DB_FILE, "r") as f:
+            with open(get_data.DB_FILE, "r", encoding="utf-8") as f:
                 lines = f.readlines()
             if len(lines) < 2:
                 self.launching_without_python()
@@ -516,7 +516,7 @@ class MainWindow(QMainWindow):
         """
         get_data.ensure_dbfile()
 
-        with open(get_data.DB_FILE, newline="") as cf:
+        with open(get_data.DB_FILE, newline="", encoding="utf-8") as cf:
             reader = csv.DictReader(cf, delimiter=",")
             self.model_interpreter_table.setRowCount(0)
             for info in reader:
@@ -590,7 +590,7 @@ class MainWindow(QMainWindow):
 
         if active_dir != "":
             if os.path.exists(active_file):
-                with open(active_file, "w") as f:
+                with open(active_file, "w", encoding="utf-8") as f:
                     f.write(active_dir)
                 self.pop_venv_table()
                 self.update_label()
