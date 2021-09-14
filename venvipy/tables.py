@@ -133,7 +133,17 @@ class VenvTable(BaseTable):
             statusTip="Upgrade Pip to the latest version"
         )
         upgrade_pip_action.triggered.connect(
-            lambda: self.upgrade_pip(event)
+            lambda: self.upgrade_pip(event, pkg="pip")
+        )
+
+        install_wheel_action = QAction(
+            QIcon.fromTheme("system-software-update"),
+            "Install &Wheel",
+            self,
+            statusTip="Install wheel package"
+        )
+        install_wheel_action.triggered.connect(
+            lambda: self.install_wheel(event, pkg="wheel")
         )
 
         install_packages_action = QAction(
@@ -235,6 +245,7 @@ class VenvTable(BaseTable):
         #]===================================================================[#
 
         context_menu.addAction(upgrade_pip_action)
+        context_menu.addAction(install_wheel_action)
 
         # install sub menu
         context_menu.addMenu(install_sub_menu)
@@ -316,18 +327,30 @@ class VenvTable(BaseTable):
         return False
 
 
-    def upgrade_pip(self, event):
+    def upgrade_pip(self, event, pkg):
         """Run `pip install --upgrade pip` command.
+        """
+        self.install_sys_pkg(pkg)
+
+
+    def install_wheel(self, event, pkg):
+        """Run `pip install --upgrade wheel` command.
+        """
+        self.install_sys_pkg(pkg)
+
+
+    def install_sys_pkg(self, pkg):
+        """Run `pip install --upgrade <pkg>` command.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
-            self.console.setWindowTitle("Updating Pip")
-            logger.debug("Attempting to update Pip...")
+            self.console.setWindowTitle(f"Installing latest {pkg}")
+            logger.debug(f"Installing latest version of {pkg}...")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(creator.cmds[0], [creator.opts[0], "pip"])
+            self.manager.run_pip(creator.cmds[0], [creator.opts[0], f"{pkg}"])
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
@@ -342,7 +365,32 @@ class VenvTable(BaseTable):
         """
         Install additional packages into the selected environment.
         """
-        pass
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+
+        if self.has_pip(active_dir, venv):
+            project_name, ok = QInputDialog.getText(
+                self,
+                "Specify project",
+                "Enter a PyPI project name:" + " " * 65
+            )
+
+            if project_name != "":
+                self.console.setWindowTitle(f"Installing {project_name}")
+                logger.debug("Installing specified project...")
+
+                self.manager = PipManager(active_dir, venv)
+                self.manager.run_pip(
+                    creator.cmds[0], [creator.opts[0], f"'{project_name}'"]
+                )
+                self.manager.started.connect(self.console.exec_)
+
+                # display the updated output
+                self.manager.textChanged.connect(self.console.update_status)
+
+                # clear the content on window close
+                if self.console.close:
+                    self.console.console_window.clear()
 
 
     def install_requires(self, event):
@@ -356,7 +404,7 @@ class VenvTable(BaseTable):
         if self.has_pip(active_dir, venv):
             file_name = QFileDialog.getOpenFileName(
                 self,
-                "Select a requirements"
+                "Specify a requirements file"
             )
             file_path = file_name[0]
 
@@ -420,8 +468,8 @@ class VenvTable(BaseTable):
         if self.has_pip(active_dir, venv):
             url, ok = QInputDialog.getText(
                 self,
-                "Specify VSC project url",
-                "Enter url to repository:" + " " * 65
+                "Specify project",
+                "Enter repository url:" + " " * 65
             )
 
             if url != "":
@@ -431,7 +479,9 @@ class VenvTable(BaseTable):
                     f"{venv_bin} -m pip install --no-cache-dir -e {project_url}"
                 )
                 self.progress_bar.setWindowTitle(f"Installing {project_name}")
-                self.progress_bar.status_label.setText("Cloning repository...")
+                self.progress_bar.status_label.setText(
+                    "Cloning repository... (this might take a moment)"
+                )
                 logger.debug(f"Installing {project_name}...")
 
                 wrapper = partial(
@@ -445,7 +495,7 @@ class VenvTable(BaseTable):
         Show an info message when the cloning process has finished successfully.
         """
         msg_txt = (
-            "Successfully installed package       \nfrom VSC repository.\n"
+            "Successfully installed package       \nfrom repository.\n"
         )
         QMessageBox.information(self, "Done", msg_txt)
 
