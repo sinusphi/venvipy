@@ -31,8 +31,7 @@ Introduction
 ------------
 
 *VenviPy* is a simple graphical user interface for creating customized
-virtual environments or modifing any existing Python environment (that
-supports the built-in ``venv`` module) quick and easy.
+virtual environments or modifing any existing Python environment quick and easy.
 
 It provides a set of features like a wizard, that guides the user through
 the creation process, a table that shows an overview of installed
@@ -56,19 +55,20 @@ more.
 Key Features
 ------------
 
-*  Create virtual environments from any Python version (3.3+) which is
+*  Create virtual environments with any Python version (3.3+) which is
    properly build or installed on your system
-*  Install and update Pip with one click
 *  Clone an environment from a requirements file
 *  Generate requirements from an existing environment
+
+*  Install and update Pip and Wheel with one click
+*  Install additional packages
+*  Install from a local stored project
+*  Install from source repository url *(currently git only)*
+
 *  List detailed information about installed packages
 *  Show dependency tree (using
    `pipdeptree <https://pypi.org/project/pipdeptree/#description>`__ package)
 *  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
-*  Install packages from local projects and from repository urls 
-   *(currently git only)*
-*  Modify any environment by adding or removing packages *(comming
-   soon)*
 
 
 Prerequisits
@@ -144,7 +144,7 @@ or run:
 
 .. code-block:: bash
 
-    $ (your_venv) pip install PyQt5==5.14.0 PyQt5-sip
+    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-sip
 
 Then you can
 
