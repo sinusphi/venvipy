@@ -78,13 +78,14 @@ class PipManager(QObject):
                 options = []
 
             venv_path = os.path.join(self._venv_dir, self._venv_name)
-            pip = f"pip {command} {' '.join(options)};"
-            pipdeptree = f"pipdeptree {' '.join(options)};"
+            pip = f"pip {command} {' '.join(options)}"
+            pipdeptree = f"pipdeptree {' '.join(options)}"
+
             task = pipdeptree if command == "pipdeptree" else pip
 
             script = (
                 f"source {venv_path}/bin/activate;"
-                f"{task}"
+                f"{task};"
                 "deactivate;"
             )
             self._process.start("bash", ["-c", script])
@@ -100,13 +101,10 @@ class PipManager(QObject):
         """Show the current process state.
         """
         if state == QProcess.Starting:
-            #print("[PROCESS]: Started")
             logger.debug("Started")
         elif state == QProcess.Running:
-            #print("[PROCESS]: Running")
             logger.debug("Running")
         elif state == QProcess.NotRunning:
-            #print("[PROCESS]: Stopped")
             logger.debug("Done.")
             self.textChanged.emit(
                 "\n\nPress [ESC] to continue..."
@@ -117,7 +115,6 @@ class PipManager(QObject):
     def on_finished(self, exitCode):
         """Show exit code when finished.
         """
-        #print(f"[PROCESS]: Exit code: {exitCode}")
         logger.debug(f"Exit code: {exitCode}")
         self._process.kill()
 
@@ -127,7 +124,6 @@ class PipManager(QObject):
         """Read from `stdout` and send the output to `update_status()`.
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
-        #print(f"[PIP]: {message}")
         logger.debug(message)
         self.textChanged.emit(message)
 
@@ -137,7 +133,6 @@ class PipManager(QObject):
         """Read from `stderr`, then kill the process.
         """
         message = self._process.readAllStandardError().data().decode().strip()
-        #print(f"[ERROR]: {message}")
         logger.error(message)
         self.textChanged.emit(message)
         self.failed.emit()

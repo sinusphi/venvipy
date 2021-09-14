@@ -47,14 +47,14 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-        logger.debug("Installing from VSC url...")
+        logger.debug("Installing from repository...")
 
         clone_repo(command)
         self.finished.emit()
 
 
 #]===========================================================================[#
-#] CLONE AND INSTALL FROM GIT REPO [#========================================[#
+#] CLONE / INSTALL FROM REPOSITORY [#========================================[#
 #]===========================================================================[#
 
 def clone_repo(command):
