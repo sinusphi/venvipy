@@ -46,12 +46,22 @@ class BaseTable(QTableView):
 
     def get_selected_item(self):
         """
-        Get the item name of the selected row (index 0).
+        Return `str` from `name` column of the selected row.
         """
         listed_items = self.selectionModel().selectedRows()
         for index in listed_items:
             selected_item = index.data()
             return selected_item
+
+
+    def get_comment(self):
+        """
+        Return `str` from `comment` column of the selected row.
+        """
+        index = self.currentIndex()
+        row_index = self.selectionModel().selectedRows()
+        row_comment = index.sibling(row_index[0].row(), 4).data()
+        return row_comment
 
 
 
@@ -79,6 +89,9 @@ class VenvTable(BaseTable):
         self.folder_icon = QIcon(
             self.style().standardIcon(QStyle.SP_DirOpenIcon)
         )
+        self.info_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+        )
 
         self.progress_bar = ProgBarDialog()
         self.console = ConsoleDialog()
@@ -98,29 +111,6 @@ class VenvTable(BaseTable):
 
 
     def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
-
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
-
-        # sub menus
-        details_sub_menu = QMenu(
-            "Det&ails",
-            self,
-            icon=self.info_icon
-        )
-        install_sub_menu = QMenu(
-            "&Install",
-            self,
-            icon=QIcon.fromTheme("software-install")
-        )
-        editable_sub_menu = QMenu(
-            "&Editable",
-            self,
-            icon=QIcon.fromTheme("software-install")
-        )
-
 
         #]===================================================================[#
         #] ACTIONS [#========================================================[#
@@ -192,6 +182,26 @@ class VenvTable(BaseTable):
             lambda: self.save_requires(event)
         )
 
+        comment_add_action = QAction(
+            self.info_icon,
+            "&Add or modify comment",
+            self,
+            statusTip="Add or modify comment"
+        )
+        comment_add_action.triggered.connect(
+            lambda: self.comment_add(event)
+        )
+
+        comment_remove_action = QAction(
+            self.info_icon,
+            "&Remove comment",
+            self,
+            statusTip="Remove comment"
+        )
+        comment_remove_action.triggered.connect(
+            lambda: self.comment_remove(event)
+        )
+
         list_packages_action = QAction(
             "&List installed packages",
             self,
@@ -244,6 +254,29 @@ class VenvTable(BaseTable):
         #] MENUS [#==========================================================[#
         #]===================================================================[#
 
+        context_menu = QMenu(self)
+
+        # pop up only if clicking on a row
+        if self.indexAt(event.pos()).isValid():
+            context_menu.popup(QCursor.pos())
+
+        # sub menus
+        details_sub_menu = QMenu(
+            "Det&ails",
+            self,
+            icon=self.info_icon
+        )
+        install_sub_menu = QMenu(
+            "&Install",
+            self,
+            icon=QIcon.fromTheme("software-install")
+        )
+        comment_sub_menu = QMenu(
+            "&Comment",
+            self,
+            icon=self.info_icon
+        )
+
         context_menu.addAction(upgrade_pip_action)
         context_menu.addAction(install_wheel_action)
 
@@ -260,6 +293,11 @@ class VenvTable(BaseTable):
         details_sub_menu.addAction(list_freeze_action)
         details_sub_menu.addAction(list_deptree_action)
 
+        # comment sub menu
+        context_menu.addMenu(comment_sub_menu)
+        comment_sub_menu.addAction(comment_add_action)
+        comment_sub_menu.addAction(comment_remove_action)
+
         context_menu.addAction(save_requires_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
@@ -269,9 +307,9 @@ class VenvTable(BaseTable):
         """Test wether the Python version required is installed.
         """
         cfg_file = os.path.join(venv_path, "pyvenv.cfg")
-        is_installed = get_data.get_pyvenv_cfg(cfg_file, "installed")
-        version = get_data.get_pyvenv_cfg(cfg_file, "version")
-        py_path = get_data.get_pyvenv_cfg(cfg_file, "py_path")
+        is_installed = get_data.get_config(cfg_file, "installed")
+        version = get_data.get_config(cfg_file, "version")
+        py_path = get_data.get_config(cfg_file, "py_path")
         msg_txt = (
             f"This environment requires {version} \nfrom {py_path} which is \nnot installed.\n"
         )
@@ -600,6 +638,65 @@ class VenvTable(BaseTable):
                     self.list_packages(event, style)
 
 
+    def comment_add(self, event):
+        """Add or modify a comment.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+        comment_old = self.get_comment()
+        venvipy_cfg = os.path.join(active_dir, venv, "venvipy.cfg")
+
+        if not os.path.exists(venvipy_cfg):
+            comment_new, ok = QInputDialog.getText(
+                self,
+                "Enter comment",
+                "\nEnter a single line comment:" + " " * 70
+            )
+            if len(comment_new) > 0:
+                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
+                    f.write(comment_new)
+                    logger.debug("Comment saved")
+
+        else:
+            comment_new, ok = QInputDialog.getText(
+                self,
+                "Modify comment",
+                "\nModify your comment:" + " " * 70,
+                text=comment_old
+            )
+            if len(comment_new) > 0:
+                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
+                    f.write(comment_new)
+                    logger.debug("Comment updated")
+            else:
+                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
+                    f.write(comment_old)
+
+        # refresh venv table
+        self.refresh.emit()
+
+
+    def comment_remove(self, event):
+        """Remove comment.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+        venvipy_cfg = os.path.join(active_dir, venv, "venvipy.cfg")
+
+        if os.path.exists(venvipy_cfg):
+            msg_box_warning = QMessageBox.warning(
+                self,
+                "Remove comment",
+                "Delete this comment.        \n"
+                "Are you sure?\n",
+                QMessageBox.Yes | QMessageBox.Cancel
+            )
+            if msg_box_warning == QMessageBox.Yes:
+                os.remove(venvipy_cfg)
+                logger.debug(f"Successfully deleted '{venvipy_cfg}'")
+                self.refresh.emit()
+
+
     def open_venv_dir(self, event):
         """Open the selected venv directory.
         """
@@ -623,8 +720,9 @@ class VenvTable(BaseTable):
         if self.venv_exists(venv_path):
             msg_box_critical = QMessageBox.critical(
                 self,
-                "Confirm",
-                f"Are you sure you want to delete '{venv}'?",
+                "Delete venv",
+                f"Delete '{venv}'?           \n"
+                "Are you sure?\n",
                 QMessageBox.Yes | QMessageBox.Cancel
             )
             if msg_box_critical == QMessageBox.Yes:
@@ -725,7 +823,8 @@ class InterpreterTable(BaseTable):
         msg_box_warning = QMessageBox.warning(
             self,
             "Confirm",
-            "Remove this item from list.     \nAre you sure?",
+            "Remove this item from list.       \n"
+            "Are you sure?\n",
             QMessageBox.Yes | QMessageBox.Cancel
         )
         if msg_box_warning == QMessageBox.Yes:

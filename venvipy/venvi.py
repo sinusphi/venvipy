@@ -14,6 +14,7 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))
 os.chdir(CURRENT_DIR)
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
 from PyQt5.QtGui import (
     QIcon,
@@ -314,10 +315,14 @@ class MainWindow(QMainWindow):
         h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
-        self.model_venv_table = QStandardItemModel(0, 3, centralwidget)
-        self.model_venv_table.setHorizontalHeaderLabels(
-            ["Venv", "Version", "Packages", "installed"]
-        )
+        self.model_venv_table = QStandardItemModel(0, 4, centralwidget)
+        self.model_venv_table.setHorizontalHeaderLabels([
+            "Venv",
+            "Version",
+            "Packages",
+            "Installed",
+            "Comment"
+        ])
         self.venv_table.setModel(self.model_venv_table)
 
         # adjust column width
@@ -536,15 +541,18 @@ class MainWindow(QMainWindow):
         """
         self.model_venv_table.setRowCount(0)
 
-        for info in get_data.get_active_dir():
+        for info in get_data.get_selected_dir():
             self.model_venv_table.insertRow(0)
             for i, text in enumerate((
                     info.venv_name,
                     info.venv_version,
                     info.site_packages,
-                    info.is_installed
+                    info.is_installed,
+                    info.venv_comment
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
+
+        self.model_venv_table.sort(0, QtCore.Qt.AscendingOrder)
 
 
     def update_label(self):
@@ -584,13 +592,11 @@ class MainWindow(QMainWindow):
             "Open a folder containing virtual environments"
         )
         self.directory_line.setText(directory)
-
-        active_file = os.path.expanduser("~/.venvipy/active")
         active_dir = self.directory_line.text()
 
         if active_dir != "":
-            if os.path.exists(active_file):
-                with open(active_file, "w", encoding="utf-8") as f:
+            if os.path.exists(get_data.ACTIVE_FILE):
+                with open(get_data.ACTIVE_FILE, "w", encoding="utf-8") as f:
                     f.write(active_dir)
                 self.pop_venv_table()
                 self.update_label()

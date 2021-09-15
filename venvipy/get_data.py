@@ -15,7 +15,7 @@ __version__ = "0.3.3"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
-ACTIVE_FILE = os.path.expanduser("~/.venvipy/active")
+ACTIVE_FILE = os.path.expanduser("~/.venvipy/selected-dir")
 
 
 
@@ -171,6 +171,7 @@ class VenvInfo:
     venv_version: str
     site_packages: str
     is_installed: str
+    venv_comment: str
 
 
 def get_venvs(path):
@@ -178,7 +179,7 @@ def get_venvs(path):
     Get the available virtual environments
     from the specified folder.
     """
-    # return an emtpty list if directory doesn"t exist
+    # return an emtpty list if directory doesn't exist
     if not os.path.isdir(path):
         return []
 
@@ -187,6 +188,8 @@ def get_venvs(path):
     for i, venv in enumerate(os.listdir(path)):
         # build path to venv directory
         valid_venv = os.path.join(path, venv)
+
+        # only look for dirs
         if not os.path.isdir(valid_venv):
             continue
 
@@ -195,24 +198,32 @@ def get_venvs(path):
         if not os.path.isfile(cfg_file):
             continue
 
+        # build path to venvipy.cfg file
+        venvipy_cfg_file = os.path.join(valid_venv, "venvipy.cfg")
+
         venv_name = os.path.basename(valid_venv)
-        venv_version = get_pyvenv_cfg(cfg_file, "version")
-        site_packages = get_pyvenv_cfg(cfg_file, "site_packages")
-        is_installed = get_pyvenv_cfg(cfg_file, "installed")
+        venv_version = get_config(cfg_file, "version")
+        site_packages = get_config(cfg_file, "site_packages")
+        is_installed = get_config(cfg_file, "installed")
+        venv_comment = get_comment(venvipy_cfg_file)
 
         venv_info = VenvInfo(
-            venv_name, venv_version, site_packages, is_installed
+            venv_name,
+            venv_version,
+            site_packages,
+            is_installed,
+            venv_comment
         )
         venv_info_list.append(venv_info)
 
     return venv_info_list[::-1]
 
 
-def get_pyvenv_cfg(cfg_file, cfg):
+def get_config(cfg_file, cfg):
     """
     Return the values as string from a `pyvenv.cfg` file.
-    Values for `cfg` can be strings: `version`, `py_path`,
-    `site_packages` or `installed`.
+    Values for `cfg` can be: `version`, `py_path`,
+    `site_packages`, `installed`, `comment`.
     """
     with open(cfg_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
@@ -252,22 +263,33 @@ def get_pyvenv_cfg(cfg_file, cfg):
 
 
 def get_active_dir_str():
-    """Get the default venv directory string from `active` file.
+    """Return path to selected directory.
     """
     ensure_active_file()
     with open(ACTIVE_FILE, "r", encoding="utf-8") as f:
-        active_dir = f.read()
-        return active_dir
+        selected_dir = f.read()
+        return selected_dir
     return ""
 
 
-def get_active_dir():
+def get_selected_dir():
     """
-    Get the active venv directory path string from `active`
-    file and pass it to `get_venvs()`.
+    Get the selected directory path from `selected-dir`
+    file. Return `get_venvs()`.
     """
-    active_dir = get_active_dir_str()
-    return get_venvs(active_dir)
+    selected_dir = get_active_dir_str()
+    return get_venvs(selected_dir)
+
+
+def get_comment(cfg_file):
+    """Get the comment string from `venvipy_cfg` file.
+    """
+    if os.path.exists(cfg_file):
+        with open(cfg_file, "r", encoding="utf-8") as f:
+            venv_comment = f.read()
+
+        return venv_comment
+    return ""
 
 
 #]===========================================================================[#
@@ -284,7 +306,7 @@ class PackageInfo:
 
 def get_package_infos(name):
     """
-    Get the package"s name, version and description
+    Get the package's name, version and summary
     from [PyPI](https://pypi.org/pypi).
     """
     client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
