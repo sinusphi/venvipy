@@ -1,3 +1,20 @@
+#    VenviPy - A Virtual Environment Manager for Python.
+#    Copyright (C) 2021 - Youssef Serestou - sinusphi.sq@gmail.com
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License or any
+#    later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    A copy of the GNU General Public License version 3 named LICENSE is
+#    in the root directory of VenviPy.
+#    If not, see <https://www.gnu.org/licenses/licenses.en.html#GPL>.
+
 # -*- coding: utf-8 -*-
 """
 This module contains some dialogs.
@@ -170,7 +187,7 @@ class InfoAboutVenviPy(QDialog):
 
     def initUI(self):
         self.setWindowTitle("About VenviPy")
-        self.setFixedSize(420, 350)
+        self.setFixedSize(495, 395)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
@@ -178,10 +195,10 @@ class InfoAboutVenviPy(QDialog):
         # logo
         logo = QLabel()
         pixmap = QPixmap(":/img/default.png")
-        logo_scaled = pixmap.scaled(136, 136, Qt.KeepAspectRatio)
+        logo_scaled = pixmap.scaled(140, 140, Qt.KeepAspectRatio)
         logo.setPixmap(logo_scaled)
 
-        place_holder = QLabel(maximumHeight=1)
+        place_holder_1 = QLabel(maximumHeight=1)
 
         # title
         title_label = QLabel(
@@ -189,7 +206,6 @@ class InfoAboutVenviPy(QDialog):
                 <b>VenviPy</b>\
             </span></p>'
         )
-        #title_label.setFont(QFont("FreeSerif", italic=True))
 
         # version
         version_label = QLabel(
@@ -205,6 +221,7 @@ class InfoAboutVenviPy(QDialog):
             </span></p>'
         )
 
+        # link to repository
         repo_label = QLabel(
             '<p><span style="font-size:11pt;">\
             <a href="https://github.com/sinusphi/venvipy">\
@@ -217,26 +234,51 @@ class InfoAboutVenviPy(QDialog):
         current_year = str(date.today().year)
         copyright_label = QLabel(
             f'<p><span style="font-size:10pt;">\
-                Copyright © 2019-{current_year} Youssef Serestou\
+                Copyright © 2019-{current_year} - Youssef Serestou \
             </span></p>'
+        )
+
+        place_holder_2 = QLabel(maximumHeight=15)
+
+        disclaimer_label_1 = QLabel(
+            '<p><span style="font-size:10pt;">\
+                This program comes WITHOUT ANY WARRANTY.\
+            </span></p>',
+        )
+
+        disclaimer_label_2 = QLabel(
+            '<p><span style="font-size:10pt;">\
+                Visit the \
+                <a href="https://www.gnu.org/licenses/licenses.en.html#GPL">\
+                GNU General Public License, version 3 or later</a> \
+                for more information.\
+            </span></p>',
+            openExternalLinks=True
         )
 
         # close button
         close_button = QPushButton("Close", clicked=self.close)
-        close_button.setMinimumSize(QSize(110, 15))
+        close_button.setFixedWidth(135)
+        close_button.setFixedHeight(30)
 
 
+        # layout
         grid_layout = QGridLayout(self)
         grid_layout.setContentsMargins(15, 15, 10, 15)
 
         grid_layout.addWidget(logo, 0, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(place_holder, 1, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(place_holder_1, 1, 0, Qt.AlignHCenter)
         grid_layout.addWidget(title_label, 2, 0, Qt.AlignHCenter)
         grid_layout.addWidget(version_label, 3, 0, Qt.AlignHCenter)
         grid_layout.addWidget(subtitle_label, 4, 0, Qt.AlignHCenter)
         grid_layout.addWidget(repo_label, 5, 0, Qt.AlignHCenter)
         grid_layout.addWidget(copyright_label, 6, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(close_button, 7, 0, Qt.AlignRight)
+
+        grid_layout.addWidget(place_holder_2, 7, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(disclaimer_label_1, 8, 0, Qt.AlignHCenter)
+        grid_layout.addWidget(disclaimer_label_2, 9, 0, Qt.AlignHCenter)
+
+        grid_layout.addWidget(close_button, 10, 0, Qt.AlignRight)
         self.setLayout(grid_layout)
 
 
