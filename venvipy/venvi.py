@@ -1,3 +1,20 @@
+#    VenviPy - A Virtual Environment Manager for Python.
+#    Copyright (C) 2021 - Youssef Serestou - sinusphi.sq@gmail.com
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License or any
+#    later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    A copy of the GNU General Public License version 3 named LICENSE is
+#    in the root directory of VenviPy.
+#    If not, see <https://www.gnu.org/licenses/licenses.en.html#GPL>.
+
 # -*- coding: utf-8 -*-
 """
 The main module of VenviPy.
@@ -69,7 +86,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("VenviPy")
-        self.resize(1100, 690)
+        self.resize(1250, 790)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
@@ -434,14 +451,9 @@ class MainWindow(QMainWindow):
         menu_venv.addAction(self.action_exit)
         menu_bar.addAction(menu_venv.menuAction())
 
-        #menu_extras = QMenu("&Extras", menu_bar)
-        #menu_extras.addAction(self.action_search_pypi)
-        #menu_bar.addAction(menu_extras.menuAction())
-
         menu_help = QMenu("&Help", menu_bar)
-        menu_help.addAction(self.action_about_venvipy)
         menu_help.addAction(self.action_about_qt)
-
+        menu_help.addAction(self.action_about_venvipy)
         menu_bar.addAction(menu_help.menuAction())
 
         msg_txt = (
