@@ -112,7 +112,7 @@ class ConsoleDialog(QDialog):
 
 
     def initUI(self):
-        self.resize(880, 510)
+        self.resize(910, 555)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
