@@ -332,7 +332,7 @@ def get_package_infos(pkg):
     snippets = []
     package_info_list = []
 
-    for page in range(1, 4):
+    for page in range(1, 3):
         params = {"q": pkg, "page": page}
         with requests.Session() as session:
             res = session.get(PYPI_URL, params=params)
