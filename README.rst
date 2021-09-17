@@ -137,7 +137,8 @@ Clone the repository (use the ``--depth`` option):
 
     $ (your_venv) git clone --depth 1 git@github.com:sinusphi/venvipy.git
 
-Cd into the repo folder and install the dependencies:
+Cd into the repo folder and install the dependencies (if you're using Python 3.6 you will
+also need to install the `dataclasses` package):
 
 .. code-block:: bash
 
