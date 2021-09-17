@@ -30,10 +30,11 @@
 Introduction
 ------------
 
-*VenviPy* is a simple graphical user interface for creating customized
-virtual environments or modifing any existing Python environment quick and easy.
+*VenviPy* is a graphical user interface for creating or modifing customized
+virtual environments quick and easy. It was developed for \*NIX systems and
+has been tested on various distributions.
 
-It provides a set of features like a wizard, that guides the user through
+*VenviPy* provides a set of features like a wizard, that guides the user through
 the creation process, a table that shows an overview of installed
 environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
@@ -59,9 +60,10 @@ Key Features
    properly build or installed on your system
 *  Clone an environment from a requirements file
 *  Generate requirements from an existing environment
+*  Add a description to an environment
 
 *  Install and update Pip and Wheel with one click
-*  Install additional packages
+*  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Install from a local stored project
 *  Install from source repository url *(currently git only)*
 
@@ -73,9 +75,6 @@ Key Features
 
 Prerequisits
 ------------
-
-Primarily *VenviPy* is aimed at \*NIX systems (maybe a Windows port could
-come sometime in the future)
 
 If you want to run *VenviPy* using your operating system's Python (3.6+)
 you will have to make sure that the packages ``python3-venv`` and
