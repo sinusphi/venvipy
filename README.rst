@@ -52,6 +52,7 @@ more.
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
 
+|
 
 Key Features
 ------------
@@ -62,16 +63,21 @@ Key Features
 *  Generate requirements from an existing environment
 *  Add a description to an environment
 
+|
+
 *  Install and update Pip and Wheel with one click
 *  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Install from a local stored project
 *  Install from source repository url *(currently git only)*
+
+|
 
 *  List detailed information about installed packages
 *  Show dependency tree (using
    `pipdeptree <https://pypi.org/project/pipdeptree/#description>`__ package)
 *  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
 
+|
 
 Prerequisits
 ------------
@@ -79,23 +85,32 @@ Prerequisits
 If you want to run *VenviPy* using your operating system's Python (3.6+)
 you will have to make sure that the packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
-venv and pip will be used to perform the commands.
+venv and pip will be used to perform commands.
 
+Also installing packages into your operating system's Python is discouraged.
+It's a better idea to create a virtual environment and run *VenviPy* inside:
+
+.. code-block:: bash
+
+    $ python3.x -m venv [your_venv]
+    $ source [your_venv]/bin/activate
+
+|
 
 Installation
 ------------
 
-You can install the latest version of *VenviPy* via:
+To install the latest stable version of *VenviPy*:
 
 .. code-block:: bash
 
-    $ pip install venvipy
+    $ (your_venv) pip install venvipy
 
-or:
+for the developement version:
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/sinusphi/venvipy.git
+    $ (your_venv) pip install git+https://github.com/sinusphi/venvipy.git
 
 Now you can launch 
 
@@ -103,15 +118,15 @@ Now you can launch
 
   - .. code-block:: bash
 
-        $ venvipy
+        $ (your_venv) venvipy
 
-- or if you just want to quickly create a virtual environment 
-  run the wizard standalone:
+- or run the wizard standalone to quickly create and set up an environment:
 
   - .. code-block:: bash
 
-        $ venvipy-wizard
+        $ (your_venv) venvipy-wizard
 
+|
 
 Running from source
 -------------------
@@ -120,30 +135,19 @@ Clone the repository (use the ``--depth`` option):
 
 .. code-block:: bash
 
-    $ git clone --depth 1 git@github.com:sinusphi/venvipy.git
+    $ (your_venv) git clone --depth 1 git@github.com:sinusphi/venvipy.git
 
-
-If running *VenviPy* from source the recommended way is to use a virtual
-environment. 
-
-.. code-block:: bash
-
-    $ python3.x -m venv [your_venv]
-    $ source [your_venv]/bin/activate
-
-
-Cd into the repo folder and install the dependencies from 
-`requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
-
-.. code-block:: bash
-
-    $ (your_venv) pip install -r requirements.txt
-
-or run:
+Cd into the repo folder and install the dependencies:
 
 .. code-block:: bash
 
     $ (your_venv) pip install PyQt5==5.15.4 PyQt5-sip
+
+or from `requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
+
+.. code-block:: bash
+
+    $ (your_venv) pip install -r requirements.txt
 
 Then you can
 
@@ -153,19 +157,13 @@ Then you can
   
         $ (your_venv) python venvipy/venvi.py
 
-- or run the standalone wizard to create and set up an environment:
+- or run the wizard standalone to quickly create and set up an environment:
 
   - .. code-block:: bash
 
         $ (your_venv) python venvipy/wizard.py
 
-
-Known issues
-------------
-
-Sometimes it might happen that the wizard page freezes when starting 
-the creation process. In this case just restart *VenviPy*. 
-
+|
 
 Contributing
 ------------
