@@ -201,9 +201,9 @@ class VenvTable(BaseTable):
 
         comment_add_action = QAction(
             self.info_icon,
-            "&Add or modify comment",
+            "&Add or modify description",
             self,
-            statusTip="Add or modify comment"
+            statusTip="Add or modify description"
         )
         comment_add_action.triggered.connect(
             lambda: self.comment_add(event)
@@ -211,9 +211,9 @@ class VenvTable(BaseTable):
 
         comment_remove_action = QAction(
             self.info_icon,
-            "&Remove comment",
+            "&Remove description",
             self,
-            statusTip="Remove comment"
+            statusTip="Remove description"
         )
         comment_remove_action.triggered.connect(
             lambda: self.comment_remove(event)
@@ -289,7 +289,7 @@ class VenvTable(BaseTable):
             icon=QIcon.fromTheme("software-install")
         )
         comment_sub_menu = QMenu(
-            "&Comment",
+            "&Description",
             self,
             icon=self.info_icon
         )
