@@ -388,7 +388,7 @@ class BasicSettings(QWizardPage):
     def select_file(self):
         """
         Specify the requirements file to use
-        to clone the virtual environment.
+        to install from.
         """
         file_name = QFileDialog.getOpenFileName()
         self.requirements_line.setText(file_name[0])
@@ -468,7 +468,9 @@ class BasicSettings(QWizardPage):
         Set the text in status label to show that Pip is being updated
         and Wheel is being installed.
         """
-        self.progress_bar.status_label.setText("Updating Pip and installing Wheel...")
+        self.progress_bar.status_label.setText(
+            "Updating Pip and installing Wheel..."
+        )
 
 
     def finish_info(self):
@@ -606,8 +608,8 @@ class InstallPackages(QWizardPage):
         """
         self.setEnabled(False)
 
-        self.console.setWindowTitle("Creating environment")
-        logger.debug("Creating environment...")
+        self.console.setWindowTitle("Installing packages")
+        logger.debug("Installing from requirements...")
 
         # open the console when recieving signal from manager
         self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
@@ -722,7 +724,7 @@ class InstallPackages(QWizardPage):
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=f"{venv_dir}/requirements.txt"
+                directory=os.path.join(venv_dir, "requirements.txt")
             )
             save_path = save_file[0]
 
