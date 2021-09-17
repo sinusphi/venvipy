@@ -173,18 +173,22 @@ def fix_requirements(require_file):
     a `pkg-resources==0.0.0` entry, then comment this line
     to prevent pip from crashing.
     """
-    with open(require_file, "r+", encoding="utf-8") as f:
-        content = f.read()
+    with open(require_file, "r", encoding="utf-8") as f:
+        content = f.readlines()
 
-        if "#pkg-resources==0.0.0" in content:
-            pass  # skip if line is already commented
+    new_content = []
 
-        elif "pkg-resources==0.0.0" in content:
-            content = content.replace(
-                "pkg-resources==0.0.0", "#pkg-resources==0.0.0"
+    for i, line in enumerate(content):
+        if line.startswith("pkg-resources==0.0.0"):
+            line = line.replace(
+                "pkg-resources==0.0.0",
+                "#pkg-resources==0.0.0"
             )
-            f.seek(0)
-            f.write(content)
+
+        new_content.append(line)
+
+    with open(require_file, "w", encoding="utf-8") as f:
+        f.writelines(new_content)
 
 
 #]===========================================================================[#
