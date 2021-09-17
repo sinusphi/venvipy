@@ -239,6 +239,10 @@ class BasicSettings(QWizardPage):
         self.venv_name_line = QLineEdit()
         venv_name_label.setBuddy(self.venv_name_line)
 
+        comment_label = QLabel("&Description:")
+        self.comment_line = QLineEdit()
+        comment_label.setBuddy(self.comment_line)
+
         venv_location_label = QLabel("&Location:")
         self.venv_location_line = QLineEdit()
         venv_location_label.setBuddy(self.venv_location_line)
@@ -293,12 +297,30 @@ class BasicSettings(QWizardPage):
             self.interpreter_combo_box,
             "currentData"
         )
-        self.registerField("venv_name*", self.venv_name_line)
-        self.registerField("venv_location*", self.venv_location_line)
-        self.registerField("with_pip", self.with_pip_check_box)
-        self.registerField("with_wheel", self.with_wheel_check_box)
-        self.registerField("site_pkgs", self.site_pkgs_check_box)
-        self.registerField("requirements", self.requirements_line)
+        self.registerField(
+            "venv_name*",
+            self.venv_name_line
+        )
+        self.registerField(
+            "venv_location*",
+            self.venv_location_line
+        )
+        self.registerField(
+            "with_pip",
+            self.with_pip_check_box
+        )
+        self.registerField(
+            "with_wheel",
+            self.with_wheel_check_box
+        )
+        self.registerField(
+            "site_pkgs",
+            self.site_pkgs_check_box
+        )
+        self.registerField(
+            "requirements",
+            self.requirements_line
+        )
 
         # grid layout
         grid_layout = QGridLayout()
@@ -309,16 +331,19 @@ class BasicSettings(QWizardPage):
         grid_layout.addWidget(venv_name_label, 1, 0, 1, 1)
         grid_layout.addWidget(self.venv_name_line, 1, 1, 1, 1)
 
-        grid_layout.addWidget(venv_location_label, 2, 0, 1, 1)
-        grid_layout.addWidget(self.venv_location_line, 2, 1, 1, 1)
-        grid_layout.addWidget(self.select_dir_button, 2, 2, 1, 1)
+        grid_layout.addWidget(comment_label, 2, 0, 1, 1)
+        grid_layout.addWidget(self.comment_line, 2, 1, 1, 1)
 
-        grid_layout.addWidget(requirements_label, 3, 0, 1, 1)
-        grid_layout.addWidget(self.requirements_line, 3, 1, 1, 1)
-        grid_layout.addWidget(self.select_file_button, 3, 2, 1, 1)
+        grid_layout.addWidget(venv_location_label, 3, 0, 1, 1)
+        grid_layout.addWidget(self.venv_location_line, 3, 1, 1, 1)
+        grid_layout.addWidget(self.select_dir_button, 3, 2, 1, 1)
 
-        grid_layout.addWidget(place_holder, 4, 0, 1, 2)
-        grid_layout.addWidget(group_box, 5, 0, 1, 3)
+        grid_layout.addWidget(requirements_label, 4, 0, 1, 1)
+        grid_layout.addWidget(self.requirements_line, 4, 1, 1, 1)
+        grid_layout.addWidget(self.select_file_button, 4, 2, 1, 1)
+
+        grid_layout.addWidget(place_holder, 5, 0, 1, 2)
+        grid_layout.addWidget(group_box, 6, 0, 1, 3)
         self.setLayout(grid_layout)
 
         # options group box
@@ -334,6 +359,9 @@ class BasicSettings(QWizardPage):
         next_button = self.wizard().button(QWizard.NextButton)
         next_button.disconnect()
         next_button.clicked.connect(self.execute_venv_create)
+
+        # clear comment line
+        self.comment_line.clear()
 
 
     def pop_combo_box(self):
@@ -475,8 +503,16 @@ class BasicSettings(QWizardPage):
 
     def finish_info(self):
         """
-        Show info message when the creation process has finished successfully.
+        Save the description text and show an info message on finish.
         """
+        comment = self.comment_line.text()
+        venvipy_cfg = os.path.join(
+            self.venv_location,
+            self.venv_name,
+            "venvipy.cfg"
+        )
+        creator.save_comment(venvipy_cfg, comment)
+
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
             f"New Python {self.python_version[7:10]} executable in \n"
@@ -753,7 +789,7 @@ class FinalPage(QWizardPage):
 
         self.setTitle("Finished")
         self.setSubTitle(
-            "All Tasks have been completed successfully. Click the Finish "
+            "All Tasks have been completed successfully. Click Finish "
             "Button to close the wizard."
         )
 
