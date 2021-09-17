@@ -557,7 +557,7 @@ class VenvTable(BaseTable):
 
     def save_requires(self, event):
         """
-        Write the requirements of the selected environment to file.
+        Pip freeze a requirements of the selected environment.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
@@ -567,20 +567,23 @@ class VenvTable(BaseTable):
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=f"{venv_dir}/requirements.txt"
+                directory=os.path.join(venv_dir, "requirements.txt")
             )
             save_path = save_file[0]
 
             if save_path != "":
-                logger.debug(f"Saving '{save_path}'...")
-
                 # write 'pip freeze' output to selected file
                 self.manager = PipManager(active_dir, venv)
                 self.manager.run_pip(creator.cmds[2], [">", save_path])
+                logger.debug(f"Saved '{save_path}'")
 
                 # show an info message
                 message_txt = (f"Saved requirements in \n{save_path}")
                 QMessageBox.information(self, "Saved", message_txt)
+
+                # comment the 'pkg_resources==0.0.0' entry
+                creator.fix_requirements(save_path)
+                logger.debug(f"Fixed requirements in '{save_path}'")
 
 
     def list_packages(self, event, style):
