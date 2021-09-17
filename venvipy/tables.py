@@ -666,28 +666,28 @@ class VenvTable(BaseTable):
         if not os.path.exists(venvipy_cfg):
             comment_new, ok = QInputDialog.getText(
                 self,
-                "Enter comment",
-                "\nEnter a single line comment:" + " " * 70
+                "Enter description",
+                "\nEnter a description:" + " " * 70
             )
             if len(comment_new) > 0:
-                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
-                    f.write(comment_new)
-                    logger.debug("Comment saved")
+                # save a new description
+                creator.save_comment(venvipy_cfg, comment_new)
+                logger.debug("Description saved")
 
         else:
             comment_new, ok = QInputDialog.getText(
                 self,
-                "Modify comment",
-                "\nModify your comment:" + " " * 70,
+                "Modify description",
+                "\nModify your description:" + " " * 70,
                 text=comment_old
             )
             if len(comment_new) > 0:
-                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
-                    f.write(comment_new)
-                    logger.debug("Comment updated")
+                # modify an existing description
+                creator.save_comment(venvipy_cfg, comment_new)
+                logger.debug("Description updated")
             else:
-                with open(venvipy_cfg, "w+", encoding="utf-8") as f:
-                    f.write(comment_old)
+                # keep the old description
+                creator.save_comment(venvipy_cfg, comment_old)
 
         # refresh venv table
         self.refresh.emit()
