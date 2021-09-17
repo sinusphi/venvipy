@@ -24,15 +24,18 @@ import shutil
 import csv
 import sys
 import os
+import re
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
-
+from bs4 import BeautifulSoup
+import requests
 
 __version__ = "0.3.3"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
 ACTIVE_FILE = os.path.expanduser("~/.venvipy/selected-dir")
+PYPI_URL = "https://pypi.org/search/"
 
 
 
@@ -318,25 +321,57 @@ class PackageInfo:
     """_"""
     pkg_name: str
     pkg_version: str
+    pkg_release_date: str
     pkg_summary: str
 
 
-def get_package_infos(name):
+def get_package_infos(pkg):
     """
-    Get the package's name, version and summary
-    from [PyPI](https://pypi.org/pypi).
+    Scrape package infos from [PyPI](https://pypi.org).
     """
-    client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
-    search_result = client.search({"name": name})
-
+    snippets = []
     package_info_list = []
 
-    for i, pkg in enumerate(search_result):
-        pkg_name = pkg["name"]
-        pkg_version = pkg["version"]
-        pkg_summary = pkg["summary"]
+    for page in range(1, 4):
+        params = {"q": pkg, "page": page}
+        with requests.Session() as session:
+            res = session.get(PYPI_URL, params=params)
 
-        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_summary)
+        soup = BeautifulSoup(res.text, "html.parser")
+        snippets += soup.select('a[class*="snippet"]')
+
+        if not hasattr(session, "start_url"):
+            session.start_url = res.url.rsplit("&page", maxsplit=1).pop(0)
+
+
+    for snippet in snippets:
+        pkg_name = re.sub(
+            r"\s+",
+            " ",
+            snippet.select_one('span[class*="name"]').text.strip()
+        )
+        pkg_version = re.sub(
+            r"\s+",
+            " ",
+            snippet.select_one('span[class*="version"]').text.strip()
+        )
+        pkg_release_date = re.sub(
+            r"\s+",
+            " ",
+            snippet.select_one('span[class*="released"]').text.strip()
+        )
+        pkg_summary = re.sub(
+            r"\s+",
+            " ",
+            snippet.select_one('p[class*="description"]').text.strip()
+        )
+
+        pkg_info = PackageInfo(
+            pkg_name,
+            pkg_version,
+            pkg_release_date,
+            pkg_summary
+        )
         package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
