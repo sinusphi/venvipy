@@ -170,7 +170,7 @@ def create_venv(
 def fix_requirements(require_file):
     """
     Check the selected requirements file. If it contains
-    a `pkg-resources==0.0.0` entry, then comment this line
+    a `pkg_resources==0.0.0` entry, then comment this line
     to prevent pip from crashing.
     """
     with open(require_file, "r", encoding="utf-8") as f:
@@ -179,10 +179,10 @@ def fix_requirements(require_file):
     new_content = []
 
     for i, line in enumerate(content):
-        if line.startswith("pkg-resources==0.0.0"):
+        if line.startswith("pkg_resources==0.0.0"):
             line = line.replace(
-                "pkg-resources==0.0.0",
-                "#pkg-resources==0.0.0"
+                "pkg_resources==0.0.0",
+                "#pkg_resources==0.0.0"
             )
 
         new_content.append(line)
