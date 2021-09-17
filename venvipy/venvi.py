@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("VenviPy")
-        self.resize(1250, 790)
+        self.resize(1150, 770)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
@@ -338,7 +338,7 @@ class MainWindow(QMainWindow):
             "Version",
             "Packages",
             "Installed",
-            "Comment"
+            "Description"
         ])
         self.venv_table.setModel(self.model_venv_table)
 
