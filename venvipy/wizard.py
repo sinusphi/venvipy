@@ -90,7 +90,7 @@ class VenvWizard(QWizard):
         super().__init__()
 
         self.setWindowTitle("VenviPy - Venv Wizard")
-        self.resize(680, 510)
+        self.resize(850, 625)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
@@ -141,12 +141,11 @@ class VenvWizard(QWizard):
         # process the flow only if the current page is BasicSettings()
         if self.currentId() != self.basic_settings_id:
             return super().nextId()
-        # remove the InstallPackages() page as long as the `pip search`
-        # command doesn't work (PyPI's XMLRPC API is currently disabled
-        # due to unmanageable load and will be deprecated in the near
-        # future. See https://status.python.org/ for more information)
-        #if self.basic_settings.with_pip_check_box.isChecked():
-            #return self.install_packages_id
+
+        # go to InstallPackages() page only if pip has been selected
+        if self.basic_settings.with_pip_check_box.isChecked():
+            return self.install_packages_id
+
         return self.final_page_id
 
 
@@ -539,21 +538,17 @@ class InstallPackages(QWizardPage):
             context_triggered=self.install_package  # signal
         )
 
-        # adjust vertical headers
-        v_header = self.results_table.verticalHeader()
-        v_header.setDefaultSectionSize(28)
-        v_header.hide()
+        # hide vertical header
+        self.results_table.verticalHeader().hide()
 
         # adjust horizontal headers
         h_header = self.results_table.horizontalHeader()
         h_header.setDefaultAlignment(Qt.AlignLeft)
-        h_header.setDefaultSectionSize(120)
         h_header.setStretchLastSection(True)
-        h_header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # item model
-        self.results_model = QStandardItemModel(0, 2, self)
-        self.results_table.setModel(self.results_model)
+        # set table view model
+        self.results_table_model = QStandardItemModel(0, 3, self)
+        self.results_table.setModel(self.results_table_model)
 
         grid_layout.addWidget(pkg_name_label, 0, 0, 1, 1)
         grid_layout.addWidget(self.pkg_name_line, 0, 1, 1, 1)
@@ -569,14 +564,17 @@ class InstallPackages(QWizardPage):
         self.requirements = self.field("requirements")
 
         # clear all inputs and contents
-        self.results_model.clear()
+        self.results_table_model.clear()
         self.pkg_name_line.clear()
         self.pkg_name_line.setFocus(True)
 
         # set text in column headers
-        self.results_model.setHorizontalHeaderLabels(
-            ["Name", "Version", "Description"]
-        )
+        self.results_table_model.setHorizontalHeaderLabels([
+            "Name",
+            "Version",
+            "Release",
+            "Description"
+        ])
 
         # remove focus from 'next' button
         QTimer.singleShot(0, lambda: self.next_button.setDefault(False))
@@ -616,7 +614,6 @@ class InstallPackages(QWizardPage):
         self.manager.started.connect(self.console.exec_)
 
         # start installing packages from requirements file
-        #print(f"[PROCESS]: Installing packages from '{self.requirements}'")
         self.manager.run_pip(
             creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"]
         )
@@ -638,32 +635,38 @@ class InstallPackages(QWizardPage):
     def pop_results_table(self):
         """Refresh the results table.
         """
+        # adjust column width
+        self.results_table.setColumnWidth(0, 200)  # name
+        self.results_table.setColumnWidth(1, 80)  # version
+        self.results_table.setColumnWidth(2, 110)  # release date
+
+        self.results_table_model.setRowCount(0)
         search_item = self.pkg_name_line.text()
 
-        self.results_model.setRowCount(0)
-
         for info in get_data.get_package_infos(search_item):
-            self.results_model.insertRow(0)
+            self.results_table_model.insertRow(0)
 
-            for i, text in enumerate(
-                    (info.pkg_name, info.pkg_version, info.pkg_summary)
-                ):
-                self.results_model.setItem(0, i, QStandardItem(text))
+            for i, text in enumerate((
+                info.pkg_name,
+                info.pkg_version,
+                info.pkg_release_date,
+                info.pkg_summary
+            )):
+                self.results_table_model.setItem(0, i, QStandardItem(text))
 
         if not get_data.get_package_infos(search_item):
             logger.debug(f"No matches for '{search_item}'")
             QMessageBox.information(
                 self,
-                "No result",
-                f"No result matching '{search_item}'.\n"
+                "No results",
+                f"No results matching '{search_item}'.\n"
             )
 
 
     def install_package(self):
         """
-        Get the name of the selected item from the results table. Ask user
-        for confirmation before installing. If user confirmes, install the
-        selected package into the created virtual environment, else abort.
+        Get the name of the selected item from the results table. Then install
+        the selected package into the created virtual environment.
         """
         indexes = self.results_table.selectionModel().selectedRows()
         for index in sorted(indexes):
@@ -702,7 +705,7 @@ class InstallPackages(QWizardPage):
 
     def save_requirements(self):
         """
-        Ask if they want to save the requirements of the
+        Ask if user want to save a requirements of the
         created virtual environment.
         """
         self.setEnabled(False)
@@ -810,7 +813,7 @@ class FinalPage(QWizardPage):
         if __name__ == "__main__":
             finish_button.clicked.connect(self.wizard().force_exit)
 
-        # call update_zen_line() to get a different line every on new session
+        # call update_zen_line() to get a different line on every new session
         self.wizard().refresh.connect(self.update_zen_line)
         self.wizard().refresh.emit()
 
