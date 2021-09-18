@@ -630,8 +630,8 @@ def with_args():
     argument_list = full_cmd_arguments[1:]
 
     # tell getopts() the parameters
-    short_options = "Vd"
-    long_options = ["version", "debug"]
+    short_options = "Vdh"
+    long_options = ["version", "debug", "help"]
 
     # use try-except to cover errors
     try:
@@ -640,18 +640,31 @@ def with_args():
         )
     except getopt.error as e:
         # print error message and return error code
-        print(str(e))
+        err_msg = str(e)
+        print(f"O{err_msg[1:]}")
         sys.exit(2)
 
     for arg, val in arguments:
-        if arg in ("-V", "--version"):
-            # print version, then exit
-            print(f"VenviPy {get_data.__version__}")
+        if arg in ("-h", "--help"):
+            # show help message, then exit
+            print(
+                f"VenviPy {get_data.__version__}  "
+                "( https://github.com/sinusphi/venvipy )\n\n"
+                "    -h --help           Show this help message and exit\n"
+                "    -d --debug          Print ddebugging output\n"
+                "    -v --version        Print version and exit\n"
+            )
             sys.exit(0)
 
         if arg in ("-d", "--debug"):
             # verbose output for debugging
             logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+
+        if arg in ("-V", "--version"):
+            # print version, then exit
+            print(f"VenviPy {get_data.__version__}")
+            sys.exit(0)
+
 
 
 def main():
