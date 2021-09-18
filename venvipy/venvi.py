@@ -651,7 +651,7 @@ def with_args():
                 f"VenviPy {get_data.__version__}  "
                 "( https://github.com/sinusphi/venvipy )\n\n"
                 "    -h --help           Show this help message and exit\n"
-                "    -d --debug          Print ddebugging output\n"
+                "    -d --debug          Print debugging output\n"
                 "    -v --version        Print version and exit\n"
             )
             sys.exit(0)
