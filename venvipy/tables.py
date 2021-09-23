@@ -154,9 +154,9 @@ class VenvTable(BaseTable):
         )
 
         install_packages_action = QAction(
-            "Install &additional packages",
+            "Install &packages from PyPI",
             self,
-            statusTip="Install additional packages"
+            statusTip="Install packages from PyPI"
         )
         install_packages_action.triggered.connect(
             lambda: self.add_packages(event)
@@ -172,28 +172,28 @@ class VenvTable(BaseTable):
         )
 
         install_local_action = QAction(
-            "Install &local project",
+            "Install from &local project directory",
             self,
-            statusTip="Install a local project"
+            statusTip="Install from a local stored project directory"
         )
         install_local_action.triggered.connect(
             lambda: self.install_local(event)
         )
 
-        install_vsc_action = QAction(
-            "Install from &repository",
+        install_vcs_action = QAction(
+            "Install from &VCS project url",
             self,
-            statusTip="Install from VSC repository"
+            statusTip="Install from a VCS url"
         )
-        install_vsc_action.triggered.connect(
-            lambda: self.install_vsc(event)
+        install_vcs_action.triggered.connect(
+            lambda: self.install_vcs(event)
         )
 
         save_requires_action = QAction(
             self.save_icon,
             "Save &requirements",
             self,
-            statusTip="Write requirements to file"
+            statusTip="Generate a requirements file"
         )
         save_requires_action.triggered.connect(
             lambda: self.save_requires(event)
@@ -302,7 +302,7 @@ class VenvTable(BaseTable):
         install_sub_menu.addAction(install_packages_action)
         install_sub_menu.addAction(install_requires_action)
         install_sub_menu.addAction(install_local_action)
-        install_sub_menu.addAction(install_vsc_action)
+        install_sub_menu.addAction(install_vcs_action)
 
         # details sub meun
         context_menu.addMenu(details_sub_menu)
@@ -328,7 +328,8 @@ class VenvTable(BaseTable):
         version = get_data.get_config(cfg_file, "version")
         py_path = get_data.get_config(cfg_file, "py_path")
         msg_txt = (
-            f"This environment requires {version} \nfrom {py_path} which is \nnot installed.\n"
+            f"This environment requires {version} \n\
+            from {py_path} which is \nnot installed.\n"
         )
 
         if is_installed == "no":
@@ -346,7 +347,7 @@ class VenvTable(BaseTable):
 
     def venv_exists(self, path):
         """
-        Test wether the directory of the selected environment actually exists.
+        Test wether the directory of the selected environment exists.
         """
         if os.path.exists(path):
             return True
@@ -359,6 +360,8 @@ class VenvTable(BaseTable):
             self
         )
         msg_box.exec_()
+
+        # refresh venv table
         self.refresh.emit()
         return False
 
@@ -427,7 +430,7 @@ class VenvTable(BaseTable):
             project_name, ok = QInputDialog.getText(
                 self,
                 "Specify project",
-                "Enter a PyPI project name:" + " " * 65
+                "Enter a PyPI project name:" + " " * 70
             )
 
             if project_name != "":
@@ -513,8 +516,8 @@ class VenvTable(BaseTable):
                     self.console.console_window.clear()
 
 
-    def install_vsc(self, event):
-        """Install from a VSC repository.
+    def install_vcs(self, event):
+        """Install from VCS.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
@@ -524,14 +527,14 @@ class VenvTable(BaseTable):
             url, ok = QInputDialog.getText(
                 self,
                 "Specify project",
-                "Enter repository url:" + " " * 65
+                "Enter repository url:" + " " * 70
             )
 
             if url != "":
                 project_name = os.path.basename(url)
-                project_url = f"git+{url}#egg={project_name}"
+                project_url = f"git+{url}.git#egg={project_name}"
                 cmd = (
-                    f"{venv_bin} -m pip install --no-cache-dir -e {project_url}"
+                    f"{venv_bin} -m pip {creator.cmds[0]} {project_url}"
                 )
                 self.progress_bar.setWindowTitle(f"Installing {project_name}")
                 self.progress_bar.status_label.setText(
@@ -583,7 +586,6 @@ class VenvTable(BaseTable):
 
                 # comment the 'pkg_resources==0.0.0' entry
                 creator.fix_requirements(save_path)
-                logger.debug(f"Fixed requirements in '{save_path}'")
 
 
     def list_packages(self, event, style):
@@ -627,7 +629,7 @@ class VenvTable(BaseTable):
         pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
         has_pipdeptree = os.path.exists(pipdeptree_binary)
         message_txt = (
-            "This requires the pipdeptree package\nto be installed.\n\n"
+            "This requires pipdeptree             \nto be installed.\n\n"
             "Do you want to install it?\n"
         )
 
@@ -659,7 +661,7 @@ class VenvTable(BaseTable):
 
 
     def comment_add(self, event):
-        """Add or modify a comment.
+        """Add / modify a comment.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
