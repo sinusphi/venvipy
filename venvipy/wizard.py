@@ -387,13 +387,13 @@ class BasicSettings(QWizardPage):
         """
         file_name = QFileDialog.getOpenFileName(
             self,
-            "Select Python Interpreter",
-            "/usr/local/bin",
+            "Select a Python interpreter",
             "Python binary (\
                 python3.3 python3.4 python3.5 \
                 python3.6 python3.7 python3.8 \
                 python3.9 python3.10 python3.11 \
-            )"
+            )",
+            directory="/usr/local/bin"
         )
         bin_file = file_name[0]
 
@@ -409,16 +409,23 @@ class BasicSettings(QWizardPage):
     def select_dir(self):
         """Specify path where to create the virtual environment.
         """
-        folder_name = QFileDialog.getExistingDirectory()
+        folder_name = QFileDialog.getExistingDirectory(
+            self,
+            "Select venv location",
+            directory=get_data.get_active_dir_str()
+        )
         self.venv_location_line.setText(folder_name)
 
 
     def select_file(self):
         """
-        Specify the requirements file to use
-        to install from.
+        Specify the requirements file to install from.
         """
-        file_name = QFileDialog.getOpenFileName()
+        file_name = QFileDialog.getOpenFileName(
+            self,
+            "Select a requirements file",
+            directory="/home"
+        )
         self.requirements_line.setText(file_name[0])
 
 
@@ -513,9 +520,13 @@ class BasicSettings(QWizardPage):
         )
         creator.save_comment(venvipy_cfg, comment)
 
+        cfg_file = os.path.join(
+            self.venv_location, self.venv_name, "pyvenv.cfg"
+        )
+        version = get_data.get_config(cfg_file, cfg="version")
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
-            f"New Python {self.python_version[7:10]} executable in \n"
+            f"New {version[:-2]} executable in \n"
             f"'{self.venv_location}/{self.venv_name}/bin'.         \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
@@ -529,6 +540,7 @@ class BasicSettings(QWizardPage):
             msg_txt = default_msg
 
         QMessageBox.information(self, "Done", msg_txt)
+        self.wizard().refresh.emit()  # refresh venv table in main menu
         self.wizard().next()
         self.setEnabled(True)
 
@@ -544,8 +556,9 @@ class InstallPackages(QWizardPage):
         self.setTitle("Install Packages")
         self.setSubTitle(
             "Specify the packages you want to install into the virtual "
-            "environment. Right-click on the item you want to install. "
-            "You can install as many packages as you need. When finished "
+            "environment. For more options right-click on the item you "
+            "want to install. "
+            "You can install multiple packages. When finished "
             "click next."
         )
 
@@ -601,6 +614,14 @@ class InstallPackages(QWizardPage):
         self.venv_location = self.field("venv_location")
         self.requirements = self.field("requirements")
 
+        # run the installer if self.requirements holds a str
+        if len(self.requirements) > 0:
+            try:
+                creator.fix_requirements(self.requirements)
+            except FileNotFoundError:
+                pass  # the gui will show an error message
+            self.install_requirements()
+
         # clear all inputs and contents
         self.results_table_model.clear()
         self.pkg_name_line.clear()
@@ -629,14 +650,6 @@ class InstallPackages(QWizardPage):
             self.next_button = self.wizard().button(QWizard.NextButton)
             self.next_button.disconnect()
             self.next_button.clicked.connect(self.save_requirements)
-
-        # run the installer if self.requirements holds a str
-        if len(self.requirements) > 0:
-            try:
-                creator.fix_requirements(self.requirements)
-            except FileNotFoundError:
-                pass  # the gui will show an error message
-            self.install_requirements()
 
 
     def install_requirements(self):
@@ -681,24 +694,25 @@ class InstallPackages(QWizardPage):
         self.results_table_model.setRowCount(0)
         search_item = self.pkg_name_line.text()
 
-        for info in get_data.get_package_infos(search_item):
-            self.results_table_model.insertRow(0)
+        if len(search_item) >= 1:
+            for info in get_data.get_package_infos(search_item):
+                self.results_table_model.insertRow(0)
 
-            for i, text in enumerate((
-                info.pkg_name,
-                info.pkg_version,
-                info.pkg_release_date,
-                info.pkg_summary
-            )):
-                self.results_table_model.setItem(0, i, QStandardItem(text))
+                for i, text in enumerate((
+                    info.pkg_name,
+                    info.pkg_version,
+                    info.pkg_release_date,
+                    info.pkg_summary
+                )):
+                    self.results_table_model.setItem(0, i, QStandardItem(text))
 
-        if not get_data.get_package_infos(search_item):
-            logger.debug(f"No matches for '{search_item}'")
-            QMessageBox.information(
-                self,
-                "No results",
-                f"No results matching '{search_item}'.\n"
-            )
+            if not get_data.get_package_infos(search_item):
+                logger.debug(f"No matches for '{search_item}'")
+                QMessageBox.information(
+                    self,
+                    "No results",
+                    f"No results matching '{search_item}'.\n"
+                )
 
 
     def install_package(self):
@@ -748,14 +762,20 @@ class InstallPackages(QWizardPage):
         """
         self.setEnabled(False)
 
-        msg_box_question = QMessageBox.question(
-            self,
+        self.msg_box = QMessageBox(
+            QMessageBox.Question,
             "Save requirements",
-            "Do you want to generate a requirements?",
-            QMessageBox.Yes | QMessageBox.No
+            "Do you want to generate a requirements?          ",
+            QMessageBox.NoButton,
+            self
         )
+        yes_button = self.msg_box.addButton("&Yes", QMessageBox.YesRole)
+        no_button = self.msg_box.addButton("&No", QMessageBox.NoRole)
+        cancel_button = self.msg_box.addButton("&Cancel", QMessageBox.RejectRole)
 
-        if msg_box_question == QMessageBox.Yes:
+        self.msg_box.exec_()
+
+        if self.msg_box.clickedButton() == yes_button:
             venv_dir = os.path.join(self.venv_location, self.venv_name)
             save_file = QFileDialog.getSaveFileName(
                 self,
@@ -764,15 +784,19 @@ class InstallPackages(QWizardPage):
             )
             save_path = save_file[0]
 
-            if save_path != "":
+            if len(save_path) >= 1:
                 self.manager = PipManager(self.venv_location, self.venv_name)
                 self.manager.run_pip(creator.cmds[2], [">", save_path])
+                logger.debug(f"Saved '{save_path}'")
 
-                msg_txt = (f"Saved requirements in: \n{save_path}")
-                QMessageBox.information(self, "Saved", msg_txt)
-                logger.debug(f"Saved '{save_path}'...")
+                QMessageBox.information(
+                    self,
+                    "Saved",
+                    f"Saved requirements in: \n{save_path}"
+                )
                 self.wizard().next()
-        else:
+
+        elif self.msg_box.clickedButton() == no_button:
             self.wizard().next()
 
         self.setEnabled(True)
@@ -789,8 +813,8 @@ class FinalPage(QWizardPage):
 
         self.setTitle("Finished")
         self.setSubTitle(
-            "All Tasks have been completed successfully. Click Finish "
-            "Button to close the wizard."
+            "All tasks have been completed successfully. Click Finish "
+            "to close the wizard."
         )
 
         h_layout = QHBoxLayout(self)
