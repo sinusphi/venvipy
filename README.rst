@@ -26,6 +26,7 @@
 .. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
     :target: https://travis-ci.org/sinusphi/venvipy
 
+|
 
 Introduction
 ------------
@@ -72,8 +73,10 @@ Key Features
 
 *  Install and update Pip and Wheel with one click
 *  Search and install packages from `PyPI <https://pypi.org/>`__
-*  Install from local stored projects directory
+*  Install from requirements files
+*  Install from local stored project directories
 *  Install from VCS project urls *(currently git only)*
+*  Install from local or remote source archives
 
 |
 
