@@ -40,13 +40,19 @@ environments in a specific directory and a collection of context menu
 actions like listing detailed information about an environment and much
 more.
 
+|
+
 **The main menu:**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
 
+|
+
 **The wizard:**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2.png
+
+|
 
 **Output when running pip commands:**
 
@@ -57,8 +63,7 @@ more.
 Key Features
 ------------
 
-*  Create virtual environments with any Python version (3.3+) which is
-   properly build or installed on your system
+*  Create virtual environments with any Python version (3.6+)
 *  Clone an environment from a requirements file
 *  Generate requirements from an existing environment
 *  Add a description to an environment
@@ -67,8 +72,8 @@ Key Features
 
 *  Install and update Pip and Wheel with one click
 *  Search and install packages from `PyPI <https://pypi.org/>`__
-*  Install from a local stored project
-*  Install from source repository url *(currently git only)*
+*  Install from local stored projects directory
+*  Install from VCS project urls *(currently git only)*
 
 |
 
