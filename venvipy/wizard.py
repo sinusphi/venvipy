@@ -276,7 +276,8 @@ class BasicSettings(QWizardPage):
             stateChanged=self.pip_enabled
         )
         self.with_wheel_check_box = QCheckBox(
-            "Install &Wheel"
+            "Install &Wheel",
+            checked=True
         )
         self.site_pkgs_check_box = QCheckBox(
             "&Make system (global) site-packages available to venv"
@@ -388,12 +389,12 @@ class BasicSettings(QWizardPage):
         file_name = QFileDialog.getOpenFileName(
             self,
             "Select a Python interpreter",
-            "Python binary (\
+            "/usr/local/bin",
+            "Python 3.3+ binary (\
                 python3.3 python3.4 python3.5 \
                 python3.6 python3.7 python3.8 \
                 python3.9 python3.10 python3.11 \
-            )",
-            directory="/usr/local/bin"
+            )"
         )
         bin_file = file_name[0]
 
@@ -423,8 +424,7 @@ class BasicSettings(QWizardPage):
         """
         file_name = QFileDialog.getOpenFileName(
             self,
-            "Select a requirements file",
-            directory="/home"
+            "Select a requirements file"
         )
         self.requirements_line.setText(file_name[0])
 
@@ -523,11 +523,12 @@ class BasicSettings(QWizardPage):
         cfg_file = os.path.join(
             self.venv_location, self.venv_name, "pyvenv.cfg"
         )
+        binary_path = os.path.join(self.venv_location, self.venv_name, "bin")
         version = get_data.get_config(cfg_file, cfg="version")
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
             f"New {version[:-2]} executable in \n"
-            f"'{self.venv_location}/{self.venv_name}/bin'.         \n"
+            f"'{binary_path}'.         \n"
         )
         with_pip_msg = ("Installed Pip and Setuptools.\n")
         with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
