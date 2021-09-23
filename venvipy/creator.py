@@ -184,6 +184,7 @@ def fix_requirements(require_file):
                 "pkg_resources==0.0.0",
                 "#pkg_resources==0.0.0"
             )
+            logger.debug(f"Fixed requirements in '{require_file}'")
 
         new_content.append(line)
 

@@ -456,18 +456,6 @@ class MainWindow(QMainWindow):
         menu_help.addAction(self.action_about_venvipy)
         menu_bar.addAction(menu_help.menuAction())
 
-        msg_txt = (
-            "No suitable Python installation found!\n\n"
-            "Please specify the path to a Python (>=3.3) \n"
-            "installation or click 'Continue' to go on anyway.\n\n"
-        )
-        self.msg_box = QMessageBox(
-            QMessageBox.Critical,
-            "VenviPy",
-            msg_txt, QMessageBox.NoButton,
-            self
-        )
-
         # check if any Python is installed
         if os.path.exists(get_data.DB_FILE):
             with open(get_data.DB_FILE, "r", encoding="utf-8") as f:
@@ -479,9 +467,21 @@ class MainWindow(QMainWindow):
     def launching_without_python(self):
         """If no Python was found run with features disabled.
         """
-        logger.warning("No suitable Python installation found")
+        logger.warning("No suitable Python interpreter found")
+        msg_txt = (
+            "No suitable Python interpreter found!\n\n"
+            "Please specify the path to a Python (>=3.6) \n"
+            "interpreter or click 'Continue' to go on anyway.\n\n"
+        )
+        self.msg_box = QMessageBox(
+            QMessageBox.Critical,
+            "VenviPy",
+            msg_txt, QMessageBox.NoButton,
+            self
+        )
         self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
         self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
+
         if self.msg_box.exec_() == QMessageBox.AcceptRole:
             # let user specify path to an interpreter
             self.add_interpreter()
