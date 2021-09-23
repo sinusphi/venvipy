@@ -1,6 +1,8 @@
-# pyqt
+# latest pyqt 5 tested
 PyQt5==5.15.4
 PyQt5-sip
+beautifulsoup4
+requests
 
-# dataclasses
+# install dataclasses if running python 3.6
 dataclasses ; python_version<"3.7"
