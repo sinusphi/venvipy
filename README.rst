@@ -64,7 +64,7 @@ more.
 Key Features
 ------------
 
-*  Create virtual environments with any Python version (3.6+)
+*  Create virtual environments with any Python version (3.3+)
 *  Clone an environment from a requirements file
 *  Generate requirements from an existing environment
 *  Add a description to an environment
