@@ -17,9 +17,9 @@
 
 # -*- coding: utf-8 -*-
 """
-This module provides all the necessary data.
+This module provides several necessary data.
 """
-import xmlrpc.client
+import logging
 import shutil
 import csv
 import sys
@@ -27,6 +27,7 @@ import os
 import re
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
+
 from bs4 import BeautifulSoup
 import requests
 
@@ -38,6 +39,7 @@ ACTIVE_FILE = os.path.expanduser("~/.venvipy/selected-dir")
 PYPI_URL = "https://pypi.org/search/"
 
 
+logger = logging.getLogger(__name__)
 
 #]===========================================================================[#
 #] FIND PYTHON 3 INSTALLATIONS [#============================================[#
@@ -60,6 +62,32 @@ def to_path(bin_path, version):
     """Return the absolute path to a python binary.
     """
     return os.path.join(bin_path, f"python{version}")
+
+
+def is_writable(target_dir):
+    """Test whether a directory is writable.
+    """
+    if os.path.exists(target_dir):
+        test_file = os.path.join(target_dir, "test_file")
+
+        try:
+            logger.debug("Testing whether filesystem is writable...")
+            with open(test_file, "w+", encoding="utf-8") as f:
+                f.write("test")
+
+            os.remove(test_file)
+            logger.debug("Filesystem is writable")
+            return True
+
+        except OSError as e:
+            logger.debug(f"Filesystem is read-only\n{e}")
+            return False
+
+    else:
+        logger.debug(f"No such file or directory: {target_dir}")
+        return False
+
+    return False
 
 
 def ensure_confdir():
@@ -342,7 +370,6 @@ def get_package_infos(pkg):
 
         if not hasattr(session, "start_url"):
             session.start_url = res.url.rsplit("&page", maxsplit=1).pop(0)
-
 
     for snippet in snippets:
         pkg_name = re.sub(
