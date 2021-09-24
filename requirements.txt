@@ -1,4 +1,4 @@
-# latest pyqt 5 tested
+# latest pyqt 5 tested with venvipy
 PyQt5==5.15.4
 PyQt5-sip
 beautifulsoup4
