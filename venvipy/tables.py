@@ -486,7 +486,7 @@ class VenvTable(BaseTable):
 
 
     def install_local(self, event):
-        """Install from a local project.
+        """Install from a local project directory.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
@@ -499,21 +499,30 @@ class VenvTable(BaseTable):
             project_name = os.path.basename(project_dir)
 
             if project_dir != "":
-                self.console.setWindowTitle(f"Installing {project_name}")
-                logger.debug("Installing from local project path...")
+                if get_data.is_writable(project_dir):
+                    self.console.setWindowTitle(f"Installing {project_name}")
+                    logger.debug("Installing from local project directory...")
 
-                self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(
-                    creator.cmds[0], [creator.opts[2], f"'{project_dir}'"]
-                )
-                self.manager.started.connect(self.console.exec_)
+                    self.manager = PipManager(active_dir, venv)
+                    self.manager.run_pip(
+                        creator.cmds[0], [creator.opts[3], f"'{project_dir}'"]
+                    )
+                    self.manager.started.connect(self.console.exec_)
 
-                # display the updated output
-                self.manager.textChanged.connect(self.console.update_status)
+                    # display the updated output
+                    self.manager.textChanged.connect(self.console.update_status)
 
-                # clear the content on window close
-                if self.console.close:
-                    self.console.console_window.clear()
+                    # clear the content on window close
+                    if self.console.close:
+                        self.console.console_window.clear()
+
+                else:
+                    msg_txt = (
+                        "Filesystem is read-only.\n\n"
+                        "Unable to create the '.egg-info'      \n"
+                        "folder inside the project directory.      \n\n"
+                    )
+                    QMessageBox.warning(self, "Abort", msg_txt)
 
 
     def install_vcs(self, event):
