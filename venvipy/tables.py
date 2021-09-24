@@ -118,9 +118,13 @@ class VenvTable(BaseTable):
         # thread
         self.thread.start()
         self.m_clone_repo_worker.moveToThread(self.thread)
+
         self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
         self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
-        self.m_clone_repo_worker.finished.connect(self.finish_info)
+        self.m_clone_repo_worker.finished.connect(self.vcs_finish_info)
+
+        self.m_clone_repo_worker.failed.connect(self.progress_bar.close)
+        self.m_clone_repo_worker.failed.connect(self.vcs_abort_info)
 
         # perform a proper stop using quit() and wait()
         self.thread.finished.connect(self.thread.quit)
@@ -536,35 +540,48 @@ class VenvTable(BaseTable):
             url, ok = QInputDialog.getText(
                 self,
                 "Specify project",
-                "Enter repository url:" + " " * 70
+                "Enter link to repository:" + " " * 80
             )
 
             if url != "":
-                project_name = os.path.basename(url)
-                project_url = f"git+{url}.git#egg={project_name}"
+                self.vcs_project_url = url[:-4] if url.endswith(".git") else url
+                self.vcs_project_name = os.path.basename(self.vcs_project_url)
+                formatted_project_url = (
+                    f"git+{self.vcs_project_url}#egg={self.vcs_project_name}"
+                )
                 cmd = (
-                    f"{venv_bin} -m pip {creator.cmds[0]} {project_url}"
+                    f"{venv_bin} -m pip {creator.cmds[0]} {formatted_project_url}"
                 )
-                self.progress_bar.setWindowTitle(f"Installing {project_name}")
+                self.progress_bar.setWindowTitle(f"Installing {self.vcs_project_name}")
                 self.progress_bar.status_label.setText(
-                    "Cloning repository... (this might take a moment)"
+                    "Installing from repository...  (this can take a moment)"
                 )
-                logger.debug(f"Installing {project_name}...")
 
                 wrapper = partial(
-                    self.m_clone_repo_worker.run_process, cmd
+                    self.m_clone_repo_worker.run_process,
+                    cmd
                 )
                 QTimer.singleShot(0, wrapper)
 
 
-    def finish_info(self):
-        """
-        Show an info message when the cloning process has finished successfully.
+    def vcs_finish_info(self):
+        """Info message if successfully installed from repository.
         """
         msg_txt = (
-            "Successfully installed package       \nfrom repository.\n"
+            "Successfully installed:           \n"
+            f"{self.vcs_project_name}\n"
         )
         QMessageBox.information(self, "Done", msg_txt)
+
+
+    def vcs_abort_info(self):
+        """Error message if installing from repository failed.
+        """
+        msg_txt = (
+            "Unable to install from\n"
+            f"{self.vcs_project_url}          \n"
+        )
+        QMessageBox.warning(self, "Abort", msg_txt)
 
 
     def save_requires(self, event):
