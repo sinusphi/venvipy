@@ -54,10 +54,11 @@ opts = [
 
 class CloningWorker(QObject):
     """
-    This worker performs package install in develp mode via subprocess.
+    This worker performs package installs.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
+    failed = pyqtSignal()
 
     @pyqtSlot(str)
     def run_process(self, command):
@@ -65,10 +66,12 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-        logger.debug("Installing from repository...")
 
-        clone_repo(command)
-        self.finished.emit()
+        if clone_repo(command) != 0:
+            self.failed.emit()
+        else:
+            self.finished.emit()
+
 
 
 #]===========================================================================[#
@@ -79,17 +82,30 @@ def clone_repo(command):
     """
     Clone a repository and install it into a virtual environment.
     """
-    process = Popen(
-        shlex.split(command), stdout=PIPE, universal_newlines=True
-    )
-    while True:
-        output = process.stdout.readline()
-        if output == "" and process.poll() is not None:
-            break
-        if output:
-            logger.debug(output.strip())
-    rc = process.poll()
-    return rc
+    with Popen(
+        shlex.split(command),
+        stdout=PIPE,
+        stderr=PIPE,
+        text="utf-8"
+    ) as process:
+
+        while True:
+            output = process.stdout.readline()
+            error = process.stderr.readline()
+
+            if output == "" and process.poll() is not None:
+                break
+
+            if output:
+                logger.debug(output.strip())
+
+            if error:
+                logger.debug(error.strip())
+
+    return_code = process.poll()
+    logger.debug(f"Exit code: {return_code}")
+    return return_code
+
 
 
 #]===========================================================================[#
@@ -154,12 +170,13 @@ def create_venv(
 
     script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
 
-    res = Popen(
+    with Popen(
         ["bash", "-c", script],
         stdout=PIPE,
-        universal_newlines=True
-    )
-    out, _ = res.communicate()
+        text="utf-8"
+    ) as res:
+        out, _ = res.communicate()
+
     output = out.strip()
     return output
 
