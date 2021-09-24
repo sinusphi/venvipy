@@ -2,8 +2,8 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.3.3-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.3.3/#description
+.. image:: https://img.shields.io/badge/pypi-v0.3.4-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.3.4/#description
 
 .. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
@@ -23,8 +23,9 @@
 .. image:: https://img.shields.io/badge/license-GPL%203.0-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/main/LICENSE
 
-.. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
-    :target: https://travis-ci.org/sinusphi/venvipy
+..
+    .. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
+        :target: https://travis-ci.org/sinusphi/venvipy
 
 |
 
@@ -75,7 +76,7 @@ Key Features
 *  Search and install packages from `PyPI <https://pypi.org/>`__
 *  Install from requirements files
 *  Install from local stored project directories
-*  Install from VCS project urls *(currently git only)*
+*  Install from a VCS project url *(currently git only)*
 *  Install from local or remote source archives
 
 |
@@ -95,8 +96,15 @@ you will have to make sure that the packages ``python3-venv`` and
 ``python3-pip`` are installed, because in this case the operating system's
 venv and pip will be used to perform commands.
 
-Also installing packages into your operating system's Python is discouraged.
-It's a better idea to create a virtual environment and run *VenviPy* inside:
+Also installing packages directly into your operating system's Python is
+discouraged. If you want to do it anyway, you can do it like this:
+
+.. code-block:: bash
+
+    $ python3.x -m pip install venvipy
+
+The better way however is to create a virtual environment and install
+*VenviPy* into it:
 
 .. code-block:: bash
 
@@ -143,14 +151,14 @@ Clone the repository (use the ``--depth`` option):
 
 .. code-block:: bash
 
-    $ (your_venv) git clone --depth 1 git@github.com:sinusphi/venvipy.git
+    $ (your_venv) git clone --depth 50 git@github.com:sinusphi/venvipy.git
 
-Cd into the repo folder and install the dependencies (if you're using Python 3.6 you will
-also need to install the `dataclasses` package):
+Cd into the repo folder and install the dependencies. On Python 3.6 you will also
+need to install the ``dataclasses`` package:
 
 .. code-block:: bash
 
-    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-sip
+    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-sip requests beautifoulsoup4
 
 or from `requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
 
