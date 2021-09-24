@@ -163,11 +163,11 @@ class VenvTable(BaseTable):
             statusTip="Install packages from PyPI"
         )
         install_packages_action.triggered.connect(
-            lambda: self.add_packages(event)
+            lambda: self.install_pypi_packages(event)
         )
 
         install_requires_action = QAction(
-            "Install from &requirements",
+            "Install from a &requirements file",
             self,
             statusTip="Install packages from requirements"
         )
@@ -176,7 +176,7 @@ class VenvTable(BaseTable):
         )
 
         install_local_action = QAction(
-            "Install from &local project directory",
+            "Install from a &local project directory",
             self,
             statusTip="Install from a local stored project directory"
         )
@@ -185,7 +185,7 @@ class VenvTable(BaseTable):
         )
 
         install_vcs_action = QAction(
-            "Install from &VCS project url",
+            "Install from a &VCS project url",
             self,
             statusTip="Install from a VCS url"
         )
@@ -262,7 +262,7 @@ class VenvTable(BaseTable):
 
         delete_venv_action = QAction(
             self.delete_icon,
-            "&Delete environment",
+            "Delete &environment",
             self,
             statusTip="Delete environment"
         )
@@ -423,9 +423,10 @@ class VenvTable(BaseTable):
                 self.console.console_window.clear()
 
 
-    def add_packages(self, event):
+    def install_pypi_packages(self, event):
         """
-        Install additional packages into the selected environment.
+        Install packages from [PyPI](https://pypi.org)
+        into the selected environment.
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
