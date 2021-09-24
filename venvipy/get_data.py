@@ -116,12 +116,9 @@ def ensure_active_file():
 def get_python_version(py_path):
     """Return Python version.
     """
-    res = Popen(
-        [py_path, "-V"],
-        stdout=PIPE,
-        universal_newlines=True
-    )
-    out, _ = res.communicate()
+    with Popen([py_path, "-V"], stdout=PIPE, text="utf-8") as res:
+        out, _ = res.communicate()
+
     python_version = out.strip()
     return python_version
 
