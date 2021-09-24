@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from bs4 import BeautifulSoup
 import requests
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
