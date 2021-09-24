@@ -43,6 +43,7 @@ opts = [
     "--upgrade",  # 0
     "--requirement",  # 1
     "--editable",  # 2
+    "--use-feature=in-tree-build"  # 3
 ]
 
 
