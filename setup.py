@@ -30,6 +30,8 @@ except FileNotFoundError:
 install_requires = [
     "PyQt5==5.15.4",
     "PyQt5-sip",
+    "requests",
+    "beautifulsoup4",
     "dataclasses ; python_version<'3.7'"
 ]
 
@@ -43,15 +45,16 @@ setup(
     description="A GUI for managing Python virtual environments.",
     long_description=long_desc,
     long_description_content_type="text/x-rst",
-    author="sinusphi",
+    author="Youssef Serestou",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.3.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.4.tar.gz",
     keywords=[
         "python",
         "python3",
         "venv",
         "virtualenvironment",
+        "virtual-environment",
         "pyqt",
         "pyqt5",
         "pyqt5-desktop-application",
