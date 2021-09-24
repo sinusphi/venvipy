@@ -62,7 +62,7 @@ class ProgBarDialog(QDialog):
 
 
     def initUI(self):
-        self.setFixedSize(350, 85)
+        self.setFixedSize(420, 85)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
@@ -72,7 +72,7 @@ class ProgBarDialog(QDialog):
         self.place_holder = QLabel(self)
 
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFixedSize(325, 23)
+        self.progress_bar.setFixedSize(395, 23)
         self.progress_bar.setRange(0, 0)
 
         v_layout = QVBoxLayout()
