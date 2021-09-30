@@ -22,7 +22,7 @@ This module creates all the stuff requested.
 import logging
 import shlex
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 from random import randint
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -52,13 +52,13 @@ opts = [
 #] CUSTOM WORKER [#==========================================================[#
 #]===========================================================================[#
 
-class CloningWorker(QObject):
+class InstallWorker(QObject):
     """
     This worker performs package installs.
     """
     started = pyqtSignal()
     finished = pyqtSignal()
-    failed = pyqtSignal()
+    text_changed = pyqtSignal(str)
 
     @pyqtSlot(str)
     def run_process(self, command):
@@ -66,45 +66,46 @@ class CloningWorker(QObject):
         Run the process.
         """
         self.started.emit()
-
-        if clone_repo(command) != 0:
-            self.failed.emit()
-        else:
-            self.finished.emit()
+        self.install_process(command)
+        self.finished.emit()
 
 
+    def install_process(self, command):
+        """
+        Install a package via subprocess.
+        """
+        os.environ['PYTHONUNBUFFERED'] = "1"
+        errors = []
 
-#]===========================================================================[#
-#] CLONE / INSTALL FROM REPOSITORY [#========================================[#
-#]===========================================================================[#
+        with Popen(
+            shlex.split(command),
+            stdout=PIPE,
+            stderr=STDOUT,
+            text="utf-8"
+        ) as process:
+            while process.poll() is None:
+                output = process.stdout.readline()
 
-def clone_repo(command):
-    """
-    Clone a repository and install it into a virtual environment.
-    """
-    with Popen(
-        shlex.split(command),
-        stdout=PIPE,
-        stderr=PIPE,
-        text="utf-8"
-    ) as process:
+                if output != "":
+                    logger.debug(output.strip())
+                    if output.lstrip().startswith((
+                        "ERROR",
+                        "WARNING",
+                        "fatal",
+                        "remote"
+                    )):
+                        errors.append(output.strip())
+                    else:
+                        self.text_changed.emit(output.strip())
 
-        while True:
-            output = process.stdout.readline()
-            error = process.stderr.readline()
+            if errors:
+                errors.insert(0, " ")
+                for line in errors:
+                    self.text_changed.emit(line)
 
-            if output == "" and process.poll() is not None:
-                break
-
-            if output:
-                logger.debug(output.strip())
-
-            if error:
-                logger.debug(error.strip())
-
-    return_code = process.poll()
-    logger.debug(f"Exit code: {return_code}")
-    return return_code
+            self.text_changed.emit("\n\nPress [ESC] to continue...\n")
+            logger.debug(f"Exit code: {process.returncode}")
+            return process.returncode
 
 
 
