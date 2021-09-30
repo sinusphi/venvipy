@@ -102,8 +102,8 @@ class ProgBarDialog(QDialog):
 
 class ConsoleDialog(QDialog):
     """
-    Dialog box printing the output to a console-like widget during the
-    installation process.
+    Dialog box printing the output to a console-like widget when running
+    commands.
     """
     def __init__(self):
         super().__init__()
@@ -112,7 +112,7 @@ class ConsoleDialog(QDialog):
 
 
     def initUI(self):
-        self.resize(910, 555)
+        self.resize(1115, 705)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
@@ -156,18 +156,6 @@ class ConsoleDialog(QDialog):
             message, Qt.ElideNone, self.console_window.width()
         )
         self.console_window.append(formatted_text)
-
-
-    def finish_fail(self):
-        """
-        Show info message when the installation process failed.
-        """
-        message_txt = (
-            "Could not install from requirements.\n\n"
-            "File not found.\n"
-        )
-        logger.error("Could not install from requirements")
-        QMessageBox.critical(self, "Error", message_txt)
 
 
 

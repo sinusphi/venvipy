@@ -56,7 +56,7 @@ class PipManager(QObject):
     started = pyqtSignal()
     finished = pyqtSignal()
     failed = pyqtSignal()
-    textChanged = pyqtSignal(str)
+    text_changed = pyqtSignal(str)
 
 
     def __init__(self, venv_dir, venv_name, parent=None):
@@ -122,9 +122,9 @@ class PipManager(QObject):
         elif state == QProcess.Running:
             logger.debug("Running")
         elif state == QProcess.NotRunning:
-            logger.debug("Done.")
-            self.textChanged.emit(
-                "\n\nPress [ESC] to continue..."
+            logger.debug("Done")
+            self.text_changed.emit(
+                "\n\nPress [ESC] to continue...\n"
             )
 
 
@@ -142,7 +142,7 @@ class PipManager(QObject):
         """
         message = self._process.readAllStandardOutput().data().decode().strip()
         logger.debug(message)
-        self.textChanged.emit(message)
+        self.text_changed.emit(message)
 
 
     @pyqtSlot()
@@ -151,7 +151,7 @@ class PipManager(QObject):
         """
         message = self._process.readAllStandardError().data().decode().strip()
         logger.error(message)
-        self.textChanged.emit(message)
+        self.text_changed.emit(message)
         self.failed.emit()
         self._process.kill()
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     _venv_name = "testenv"  # need to have a virtual env in current_dir
 
     manager = PipManager(current_dir, _venv_name)
-    manager.textChanged.connect(console.update_status)
+    manager.text_changed.connect(console.update_status)
     manager.started.connect(console.show)
     manager.run_pip(
         "freeze", [f" > {current_dir}/{_venv_name}/requirements.txt"]
