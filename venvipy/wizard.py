@@ -671,11 +671,7 @@ class InstallPackages(QWizardPage):
         )
 
         # display the updated output
-        self.manager.textChanged.connect(self.console.update_status)
-
-        # show info dialog
-        self.manager.failed.connect(self.console.finish_fail)
-        self.manager.failed.connect(self.console.close)
+        self.manager.text_changed.connect(self.console.update_status)
 
         # clear the contents when closing console
         if self.console.close:
@@ -745,7 +741,7 @@ class InstallPackages(QWizardPage):
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
 
             # display the updated output
-            self.manager.textChanged.connect(self.console.update_status)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content when closing console
             if self.console.close:
