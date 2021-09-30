@@ -40,7 +40,7 @@ from PyQt5.QtWidgets import (
 import get_data
 import creator
 from dialogs import ConsoleDialog, ProgBarDialog
-from creator import CloningWorker
+from creator import InstallWorker
 from manage_pip import PipManager
 
 
@@ -113,18 +113,16 @@ class VenvTable(BaseTable):
         self.progress_bar = ProgBarDialog()
         self.console = ConsoleDialog()
         self.thread = QThread(self)
-        self.m_clone_repo_worker = CloningWorker()
+        self.m_install_worker = InstallWorker()
 
         # thread
         self.thread.start()
-        self.m_clone_repo_worker.moveToThread(self.thread)
+        self.m_install_worker.moveToThread(self.thread)
 
-        self.m_clone_repo_worker.started.connect(self.progress_bar.exec_)
-        self.m_clone_repo_worker.finished.connect(self.progress_bar.close)
-        self.m_clone_repo_worker.finished.connect(self.vcs_finish_info)
-
-        self.m_clone_repo_worker.failed.connect(self.progress_bar.close)
-        self.m_clone_repo_worker.failed.connect(self.vcs_abort_info)
+        self.m_install_worker.started.connect(self.console.exec_)
+        self.m_install_worker.text_changed.connect(
+            self.console.update_status
+        )
 
         # perform a proper stop using quit() and wait()
         self.thread.finished.connect(self.thread.quit)
@@ -332,8 +330,8 @@ class VenvTable(BaseTable):
         version = get_data.get_config(cfg_file, "version")
         py_path = get_data.get_config(cfg_file, "py_path")
         msg_txt = (
-            f"This environment requires {version} \n\
-            from {py_path} which is \nnot installed.\n"
+            f"This environment requires {version} \n"
+            f"from {py_path} which is \nnot installed.\n"
         )
 
         if is_installed == "no":
@@ -416,7 +414,7 @@ class VenvTable(BaseTable):
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
-            self.manager.textChanged.connect(self.console.update_status)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content on window close
             if self.console.close:
@@ -449,7 +447,7 @@ class VenvTable(BaseTable):
                 self.manager.started.connect(self.console.exec_)
 
                 # display the updated output
-                self.manager.textChanged.connect(self.console.update_status)
+                self.manager.text_changed.connect(self.console.update_status)
 
                 # clear the content on window close
                 if self.console.close:
@@ -463,6 +461,7 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
+        venv_bin = os.path.join(active_dir, venv, "bin", "python")
 
         if self.has_pip(active_dir, venv):
             file_name = QFileDialog.getOpenFileName(
@@ -473,17 +472,15 @@ class VenvTable(BaseTable):
 
             if file_path != "":
                 creator.fix_requirements(file_path)
-                self.console.setWindowTitle("Installing from requirements")
                 logger.debug("Installing from requirements...")
-
-                self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(
-                    creator.cmds[0], [creator.opts[1], f"'{file_path}'"]
+                cmd = (
+                    f"{venv_bin} -m pip {creator.cmds[0]} {creator.opts[1]} {file_path}"
                 )
-                self.manager.started.connect(self.console.exec_)
-
-                # display the updated output
-                self.manager.textChanged.connect(self.console.update_status)
+                self.console.setWindowTitle(
+                    "Installing from requirements file"
+                )
+                wrapper = partial(self.m_install_worker.run_process, cmd)
+                QTimer.singleShot(0, wrapper)
 
                 # clear the content on window close
                 if self.console.close:
@@ -515,7 +512,7 @@ class VenvTable(BaseTable):
                     self.manager.started.connect(self.console.exec_)
 
                     # display the updated output
-                    self.manager.textChanged.connect(self.console.update_status)
+                    self.manager.text_changed.connect(self.console.update_status)
 
                     # clear the content on window close
                     if self.console.close:
@@ -523,7 +520,7 @@ class VenvTable(BaseTable):
 
                 else:
                     msg_txt = (
-                        "Filesystem is read-only.\n\n"
+                        "Filesystem not writable.\n\n"
                         "Unable to create the '.egg-info'      \n"
                         "folder inside the project directory.      \n\n"
                     )
@@ -553,36 +550,15 @@ class VenvTable(BaseTable):
                 cmd = (
                     f"{venv_bin} -m pip {creator.cmds[0]} {formatted_project_url}"
                 )
-                self.progress_bar.setWindowTitle(f"Installing {self.vcs_project_name}")
-                self.progress_bar.status_label.setText(
-                    "Installing from repository...  (this can take a moment)"
+                self.console.setWindowTitle(
+                    f"Installing {self.vcs_project_name}"
                 )
-
-                wrapper = partial(
-                    self.m_clone_repo_worker.run_process,
-                    cmd
-                )
+                wrapper = partial(self.m_install_worker.run_process, cmd)
                 QTimer.singleShot(0, wrapper)
 
-
-    def vcs_finish_info(self):
-        """Info message if successfully installed from repository.
-        """
-        msg_txt = (
-            "Successfully installed:           \n"
-            f"{self.vcs_project_name}\n"
-        )
-        QMessageBox.information(self, "Done", msg_txt)
-
-
-    def vcs_abort_info(self):
-        """Error message if installing from repository failed.
-        """
-        msg_txt = (
-            "Unable to install from\n"
-            f"{self.vcs_project_url}          \n"
-        )
-        QMessageBox.warning(self, "Abort", msg_txt)
+                # clear the content on window close
+                if self.console.close:
+                    self.console.console_window.clear()
 
 
     def save_requires(self, event):
@@ -633,7 +609,7 @@ class VenvTable(BaseTable):
             self.manager.started.connect(self.console.exec_)
 
             # display the updated output
-            self.manager.textChanged.connect(self.console.update_status)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content on window close
             if self.console.close:
