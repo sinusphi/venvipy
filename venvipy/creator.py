@@ -62,8 +62,7 @@ class InstallWorker(QObject):
 
     @pyqtSlot(str)
     def run_process(self, command):
-        """
-        Run the process.
+        """Run the process.
         """
         self.started.emit()
         self.install_process(command)
@@ -71,10 +70,9 @@ class InstallWorker(QObject):
 
 
     def install_process(self, command):
+        """Install a package via subprocess.
         """
-        Install a package via subprocess.
-        """
-        os.environ['PYTHONUNBUFFERED'] = "1"
+        os.environ["PYTHONUNBUFFERED"] = "1"
         errors = []
 
         with Popen(
@@ -124,8 +122,7 @@ class CreationWorker(QObject):
 
     @pyqtSlot(tuple)
     def install_venv(self, args):
-        """
-        Execute the commands to create the environment.
+        """Execute the commands to create the environment.
         """
         self.started.emit()
         logger.debug("Creating virtual environment...")
@@ -227,8 +224,7 @@ def save_comment(path, comment):
 #]===========================================================================[#
 
 def random_zen_line():
-    """
-    Return a random line from the Zen of Python.
+    """Return a random line from the Zen of Python.
     """
     this = [
         "\nBeautiful is better than ugly.",
