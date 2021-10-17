@@ -175,7 +175,7 @@ class InfoAboutVenviPy(QDialog):
 
     def initUI(self):
         self.setWindowTitle("About VenviPy")
-        self.setFixedSize(495, 395)
+        self.setFixedSize(500, 405)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
@@ -183,10 +183,11 @@ class InfoAboutVenviPy(QDialog):
         # logo
         logo = QLabel()
         pixmap = QPixmap(":/img/default.png")
-        logo_scaled = pixmap.scaled(140, 140, Qt.KeepAspectRatio)
+        logo_scaled = pixmap.scaled(156, 156, Qt.KeepAspectRatio)
         logo.setPixmap(logo_scaled)
 
-        place_holder_1 = QLabel(maximumHeight=1)
+        # add some space
+        place_holder_1 = QLabel(minimumHeight=1)
 
         # title
         title_label = QLabel(
@@ -217,6 +218,7 @@ class InfoAboutVenviPy(QDialog):
             </a></span></p>',
             openExternalLinks=True
         )
+        repo_label.setToolTip("https://github.com/sinusphi/venvipy")
 
         # copyright
         current_year = str(date.today().year)
@@ -226,29 +228,12 @@ class InfoAboutVenviPy(QDialog):
             </span></p>'
         )
 
-        place_holder_2 = QLabel(maximumHeight=15)
-
-        disclaimer_label_1 = QLabel(
-            '<p><span style="font-size:10pt;">\
-                This program comes WITHOUT ANY WARRANTY.\
-            </span></p>',
-        )
-
-        disclaimer_label_2 = QLabel(
-            '<p><span style="font-size:10pt;">\
-                Visit the \
-                <a href="https://www.gnu.org/licenses/licenses.en.html#GPL">\
-                GNU General Public License, version 3 or later</a> \
-                for more information.\
-            </span></p>',
-            openExternalLinks=True
-        )
+        place_holder_2 = QLabel(minimumHeight=5)
 
         # close button
         close_button = QPushButton("Close", clicked=self.close)
         close_button.setFixedWidth(135)
         close_button.setFixedHeight(30)
-
 
         # layout
         grid_layout = QGridLayout(self)
@@ -261,12 +246,8 @@ class InfoAboutVenviPy(QDialog):
         grid_layout.addWidget(subtitle_label, 4, 0, Qt.AlignHCenter)
         grid_layout.addWidget(repo_label, 5, 0, Qt.AlignHCenter)
         grid_layout.addWidget(copyright_label, 6, 0, Qt.AlignHCenter)
-
         grid_layout.addWidget(place_holder_2, 7, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(disclaimer_label_1, 8, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(disclaimer_label_2, 9, 0, Qt.AlignHCenter)
-
-        grid_layout.addWidget(close_button, 10, 0, Qt.AlignRight)
+        grid_layout.addWidget(close_button, 8, 0, Qt.AlignRight)
         self.setLayout(grid_layout)
 
 
