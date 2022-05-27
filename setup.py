@@ -10,9 +10,8 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))  # for setuptools.build_meta
 
 try:
-    fh = codecs.open(CURRENT_DIR / "README.rst", encoding="utf-8")
-    long_desc = fh.read()
-    fh.close()
+    with codecs.open(CURRENT_DIR / "README.rst", encoding="utf-8") as f:
+        long_desc = f.read()
 except FileNotFoundError:
     long_desc = ""
 
@@ -29,7 +28,8 @@ except FileNotFoundError:
 
 install_requires = [
     "PyQt5==5.15.4",
-    "PyQt5-sip",
+    "PyQt5-Qt5==5.15.2",
+    "PyQt5-sip==12.10.1",
     "requests",
     "beautifulsoup4",
     "dataclasses ; python_version<'3.7'"
@@ -48,7 +48,7 @@ setup(
     author="Youssef Serestou",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.4.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.5.tar.gz",
     keywords=[
         "python",
         "python3",
