@@ -429,7 +429,7 @@ class BasicSettings(QWizardPage):
         self.requirements_line.setText(file_name[0])
 
 
-    def pip_enabled(self, state):
+    def pip_enabled(self):
         """
         Enable or disable input line for requirements
         and checkbox for installing wheel.
