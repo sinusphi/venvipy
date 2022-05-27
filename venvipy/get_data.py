@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from bs4 import BeautifulSoup
 import requests
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -372,22 +372,22 @@ def get_package_infos(pkg):
         pkg_name = re.sub(
             r"\s+",
             " ",
-            snippet.select_one('span[class*="name"]').text.strip()
+            snippet.select_one('span[class*="package-snippet__name"]').text.strip()
         )
         pkg_version = re.sub(
             r"\s+",
             " ",
-            snippet.select_one('span[class*="version"]').text.strip()
+            snippet.select_one('span[class*="package-snippet__version"]').text.strip()
         )
         pkg_release_date = re.sub(
             r"\s+",
             " ",
-            snippet.select_one('span[class*="released"]').text.strip()
+            snippet.select_one('span[class*="package-snippet__created"]').text.strip()
         )
         pkg_summary = re.sub(
             r"\s+",
             " ",
-            snippet.select_one('p[class*="description"]').text.strip()
+            snippet.select_one('p[class*="package-snippet__description"]').text.strip()
         )
 
         pkg_info = PackageInfo(
