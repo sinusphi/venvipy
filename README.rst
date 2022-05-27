@@ -2,8 +2,8 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.3.4-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.3.4/#description
+.. image:: https://img.shields.io/badge/pypi-v0.3.5-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.3.5/#description
 
 .. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
@@ -91,13 +91,24 @@ Key Features
 Prerequisits
 ------------
 
-If you want to run *VenviPy* using your operating system's Python (3.6+)
-you will have to make sure that the packages ``python3-venv`` and
-``python3-pip`` are installed, because in this case the operating system's
-venv and pip will be used to perform commands.
+If you don't have a Python built from source, you'll have to run *VenviPy* 
+using your operating system's Python (3.6+). In this case please make sure 
+that the following packages are installed on your system: 
 
-Also installing packages directly into your operating system's Python is
-discouraged. If you want to do it anyway, you can do it like this:
+.. code-block:: bash
+
+    python3-pip
+    python3-venv
+    python3.9-venv
+    python3.10-venv
+
+|
+
+Installation
+------------
+
+Installing packages directly into your operating system's Python is
+discouraged. If you want to do it anyway, do it like this:
 
 .. code-block:: bash
 
@@ -110,11 +121,6 @@ The better way however is to create a virtual environment and install
 
     $ python3.x -m venv [your_venv]
     $ source [your_venv]/bin/activate
-
-|
-
-Installation
-------------
 
 To install the latest stable version of *VenviPy*:
 
@@ -154,17 +160,18 @@ Clone the repository (use the ``--depth`` option):
     $ (your_venv) git clone --depth 50 git@github.com:sinusphi/venvipy.git
 
 Cd into the repo folder and install the dependencies. On Python 3.6 you will also
-need to install the ``dataclasses`` package:
-
-.. code-block:: bash
-
-    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-sip requests beautifoulsoup4
-
-or from `requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
+need to install the ``dataclasses`` package if you're not using the provided 
+`requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
 
 .. code-block:: bash
 
     $ (your_venv) pip install -r requirements.txt
+
+or: 
+
+.. code-block:: bash
+
+    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-Qt5==5.15.2 PyQt5-sip==12.10.1 requests beautifoulsoup4
 
 Then you can
 
