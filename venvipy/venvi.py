@@ -66,6 +66,7 @@ from PyQt5.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
+from pkg_installer import PackageInstaller
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable, InterpreterTable
 
@@ -143,6 +144,7 @@ class MainWindow(QMainWindow):
         # refresh interpreter table if 'py-installs' changes
         self.venv_wizard.update_table.connect(self.pop_interpreter_table)
 
+        self.pkg_installer = PackageInstaller()
 
         #]===================================================================[#
         #] ICONS [#==========================================================[#
@@ -320,7 +322,8 @@ class MainWindow(QMainWindow):
             editTriggers=QAbstractItemView.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            refresh=self.pop_venv_table
+            refresh=self.pop_venv_table,
+            start_installer=self.pkg_installer.launch
         )
 
         # hide vertical header
