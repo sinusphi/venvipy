@@ -36,6 +36,7 @@ __version__ = "0.3.5"
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
 ACTIVE_FILE = os.path.expanduser("~/.venvipy/selected-dir")
+ACTIVE_VENV = os.path.expanduser("~/.venvipy/active-venv")
 PYPI_URL = "https://pypi.org/search/"
 
 
