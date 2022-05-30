@@ -89,6 +89,7 @@ class VenvTable(BaseTable):
     finished = pyqtSignal()
     text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
+    start_installer = pyqtSignal()
 
 
     def __init__(self, *args, **kwargs):
@@ -428,30 +429,13 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
+        venv_path = os.path.join(active_dir, venv)
 
         if self.has_pip(active_dir, venv):
-            project_name, ok = QInputDialog.getText(
-                self,
-                "Specify project",
-                "Enter a PyPI project name:" + " " * 70
-            )
+            with open(get_data.ACTIVE_VENV, "w") as f:
+                f.write(venv_path)
 
-            if project_name != "":
-                self.console.setWindowTitle(f"Installing {project_name}")
-                logger.debug("Installing specified project...")
-
-                self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(
-                    creator.cmds[0], [creator.opts[0], f"'{project_name}'"]
-                )
-                self.manager.started.connect(self.console.exec_)
-
-                # display the updated output
-                self.manager.text_changed.connect(self.console.update_status)
-
-                # clear the content on window close
-                if self.console.close:
-                    self.console.console_window.clear()
+            self.start_installer.emit()
 
 
     def install_requires(self, event):
@@ -807,7 +791,7 @@ class ResultsTable(BaseTable):
         """
         url = "https://pypi.org/project"
         package = self.get_selected_item()
-        webbrowser.open("/".join([url, package, "#description"]))
+        webbrowser.open("/".join([url, package]))
 
 
 
