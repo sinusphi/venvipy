@@ -3,6 +3,7 @@ dev_requirements.txt
 __pycache__/
 .vscode/
 testenv/
+gui-dev/
 build/
 tests/
 dist/
