@@ -58,7 +58,6 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QPushButton,
     QMessageBox,
-    QHeaderView,
     QDesktopWidget
 )
 
@@ -66,7 +65,7 @@ import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import creator
 from dialogs import ProgBarDialog, ConsoleDialog
-from tables import ResultsTable
+from pkg_installer import ResultsTable
 from creator import CreationWorker
 from manage_pip import PipManager
 
@@ -205,7 +204,9 @@ class BasicSettings(QWizardPage):
         self.m_install_venv_worker.updating_pip.connect(
             lambda: logger.debug("Updating pip...")
         )
-        self.m_install_venv_worker.installing_wheel.connect(self.install_wheel_msg)
+        self.m_install_venv_worker.installing_wheel.connect(
+            self.install_wheel_msg
+        )
         self.m_install_venv_worker.installing_wheel.connect(
             lambda: logger.debug("Installing wheel...")
         )
