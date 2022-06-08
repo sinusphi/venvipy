@@ -19,12 +19,12 @@
 """
 This module provides several necessary data.
 """
-import logging
-import shutil
-import csv
-import sys
-import os
 import re
+import os
+import sys
+import csv
+import shutil
+import logging
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
@@ -35,7 +35,7 @@ __version__ = "0.3.5"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
-ACTIVE_FILE = os.path.expanduser("~/.venvipy/selected-dir")
+ACTIVE_DIR = os.path.expanduser("~/.venvipy/selected-dir")
 ACTIVE_VENV = os.path.expanduser("~/.venvipy/active-venv")
 PYPI_URL = "https://pypi.org/search/"
 
@@ -105,12 +105,21 @@ def ensure_dbfile():
         get_python_installs()
 
 
-def ensure_active_file():
+def ensure_active_dir():
     """Create the file that holds the selected path to venvs.
     """
     ensure_confdir()
-    if not os.path.exists(ACTIVE_FILE):
-        with open(ACTIVE_FILE, "w+", encoding="utf-8") as f:
+    if not os.path.exists(ACTIVE_DIR):
+        with open(ACTIVE_DIR, "w+", encoding="utf-8") as f:
+            f.write("")
+
+
+def ensure_active_venv():
+    """Create the file that holds the selected path to venvs.
+    """
+    ensure_confdir()
+    if not os.path.exists(ACTIVE_VENV):
+        with open(ACTIVE_VENV, "w+", encoding="utf-8") as f:
             f.write("")
 
 
@@ -311,8 +320,8 @@ def get_config(cfg_file, cfg):
 def get_active_dir_str():
     """Return path to selected directory.
     """
-    ensure_active_file()
-    with open(ACTIVE_FILE, "r", encoding="utf-8") as f:
+    ensure_active_dir()
+    with open(ACTIVE_DIR, "r", encoding="utf-8") as f:
         selected_dir = f.read()
         return selected_dir
     return ""
