@@ -610,8 +610,8 @@ class MainWindow(QMainWindow):
         active_dir = self.directory_line.text()
 
         if active_dir != "":
-            if os.path.exists(get_data.ACTIVE_FILE):
-                with open(get_data.ACTIVE_FILE, "w", encoding="utf-8") as f:
+            if os.path.exists(get_data.ACTIVE_DIR):
+                with open(get_data.ACTIVE_DIR, "w", encoding="utf-8") as f:
                     f.write(active_dir)
                 self.pop_venv_table()
                 self.update_label()

@@ -24,7 +24,7 @@ import logging
 from datetime import date
 
 from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
-from PyQt5.QtCore import Qt, QSize, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -35,8 +35,7 @@ from PyQt5.QtWidgets import (
     QProgressBar,
     QPushButton,
     QApplication,
-    QGridLayout,
-    QMessageBox
+    QGridLayout
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -53,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 class ProgBarDialog(QDialog):
     """
-    Dialog showing a progress bar during the create process.
+    Dialog showing a progress bar during processes.
     """
     def __init__(self):
         super().__init__()
