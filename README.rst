@@ -2,8 +2,8 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.3.5-blue?logo=pypi&logoColor=FFE873
-    :target: https://pypi.org/project/venvipy/0.3.5/#description
+.. image:: https://img.shields.io/badge/pypi-v0.3.6-blue?logo=pypi&logoColor=FFE873
+    :target: https://pypi.org/project/venvipy/0.3.6
 
 .. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
     :target: https://www.python.org/downloads
