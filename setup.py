@@ -48,7 +48,7 @@ setup(
     author="Youssef Serestou",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.5.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.6.tar.gz",
     keywords=[
         "python",
         "python3",
