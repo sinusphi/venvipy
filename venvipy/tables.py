@@ -19,9 +19,8 @@
 """
 This module contains the tables.
 """
-import webbrowser
-import shutil
 import os
+import shutil
 import logging
 from functools import partial
 
@@ -738,60 +737,6 @@ class VenvTable(BaseTable):
                 shutil.rmtree(venv_path)
                 logger.debug(f"Successfully deleted '{venv_path}'")
                 self.refresh.emit()
-
-
-
-class ResultsTable(BaseTable):
-    """Contains the results from PyPI.
-    """
-    context_triggered = pyqtSignal()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
-        )
-
-    def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
-
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
-
-        install_action = QAction(
-            QIcon.fromTheme("software-install"),
-            "&Install module",
-            self,
-            statusTip="Install module"
-        )
-        context_menu.addAction(install_action)
-        # connect to install_package() in InstallPackages() in wizard
-        install_action.triggered.connect(
-            lambda: self.context_triggered.emit()
-        )
-
-        open_pypi_action = QAction(
-            self.info_icon,
-            "&Open on PyPI",
-            self,
-            statusTip="Open on Python Package Index"
-        )
-        context_menu.addAction(open_pypi_action)
-        open_pypi_action.triggered.connect(
-            lambda: self.open_on_pypi(event)
-        )
-
-
-    def open_on_pypi(self, event):
-        """
-        Open pypi.org and show the project description
-        of the selected package.
-        """
-        url = "https://pypi.org/project"
-        package = self.get_selected_item()
-        webbrowser.open("/".join([url, package]))
 
 
 
