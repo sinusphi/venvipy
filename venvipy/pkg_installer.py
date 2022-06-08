@@ -20,13 +20,13 @@
 This module contains the package installer.
 """
 import os
-import sys
 import logging
 import webbrowser
 
 from PyQt5.QtGui import (
     QIcon,
     QCursor,
+    QPixmap,
     QStandardItem,
     QStandardItemModel
 )
@@ -35,30 +35,27 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QDialog,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QDesktopWidget,
     QPushButton,
-    QApplication,
     QGridLayout,
     QMessageBox,
     QAbstractItemView,
     QStyle,
     QAction,
     QTableView,
-    QMenu
+    QMenu,
+    QFrame
 )
 
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import creator
 from dialogs import ConsoleDialog
-from wizard import InstallPackages
 from manage_pip import PipManager
 
 logger = logging.getLogger(__name__)
-
 
 
 
@@ -138,23 +135,48 @@ class PackageInstaller(QDialog):
     """
     The package installer dialog.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.setWindowTitle("Package Installer")
-        self.setFixedSize(975, 650)
+        self.resize(975, 650)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
 
         self.console = ConsoleDialog()
-        self.install_packages = InstallPackages()
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
 
-        grid_layout = QGridLayout(self)
+        horizontal_layout = QHBoxLayout(self)
+        horizontal_layout.setContentsMargins(25, 18, 25, 22)
+
+        grid_layout = QGridLayout()
+
+        title_label = QLabel(
+            '<p><span style="font-size:12.5pt;">\
+                <b>Package Installer</b>\
+            </span></p>'
+        )
+
+        logo = QLabel()
+        pixmap = QPixmap(":/img/pypi.png")
+        logo_scaled = pixmap.scaled(92, 92, Qt.KeepAspectRatio)
+        logo.setPixmap(logo_scaled)
+
+        subtitle_label_1 = QLabel(
+            "      Here you can search for Python packages on PYPI "
+            "and install them into your virtual environment. "
+        )
+        subtitle_label_2 = QLabel(
+            "      Use right-click for more info. "
+        )
+
+        line_1 = QFrame(self)
+        line_1.setFixedHeight(15)
+        line_1.setFrameShape(QFrame.HLine)
+        line_1.setFrameShadow(QFrame.Sunken)
 
         pkg_name_label = QLabel("Package &name:")
         self.pkg_name_line = QLineEdit()
@@ -165,9 +187,9 @@ class PackageInstaller(QDialog):
             clicked=self.pop_results_table
         )
 
-        self.exit_button = QPushButton(
+        exit_button = QPushButton(
             "&Exit",
-            clicked=self.save_requirements
+            clicked=self.on_close
         )
 
         # results table
@@ -192,16 +214,49 @@ class PackageInstaller(QDialog):
         self.results_table_model = QStandardItemModel(0, 3, self)
         self.results_table.setModel(self.results_table_model)
 
-        grid_layout.addWidget(pkg_name_label, 0, 0, 1, 1)
-        grid_layout.addWidget(self.pkg_name_line, 0, 1, 1, 1)
-        grid_layout.addWidget(self.search_button, 0, 2, 1, 1)
-        grid_layout.addWidget(self.results_table, 1, 0, 1, 3)
-        grid_layout.addWidget(self.exit_button, 2, 2, 1, 1)
+        line_2 = QFrame(self)
+        line_2.setFixedHeight(8)
+        line_2.setFrameShape(QFrame.HLine)
+        line_2.setFrameShadow(QFrame.Sunken)
+
+        grid_layout.addWidget(title_label, 0, 0, 1, 2)
+        grid_layout.addWidget(logo, 0, 2, 1, 1)
+        grid_layout.addWidget(subtitle_label_1, 1, 0, 1, 2)
+        grid_layout.addWidget(subtitle_label_2, 2, 0, 1, 2)
+        grid_layout.addWidget(line_1, 3, 0, 1, 3)
+        grid_layout.addWidget(pkg_name_label, 4, 0, 1, 1)
+        grid_layout.addWidget(self.pkg_name_line, 4, 1, 1, 1)
+        grid_layout.addWidget(self.search_button, 4, 2, 1, 1)
+        grid_layout.addWidget(self.results_table, 5, 0, 1, 3)
+        grid_layout.addWidget(line_2, 6, 0, 1, 3)
+        grid_layout.addWidget(exit_button, 7, 2, 1, 1)
+
+        horizontal_layout.addLayout(grid_layout)
+
+
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+
+    def on_close(self):
+        """Close window if no changes made, else ask to save a requirements.
+        """
+        if self.venv_modified != 0:
+            self.save_requirements()
+        else:
+            self.close()
 
 
     def launch(self):
         """Launches the installer dialog.
         """
+        # count whether changes has been made to venv
+        self.venv_modified = 0
+
         # get the venv path from file
         with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
             venv_path = f.read()
@@ -228,8 +283,8 @@ class PackageInstaller(QDialog):
         self.results_table.setColumnWidth(1, 80)  # version
         self.results_table.setColumnWidth(2, 150)  # release
 
-        # launch installer
-        self.show()
+        # launch the dialog via exec_() method
+        self.exec_()
 
 
     def pop_results_table(self):
@@ -257,6 +312,7 @@ class PackageInstaller(QDialog):
                     "No results",
                     f"No results matching '{search_item}'.\n"
                 )
+                self.pkg_name_line.setFocus(True)
 
 
     def install_package(self):
@@ -275,6 +331,9 @@ class PackageInstaller(QDialog):
 
         if msg_box_question == QMessageBox.Yes:
             self.console.setWindowTitle(f"Installing {self.pkg}")
+
+            # changes (may) have been made to venv
+            self.venv_modified += 1
 
             self.manager = PipManager(
                 self.venv_location,
@@ -311,9 +370,18 @@ class PackageInstaller(QDialog):
             QMessageBox.NoButton,
             self
         )
-        yes_button = self.msg_box.addButton("&Yes", QMessageBox.YesRole)
-        no_button = self.msg_box.addButton("&No", QMessageBox.NoRole)
-        cancel_button = self.msg_box.addButton("&Cancel", QMessageBox.RejectRole)
+        yes_button = self.msg_box.addButton(
+            "&Yes",
+            QMessageBox.YesRole
+        )
+        no_button = self.msg_box.addButton(
+            "&No",
+            QMessageBox.NoRole
+        )
+        cancel_button = self.msg_box.addButton(
+            "&Cancel",
+            QMessageBox.RejectRole
+        )
 
         self.msg_box.exec_()
 
@@ -340,22 +408,3 @@ class PackageInstaller(QDialog):
 
         elif self.msg_box.clickedButton() == no_button:
             self.close()
-
-
-    def center(self):
-        """Center window."""
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
-
-
-#if __name__ == "__main__":
-#
-#    app = QApplication(sys.argv)
-#
-#    package_installer = PackageInstaller()
-#    package_installer.launch()
-#
-#    sys.exit(app.exec_())
