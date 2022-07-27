@@ -197,9 +197,3 @@ requests <https://github.com/sinusphi/venvipy/pulls>`__, `bug
 reports <https://github.com/sinusphi/venvipy/issues>`__, and `feature
 requests <https://github.com/sinusphi/venvipy/issues>`__.
 
-|
-
-Known issues
-------------
-
-There are reports that when trying to run *VenviPy* on Ubuntu 22 might run into an error like described `here <https://github.com/sinusphi/venvipy/issues/15>`__. Unfortunately I have no fix for this at the moment. But I'm working on it. Every feedback is much appreciated. 
