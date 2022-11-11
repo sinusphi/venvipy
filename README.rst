@@ -99,7 +99,6 @@ that the following packages are installed on your system:
 
     python3-pip
     python3-venv
-    python3.9-venv
     python3.10-venv
 
 |
