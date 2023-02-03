@@ -2,13 +2,13 @@
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.3.6-blue?logo=pypi&logoColor=FFE873
+.. image:: https://img.shields.io/badge/pypi-v0.3.6-blue?logo=pypi&logoColor=gold
     :target: https://pypi.org/project/venvipy/0.3.6
 
-.. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=FFE873
+.. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=gold
     :target: https://www.python.org/downloads
 
-.. image:: https://img.shields.io/badge/pyqt-5.15.4-darkgreen
+.. image:: https://img.shields.io/badge/pyqt-5.15.4-darkgreen?logo=qt&logoColor=green
     :target: https://pypi.org/project/PyQt5
 
 .. image:: https://pepy.tech/badge/venvipy
@@ -23,7 +23,7 @@
 .. image:: https://img.shields.io/badge/license-GPL%203.0-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/main/LICENSE
 
-.. image:: https://img.shields.io/badge/donations-paypal-orange
+.. image:: https://img.shields.io/badge/donations-paypal-orange?logo=paypal&logoColor=darkblue
     :target: https://paypal.me/sinusphi
 
 ..
