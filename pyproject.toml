@@ -51,7 +51,7 @@ dependencies = [
     "beautifulsoup4",
     'dataclasses ; python_version<"3.7"'
 ]
-dynamic = ["version"]
+dynamic = ["0.3.6"]
 
 [project.scripts]
 venvipy = "venvipy=venvipy.venvi:main"
