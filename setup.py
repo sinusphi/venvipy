@@ -27,9 +27,7 @@ except FileNotFoundError:
     version = "latest"
 
 install_requires = [
-    "PyQt5==5.15.4",
-    "PyQt5-Qt5==5.15.2",
-    "PyQt5-sip==12.10.1",
+    "PyQt5==5.15.9",
     "requests",
     "beautifulsoup4",
     "dataclasses ; python_version<'3.7'"
@@ -48,7 +46,7 @@ setup(
     author="Youssef Serestou",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.6.tar.gz",
+    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.7.tar.gz",
     keywords=[
         "python",
         "python3",
