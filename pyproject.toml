@@ -45,14 +45,13 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-    "PyQt5==5.15.4",
-    "PyQt5-sip",
+    "PyQt5==5.15.9",
     "requests",
     "beautifulsoup4",
     'dataclasses ; python_version<"3.7"'
 ]
-dynamic = ["0.3.6"]
+dynamic = ["0.3.7"]
 
 [project.scripts]
-venvipy = "venvipy=venvipy.venvi:main"
-venvipy-wizard = "venvipy-wizard=venvipy.wizard:main"
+venvipy = "venvipy.venvi:main"
+venvipy-wizard = "venvipy.wizard:main"
