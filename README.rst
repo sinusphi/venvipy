@@ -26,9 +26,6 @@
 .. image:: https://img.shields.io/badge/donations-paypal-orange?logo=paypal&logoColor=darkblue
     :target: https://paypal.me/sinusphi
 
-.. image:: https://ko-fi.com/img/githubbutton_sm.svg
-    :target: https://ko-fi.com/sinusphi
-
 ..
     .. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
         :target: https://travis-ci.org/sinusphi/venvipy
