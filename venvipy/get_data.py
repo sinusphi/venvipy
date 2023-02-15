@@ -356,7 +356,7 @@ class PackageInfo:
     """_"""
     pkg_name: str
     pkg_version: str
-    pkg_release_date: str
+    pkg_info_2: str
     pkg_summary: str
 
 
@@ -389,7 +389,7 @@ def get_package_infos(pkg):
             " ",
             snippet.select_one('span[class*="package-snippet__version"]').text.strip()
         )
-        pkg_release_date = re.sub(
+        pkg_info_2 = re.sub(
             r"\s+",
             " ",
             snippet.select_one('span[class*="package-snippet__created"]').text.strip()
@@ -403,9 +403,67 @@ def get_package_infos(pkg):
         pkg_info = PackageInfo(
             pkg_name,
             pkg_version,
-            pkg_release_date,
+            pkg_info_2,
             pkg_summary
         )
         package_info_list.append(pkg_info)
+
+    return package_info_list[::-1]
+
+
+def get_installed_packages(venv_location, venv_name):
+    """Get infos about installed packages.
+    """
+    # build path to venv
+    venv_path = os.path.join(venv_location, venv_name)
+
+    # path to 'lib' folder
+    lib_dir = os.path.join(venv_path, "lib")
+
+    # list content
+    lib_dir_content = os.listdir(lib_dir)
+
+    # get 'python' folder
+    python_dir = lib_dir_content[0]
+
+    # build path to 'site-packages' folder
+    site_packages_dir = os.path.join(lib_dir, python_dir, "site-packages")
+
+    # get list of installed packages
+    package_info_list = []
+    site_packages = os.listdir(site_packages_dir)
+
+    for _, pkg in enumerate(site_packages):
+        if ".dist-info" in pkg:
+            meta_file = os.path.join(
+                site_packages_dir,
+                pkg,
+                "METADATA"
+            )
+
+            with open(meta_file, "r", encoding="utf-8") as f:
+                meta_data = f.readlines()
+
+            # search for each str
+            for i, line in enumerate(meta_data):
+                if "Name: " in line:
+                    pkg_name = line[5:].strip()
+
+                if "Version: " in line:
+                    pkg_version = line[8:].strip()
+
+                if "Author: " in line:
+                    pkg_info_2 = line[7:].strip()
+
+                if "Summary: " in line:
+                    pkg_summary = line[8:].strip()
+
+            pkg_info = PackageInfo(
+                pkg_name,
+                pkg_version,
+                pkg_info_2,
+                pkg_summary
+            )
+            package_info_list.append(pkg_info)
 
     return package_info_list[::-1]

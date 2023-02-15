@@ -531,8 +531,8 @@ class BasicSettings(QWizardPage):
             f"New {version[:-2]} executable in \n"
             f"'{binary_path}'.         \n"
         )
-        with_pip_msg = ("Installed Pip and Setuptools.\n")
-        with_wheel_msg = ("Installed Pip, Setuptools and Wheel.\n")
+        with_pip_msg = "Installed Pip and Setuptools.\n"
+        with_wheel_msg = "Installed Pip, Setuptools and Wheel.\n"
 
         if self.with_wheel_check_box.isChecked():
             msg_txt = default_msg + with_wheel_msg

@@ -89,6 +89,7 @@ class VenvTable(BaseTable):
     text_changed = pyqtSignal(str)
     refresh = pyqtSignal()
     start_installer = pyqtSignal()
+    start_pkg_manager = pyqtSignal()
 
 
     def __init__(self, *args, **kwargs):
@@ -153,6 +154,15 @@ class VenvTable(BaseTable):
         )
         install_wheel_action.triggered.connect(
             lambda: self.install_wheel(event, pkg="wheel")
+        )
+
+        manage_packages_action = QAction(
+            "&Manage installed packages",
+            self,
+            statusTip="Manage installed packages"
+        )
+        manage_packages_action.triggered.connect(
+            lambda: self.manage_packages(event)
         )
 
         install_packages_action = QAction(
@@ -285,8 +295,8 @@ class VenvTable(BaseTable):
             self,
             icon=self.info_icon
         )
-        install_sub_menu = QMenu(
-            "&Install",
+        manage_sub_menu = QMenu(
+            "&Manage",
             self,
             icon=QIcon.fromTheme("software-install")
         )
@@ -300,11 +310,12 @@ class VenvTable(BaseTable):
         context_menu.addAction(install_wheel_action)
 
         # install sub menu
-        context_menu.addMenu(install_sub_menu)
-        install_sub_menu.addAction(install_packages_action)
-        install_sub_menu.addAction(install_requires_action)
-        install_sub_menu.addAction(install_local_action)
-        install_sub_menu.addAction(install_vcs_action)
+        context_menu.addMenu(manage_sub_menu)
+        manage_sub_menu.addAction(manage_packages_action)
+        manage_sub_menu.addAction(install_packages_action)
+        manage_sub_menu.addAction(install_requires_action)
+        manage_sub_menu.addAction(install_local_action)
+        manage_sub_menu.addAction(install_vcs_action)
 
         # details sub meun
         context_menu.addMenu(details_sub_menu)
@@ -421,6 +432,21 @@ class VenvTable(BaseTable):
                 self.console.console_window.clear()
 
 
+
+    def manage_packages(self, event):
+        """Manage installed packages of the selected environment.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_path = os.path.join(active_dir, venv)
+
+        if self.has_pip(active_dir, venv):
+            with open(get_data.ACTIVE_VENV, "w", encoding="utf-8") as f:
+                f.write(venv_path)
+
+            self.start_pkg_manager.emit()
+
+
     def install_pypi_packages(self, event):
         """
         Install packages from [PyPI](https://pypi.org)
@@ -431,7 +457,7 @@ class VenvTable(BaseTable):
         venv_path = os.path.join(active_dir, venv)
 
         if self.has_pip(active_dir, venv):
-            with open(get_data.ACTIVE_VENV, "w") as f:
+            with open(get_data.ACTIVE_VENV, "w", encoding="utf-8") as f:
                 f.write(venv_path)
 
             self.start_installer.emit()
@@ -567,7 +593,7 @@ class VenvTable(BaseTable):
                 logger.debug(f"Saved '{save_path}'")
 
                 # show an info message
-                message_txt = (f"Saved requirements in \n{save_path}")
+                message_txt = f"Saved requirements in \n{save_path}"
                 QMessageBox.information(self, "Saved", message_txt)
 
                 # comment the 'pkg_resources==0.0.0' entry

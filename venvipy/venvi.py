@@ -67,6 +67,7 @@ import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
 from pkg_installer import PackageInstaller
+from pkg_manager import PackageManager
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable, InterpreterTable
 
@@ -145,6 +146,7 @@ class MainWindow(QMainWindow):
         self.venv_wizard.update_table.connect(self.pop_interpreter_table)
 
         self.pkg_installer = PackageInstaller()
+        self.pkg_manager = PackageManager()
 
         #]===================================================================[#
         #] ICONS [#==========================================================[#
@@ -217,13 +219,6 @@ class MainWindow(QMainWindow):
         )
         self.new_venv_button.setMinimumSize(QSize(135, 0))
 
-        #self.search_pypi_button = QPushButton(
-            #"&Search PyPI",
-            #centralwidget,
-            #statusTip="Search the Python Package Index",
-            #clicked=self.search_pypi
-        #)
-
         self.exit_button = QPushButton(
             "Quit",
             centralwidget,
@@ -260,7 +255,6 @@ class MainWindow(QMainWindow):
         v_layout_2.addWidget(self.logo)
         v_layout_2.addWidget(self.add_interpreter_button)
         v_layout_2.addWidget(self.new_venv_button)
-        #v_layout_2.addWidget(self.search_pypi_button)
         v_layout_2.addItem(spacer_item_1)
         v_layout_2.addWidget(self.exit_button)
 
@@ -323,7 +317,8 @@ class MainWindow(QMainWindow):
             alternatingRowColors=True,
             sortingEnabled=True,
             refresh=self.pop_venv_table,
-            start_installer=self.pkg_installer.launch
+            start_installer=self.pkg_installer.launch,
+            start_pkg_manager=self.pkg_manager.launch
         )
 
         # hide vertical header
@@ -388,15 +383,6 @@ class MainWindow(QMainWindow):
             shortcut="Ctrl+N",
             triggered=self.venv_wizard.exec_
         )
-
-        #self.action_search_pypi = QAction(
-            #manage_icon,
-            #"&Search PyPI",
-            #self,
-            #statusTip="Search the Python Package Index",
-            #shortcut="Ctrl+S",
-            #triggered=self.search_pypi
-        #)
 
         self.action_select_active_dir = QAction(
             folder_icon,
@@ -526,8 +512,6 @@ class MainWindow(QMainWindow):
         """Enable or disable features.
         """
         self.venv_table.setEnabled(state)
-        #self.search_pypi_button.setEnabled(state)
-        #self.action_search_pypi.setEnabled(state)
 
 
     @pyqtSlot()
@@ -602,9 +586,13 @@ class MainWindow(QMainWindow):
         Select the active directory of which the content
         should be shown in venv table.
         """
+        with open(get_data.ACTIVE_DIR, "r", encoding="utf-8") as f:
+            current_dir = f.read()
+
         directory = QFileDialog.getExistingDirectory(
             self,
-            "Open a folder containing virtual environments"
+            "Open a folder containing virtual environments",
+            directory=current_dir
         )
         self.directory_line.setText(directory)
         active_dir = self.directory_line.text()
@@ -616,11 +604,6 @@ class MainWindow(QMainWindow):
                 self.pop_venv_table()
                 self.update_label()
 
-
-    def search_pypi(self):
-        """Search the Python Package Index.
-        """
-        pass
 
 
 def with_args():
