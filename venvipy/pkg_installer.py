@@ -300,7 +300,7 @@ class PackageInstaller(QDialog):
                 for i, text in enumerate((
                     info.pkg_name,
                     info.pkg_version,
-                    info.pkg_release_date,
+                    info.pkg_info_2,
                     info.pkg_summary
                 )):
                     self.results_table_model.setItem(0, i, QStandardItem(text))
@@ -360,7 +360,7 @@ class PackageInstaller(QDialog):
 
     def save_requirements(self):
         """
-        Ask if user want to save a requirements of the
+        Ask if user wants to save a requirements of the
         updated environment.
         """
         self.msg_box = QMessageBox(
