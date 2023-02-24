@@ -169,11 +169,11 @@ need to install the ``dataclasses`` package if you're not using the provided
 
     $ (your_venv) pip install -r requirements.txt
 
-or: 
+or manually: 
 
 .. code-block:: bash
 
-    $ (your_venv) pip install PyQt5==5.15.4 PyQt5-Qt5==5.15.2 PyQt5-sip==12.10.1 requests beautifoulsoup4
+    $ (your_venv) pip install requests beautifoulsoup4 pyqt5==5.15.9
 
 Then you can
 
