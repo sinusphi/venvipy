@@ -699,7 +699,7 @@ class InstallPackages(QWizardPage):
                 for i, text in enumerate((
                     info.pkg_name,
                     info.pkg_version,
-                    info.pkg_release_date,
+                    info.pkg_info_2,
                     info.pkg_summary
                 )):
                     self.results_table_model.setItem(0, i, QStandardItem(text))
