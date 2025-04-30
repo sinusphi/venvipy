@@ -24,7 +24,7 @@
     :target: https://github.com/sinusphi/venvipy/blob/main/LICENSE
 
 .. image:: https://img.shields.io/badge/donations-paypal-orange?logo=paypal&logoColor=darkblue
-    :target: https://paypal.me/sinusphi
+    :target: https://paypal.me/yserestou
 
 ..
     .. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
