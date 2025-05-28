@@ -395,6 +395,7 @@ class BasicSettings(QWizardPage):
                 python3.3 python3.4 python3.5 \
                 python3.6 python3.7 python3.8 \
                 python3.9 python3.10 python3.11 \
+                python3.12 python3.13 python3.14
             )"
         )
         bin_file = file_name[0]
