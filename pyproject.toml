@@ -4,6 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "venvipy"
+dynamic = ["version"]
+
 authors = [
     {name = "sinusphi", email = "sinusphi.sq@gmail.com"}
 ]
@@ -42,6 +44,9 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
@@ -50,8 +55,11 @@ dependencies = [
     "beautifulsoup4",
     'dataclasses ; python_version<"3.7"'
 ]
-dynamic = ["0.3.7"]
 
 [project.scripts]
 venvipy = "venvipy.venvi:main"
 venvipy-wizard = "venvipy.wizard:main"
+
+[tool.setuptools]
+packages = ["venvipy"]
+dynamic = {version = {attr = "venvipy.get_data.__version__"}}
