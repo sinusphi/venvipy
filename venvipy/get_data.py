@@ -31,7 +31,7 @@ from dataclasses import dataclass
 from bs4 import BeautifulSoup
 import requests
 
-__version__ = "0.3.7"
+__version__ = "0.3.8"
 
 CFG_DIR = os.path.expanduser("~/.venvipy")
 DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
@@ -139,7 +139,7 @@ def get_python_installs(relaunching=False):
     a new database if `relaunching=True`.
     """
     versions = [
-        "3.11", "3.10", "3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"
+        "3.14", "3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"
     ]
     py_info_list = []
     ensure_confdir()
