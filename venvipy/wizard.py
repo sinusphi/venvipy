@@ -391,12 +391,7 @@ class BasicSettings(QWizardPage):
             self,
             "Select a Python interpreter",
             "/usr/local/bin",
-            "Python 3.3+ binary (\
-                python3.3 python3.4 python3.5 \
-                python3.6 python3.7 python3.8 \
-                python3.9 python3.10 python3.11 \
-                python3.12 python3.13 python3.14 \
-            )"
+            "Python3.*"
         )
         bin_file = file_name[0]
 
@@ -634,7 +629,7 @@ class InstallPackages(QWizardPage):
         self.results_table_model.setHorizontalHeaderLabels([
             "Name",
             "Version",
-            "Release",
+            "Author",
             "Description"
         ])
 
