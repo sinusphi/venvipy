@@ -274,7 +274,7 @@ class PackageInstaller(QDialog):
         self.results_table_model.setHorizontalHeaderLabels([
             "Name",
             "Version",
-            "Release",
+            "Author",
             "Description"
         ])
 
