@@ -23,8 +23,12 @@ import re
 import os
 import sys
 import csv
+import time
 import shutil
+import sqlite3
 import logging
+from pathlib import Path
+from typing import List, Optional
 from subprocess import Popen, PIPE
 from dataclasses import dataclass
 
@@ -33,12 +37,15 @@ import requests
 
 __version__ = "0.3.8"
 
-CFG_DIR = os.path.expanduser("~/.venvipy")
-DB_FILE = os.path.expanduser("~/.venvipy/py-installs")
-ACTIVE_DIR = os.path.expanduser("~/.venvipy/selected-dir")
-ACTIVE_VENV = os.path.expanduser("~/.venvipy/active-venv")
-PYPI_URL = "https://pypi.org/search/"
-
+CFG_DIR = Path.home() / ".venvipy"
+DB_FILE = Path.home() / ".venvipy" / "py-installs"
+ACTIVE_DIR = Path.home() / ".venvipy" / "selected-dir"
+ACTIVE_VENV = Path.home() / ".venvipy" / "active-venv"
+PYPI_SIMPLE_URL = "https://pypi.org/simple/"
+PYPI_JSON_URL = "https://pypi.org/pypi/{name}/json"
+PACKAGE_DB_PATH = Path.home() / ".venvipy" / "pypi_index.sqlite3"
+DB_TABLE = "projects"
+DB_COL = "name"
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +133,7 @@ def ensure_active_venv():
 def get_python_version(py_path):
     """Return Python version.
     """
-    with Popen([py_path, "-V"], stdout=PIPE, text="utf-8") as res:
+    with Popen([py_path, "-V"], stdout=PIPE, encoding="utf-8") as res:
         out, _ = res.communicate()
 
     python_version = out.strip()
@@ -138,10 +145,10 @@ def get_python_installs(relaunching=False):
     Write the found Python versions to `py-installs`. Create
     a new database if `relaunching=True`.
     """
-    versions = [
-        "3.14", "3.13", "3.12", "3.11", "3.10", "3.9", "3.8", "3.7", "3.6", "3.5", "3.4", "3.3"
-    ]
+    LATEST = 15
+    versions = [f"3.{v}" for v in range(LATEST, 2, -1)]
     py_info_list = []
+
     ensure_confdir()
 
     if not os.path.exists(DB_FILE) or relaunching:
@@ -347,6 +354,7 @@ def get_comment(cfg_file):
     return ""
 
 
+
 #]===========================================================================[#
 #] GET INFOS FROM PYTHON PACKAGE INDEX [#====================================[#
 #]===========================================================================[#
@@ -360,58 +368,362 @@ class PackageInfo:
     pkg_summary: str
 
 
-def get_package_infos(pkg):
+
+def ensure_pypi_db() -> None:
+    CFG_DIR.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute("PRAGMA journal_mode=WAL;")
+        con.execute("CREATE TABLE IF NOT EXISTS projects (name TEXT PRIMARY KEY)")
+        con.execute("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_projects_name_nocase ON projects(name COLLATE NOCASE)")
+
+        # cache table: version/author/summary + timestamp
+        # if older schema exists -> drop & recreate once (simple, no ALTER-mess)
+        cols = {r[1] for r in con.execute("PRAGMA table_info(pkg_meta)").fetchall()}
+        if cols and not {"name", "version", "info_2", "summary", "fetched_at"}.issubset(cols):
+            con.execute("DROP TABLE IF EXISTS pkg_meta")
+
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS pkg_meta (
+                name TEXT PRIMARY KEY,
+                version TEXT NOT NULL DEFAULT '',
+                info_2  TEXT NOT NULL DEFAULT '',
+                summary TEXT NOT NULL DEFAULT '',
+                fetched_at INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+
+def update_pypi_index(force: bool = False, timeout: int = 60) -> bool:
     """
-    Scrape package infos from [PyPI](https://pypi.org).
+    Returns True if DB was updated, False if unchanged.
     """
-    snippets = []
-    package_info_list = []
+    ensure_pypi_db()
 
-    for page in range(1, 3):
-        params = {"q": pkg, "page": page}
-        with requests.Session() as session:
-            res = session.get(PYPI_URL, params=params)
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        cur = con.cursor()
+        cur.execute("SELECT value FROM meta WHERE key='last_serial'")
+        row = cur.fetchone()
+        stored_serial = row[0] if row else None
 
-        soup = BeautifulSoup(res.text, "html.parser")
-        snippets += soup.select('a[class*="snippet"]')
+    with requests.Session() as s:
+        r = s.get(
+            PYPI_SIMPLE_URL,
+            headers={
+                "Accept": "application/vnd.pypi.simple.v1+json, application/json;q=0.9, text/html;q=0.1",
+                "User-Agent": "venvipy",
+            },
+            timeout=timeout,
+        )
+        r.raise_for_status()
 
-        if not hasattr(session, "start_url"):
-            session.start_url = res.url.rsplit("&page", maxsplit=1).pop(0)
+        last_serial = r.headers.get("X-PyPI-Last-Serial")
 
-    for snippet in snippets:
-        pkg_name = re.sub(
-            r"\s+",
-            " ",
-            snippet.select_one('span[class*="package-snippet__name"]').text.strip()
+        if (not force) and last_serial and stored_serial == last_serial:
+            return False
+
+        ctype = (r.headers.get("content-type") or "").lower()
+        if "json" in ctype:
+            data = r.json()
+            projects = [p["name"] for p in data.get("projects", []) if isinstance(p, dict) and p.get("name")]
+        else:
+            soup = BeautifulSoup(r.text, "html.parser")
+            projects = [a.get_text(strip=True) for a in soup.select("a") if a.get_text(strip=True)]
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute("BEGIN")
+        con.execute("DELETE FROM projects")
+        con.executemany("INSERT INTO projects(name) VALUES (?)", [(n,) for n in projects])
+        con.execute(
+            """
+            INSERT INTO meta(key, value) VALUES ('last_serial', ?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            """,
+            (last_serial or "",),
         )
-        pkg_version = re.sub(
-            r"\s+",
-            " ",
-            snippet.select_one('span[class*="package-snippet__version"]').text.strip()
-        )
-        pkg_info_2 = re.sub(
-            r"\s+",
-            " ",
-            snippet.select_one('span[class*="package-snippet__created"]').text.strip()
-        )
-        pkg_summary = re.sub(
-            r"\s+",
-            " ",
-            snippet.select_one('p[class*="package-snippet__description"]').text.strip()
+        con.commit()
+
+    return True
+
+
+def _get_db_names(name: str, following: int) -> List[str]:
+    """
+    Returns anchor match + `following` subsequent package names (alphabetical).
+    If nothing found, returns [].
+    """
+    if not name or following < 0:
+        return []
+
+    def q1(cur, sql, params) -> Optional[str]:
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        return row[0] if row else None
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        cur = con.cursor()
+
+        # 1) exact (case-insensitive)
+        anchor = q1(
+            cur,
+            f"SELECT {DB_COL} FROM {DB_TABLE} WHERE lower({DB_COL}) = lower(?) LIMIT 1",
+            (name,),
         )
 
-        pkg_info = PackageInfo(
-            pkg_name,
-            pkg_version,
-            pkg_info_2,
-            pkg_summary
+        # 2) prefix (case-insensitive)
+        if anchor is None:
+            anchor = q1(
+                cur,
+                f"""
+                SELECT {DB_COL}
+                FROM {DB_TABLE}
+                WHERE {DB_COL} LIKE ? ESCAPE '\\' COLLATE NOCASE
+                ORDER BY {DB_COL} COLLATE NOCASE
+                LIMIT 1
+                """,
+                (f"{name}%",),
+            )
+
+        # 3) contains (case-insensitive), prefer earlier occurrence + shorter names
+        if anchor is None:
+            anchor = q1(
+                cur,
+                f"""
+                SELECT {DB_COL}
+                FROM {DB_TABLE}
+                WHERE {DB_COL} LIKE ? COLLATE NOCASE
+                ORDER BY instr(lower({DB_COL}), lower(?)) ASC, length({DB_COL}) ASC, {DB_COL} COLLATE NOCASE
+                LIMIT 1
+                """,
+                (f"%{name}%", name),
+            )
+
+        # 4) fallback: next alphabetical position
+        if anchor is None:
+            anchor = q1(
+                cur,
+                f"""
+                SELECT {DB_COL}
+                FROM {DB_TABLE}
+                WHERE {DB_COL} >= ? COLLATE NOCASE
+                ORDER BY {DB_COL} COLLATE NOCASE
+                LIMIT 1
+                """,
+                (name,),
+            )
+
+        if anchor is None:
+            return []
+
+        # anchor + following subsequent
+        limit = following + 1
+        cur.execute(
+            f"""
+            SELECT {DB_COL}
+            FROM {DB_TABLE}
+            WHERE {DB_COL} >= ? COLLATE NOCASE
+            ORDER BY {DB_COL} COLLATE NOCASE
+            LIMIT ?
+            """,
+            (anchor, limit),
         )
+        return [r[0] for r in cur.fetchall()]
+
+
+def get_db_name(name: str, following: int) -> str:
+    """
+    Returns a newline-separated string of suggested package names.
+    If nothing found, returns "".
+    """
+    names = _get_db_names(name, following)
+    return "\n".join(names) if names else ""
+
+
+def get_pkg_info_2(name: str, ttl_sec: int = 24 * 3600) -> str:
+    """Return author (pkg_info_2) for `name`, cached in ~/.venvipy/pypi_index.sqlite3."""
+    if not name:
+        return ""
+
+    now = int(time.time())
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS pkg_meta (
+                name TEXT PRIMARY KEY,
+                version TEXT NOT NULL DEFAULT '',
+                info_2  TEXT NOT NULL DEFAULT '',
+                summary TEXT NOT NULL DEFAULT '',
+                fetched_at INTEGER NOT NULL
+            )
+        """)
+
+        row = con.execute(
+            "SELECT info_2, fetched_at FROM pkg_meta WHERE name = ?",
+            (name,),
+        ).fetchone()
+
+        if row:
+            cached_info_2, fetched_at = row
+            if cached_info_2 and (now - int(fetched_at) < ttl_sec):
+                return cached_info_2
+
+    # fetch fresh
+    try:
+        r = requests.get(PYPI_JSON_URL.format(name=name), timeout=10)
+        if r.status_code == 404:
+            return ""
+        r.raise_for_status()
+        info = r.json().get("info", {}) or {}
+        author = (info.get("author") or "").strip()
+        author_email = (info.get("author_email") or "").strip()
+
+        # keep it short but useful
+        info_2 = author
+        if author_email and author_email not in info_2:
+            info_2 = f"{author} <{author_email}>".strip() if author else author_email
+    except Exception:
+        if row:
+            return row[0] or ""
+        return ""
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute(
+            """
+            INSERT INTO pkg_meta(name, info_2, fetched_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(name) DO UPDATE SET
+                info_2 = excluded.info_2,
+                fetched_at = excluded.fetched_at
+            """,
+            (name, info_2, now),
+        )
+
+    return info_2
+
+
+def get_pkg_summary(name: str, ttl_sec: int = 24 * 3600) -> str:
+    """Return short description (PyPI 'summary') for `name`, cached in pkg_meta.summary."""
+    if not name:
+        return ""
+
+    now = int(time.time())
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        row = con.execute(
+            "SELECT summary, fetched_at FROM pkg_meta WHERE name = ?",
+            (name,),
+        ).fetchone()
+
+    if row:
+        cached_summary, fetched_at = row
+        if cached_summary and (now - int(fetched_at) < ttl_sec):
+            return cached_summary
+    else:
+        cached_summary = ""
+
+    try:
+        r = requests.get(PYPI_JSON_URL.format(name=name), timeout=10)
+        if r.status_code == 404:
+            return ""
+        r.raise_for_status()
+        info = r.json().get("info", {}) or {}
+
+        summary = (info.get("summary") or "").strip()
+        if not summary:
+            # fallback: derive a short line from long description
+            desc = (info.get("description") or "").strip()
+            summary = re.sub(r"\s+", " ", desc).strip()[:160] if desc else ""
+    except Exception:
+        return cached_summary or ""
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute(
+            """
+            INSERT INTO pkg_meta(name, summary, fetched_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(name) DO UPDATE SET
+                summary = excluded.summary,
+                fetched_at = excluded.fetched_at
+            """,
+            (name, summary, now),
+        )
+
+    return summary
+
+
+def get_pkg_version(name: str, ttl_sec: int = 24 * 3600) -> str:
+    """
+    Return latest version for `name`, cached
+    in ~/.venvipy/pypi_index.sqlite3.
+    """
+    if not name:
+        return ""
+
+    now = int(time.time())
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS pkg_meta (
+                name TEXT PRIMARY KEY,
+                version TEXT NOT NULL,
+                fetched_at INTEGER NOT NULL
+            )
+        """)
+
+        row = con.execute(
+            "SELECT version, fetched_at FROM pkg_meta WHERE name = ?",
+            (name,),
+        ).fetchone()
+
+        if row:
+            cached_version, fetched_at = row
+            if cached_version and (now - int(fetched_at) < ttl_sec):
+                return cached_version
+
+    # fetch fresh
+    try:
+        r = requests.get(PYPI_JSON_URL.format(name=name), timeout=10)
+        if r.status_code == 404:
+            return ""
+        r.raise_for_status()
+        version = (r.json().get("info", {}) or {}).get("version", "") or ""
+    except Exception:
+        # fallback to cached if available
+        if row:
+            return row[0] or ""
+        return ""
+
+    with sqlite3.connect(PACKAGE_DB_PATH) as con:
+        con.execute(
+            """
+            INSERT INTO pkg_meta(name, version, fetched_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(name) DO UPDATE SET
+                version = excluded.version,
+                fetched_at = excluded.fetched_at
+            """,
+            (name, version, now),
+        )
+
+    return version
+
+
+def get_package_infos(pkg: str) -> list[PackageInfo]:
+    """Get package infos from PyPI (pkg_name from DB for now).
+    """
+    package_info_list: list[PackageInfo] = []
+
+    # e.g. show 15 suggestions; adjust as needed
+    for pkg_name in _get_db_names(pkg, following=8):
+        pkg_version = get_pkg_version(pkg_name)
+        pkg_info_2 = get_pkg_info_2(pkg_name)
+        pkg_summary = get_pkg_summary(pkg_name)
+
+        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_info_2, pkg_summary)
         package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
 
 
-def get_installed_packages(venv_location, venv_name):
+def get_installed_packages(venv_location, venv_name) -> list:
     """Get infos about installed packages.
     """
     # build path to venv
@@ -441,8 +753,11 @@ def get_installed_packages(venv_location, venv_name):
                 "METADATA"
             )
 
-            with open(meta_file, "r", encoding="utf-8") as f:
-                meta_data = f.readlines()
+            try:
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    meta_data = f.readlines()
+            except FileNotFoundError as e:
+                logger.debug(f"File '{meta_file}' not found.")
 
             # search for each str
             for i, line in enumerate(meta_data):
@@ -467,3 +782,14 @@ def get_installed_packages(venv_location, venv_name):
             package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    update_pypi_index(True)
+    
+    print(get_package_infos("venvipy"))
