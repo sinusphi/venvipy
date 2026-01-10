@@ -79,7 +79,7 @@ class InstallWorker(QObject):
             shlex.split(command),
             stdout=PIPE,
             stderr=STDOUT,
-            text="utf-8"
+            encoding="utf-8"
         ) as process:
             while process.poll() is None:
                 output = process.stdout.readline()
@@ -171,7 +171,7 @@ def create_venv(
     with Popen(
         ["bash", "-c", script],
         stdout=PIPE,
-        text="utf-8"
+        encoding="utf-8"
     ) as res:
         out, _ = res.communicate()
 
