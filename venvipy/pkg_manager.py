@@ -196,8 +196,11 @@ class PackageManager(QDialog):
         )
 
         # get the venv path from file
-        with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
-            venv_path = f.read()
+        try:
+            with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
+                venv_path = f.read()
+        except FileNotFoundError:
+            venv_path = ""
 
         split_venv_path = os.path.split(venv_path)
         self.venv_location = split_venv_path[0]
