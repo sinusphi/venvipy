@@ -660,6 +660,7 @@ def main():
     os.system("clear")
 
     main_window = MainWindow()
+    get_data.update_pypi_index()
     get_data.get_python_installs(True)
     main_window.pop_interpreter_table()
     main_window.venv_wizard.basic_settings.pop_combo_box()
