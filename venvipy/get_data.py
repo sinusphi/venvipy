@@ -776,7 +776,7 @@ def get_installed_packages(venv_location, venv_name) -> list:
     package_info_list = []
     site_packages = os.listdir(site_packages_dir)
 
-    for _, pkg in enumerate(site_packages):
+    for pkg in site_packages:
         if ".dist-info" in pkg:
             meta_file = os.path.join(
                 site_packages_dir,
@@ -787,11 +787,17 @@ def get_installed_packages(venv_location, venv_name) -> list:
             try:
                 with open(meta_file, "r", encoding="utf-8") as f:
                     meta_data = f.readlines()
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 logger.debug(f"File '{meta_file}' not found.")
+                continue
+
+            pkg_name = ""
+            pkg_version = ""
+            pkg_info_2 = ""
+            pkg_summary = ""
 
             # search for each str
-            for i, line in enumerate(meta_data):
+            for line in meta_data:
                 if "Name: " in line:
                     pkg_name = line[5:].strip()
 
@@ -804,13 +810,14 @@ def get_installed_packages(venv_location, venv_name) -> list:
                 if "Summary: " in line:
                     pkg_summary = line[8:].strip()
 
-            pkg_info = PackageInfo(
-                pkg_name,
-                pkg_version,
-                pkg_info_2,
-                pkg_summary
-            )
-            package_info_list.append(pkg_info)
+            if pkg_name:
+                pkg_info = PackageInfo(
+                    pkg_name,
+                    pkg_version,
+                    pkg_info_2,
+                    pkg_summary
+                )
+                package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
 

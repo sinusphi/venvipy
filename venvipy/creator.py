@@ -194,7 +194,7 @@ def fix_requirements(require_file):
 
     new_content = []
 
-    for i, line in enumerate(content):
+    for line in content:
         if line.startswith("pkg_resources==0.0.0"):
             line = line.replace(
                 "pkg_resources==0.0.0",

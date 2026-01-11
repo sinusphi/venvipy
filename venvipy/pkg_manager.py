@@ -75,10 +75,6 @@ class PackagesTable(QTableView):
             self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
 
-        self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
-        )
-
         self.console = ConsoleDialog()
 
 

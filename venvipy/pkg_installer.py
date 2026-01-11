@@ -74,10 +74,6 @@ class ResultsTable(QTableView):
             self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
 
-        self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
-        )
-
 
     def get_selected_item(self):
         """
