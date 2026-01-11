@@ -290,14 +290,45 @@ def get_config(cfg_file, cfg):
     with open(cfg_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    if lines[2][13] == ".":
-        version = lines[2][10:13].strip()  # python 3.x
-    else:
-        version = lines[2][10:14].strip()  # python 3.10+
+    config = {}
 
-    version_str = to_version(lines[2][10:].strip())
-    binary_path = to_path(lines[0][7:].strip(), version)
-    site_packages = lines[1][31:].strip()
+    for line in lines:
+        if "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        config[key.strip().lower()] = value.strip()
+
+
+    def normalized_version(value):
+        numbers = re.findall(r"\d+", value)
+
+        if len(numbers) >= 3:
+            return ".".join(numbers[:3])
+
+        if len(numbers) >= 2:
+            return ".".join(numbers[:2])
+
+        return value.strip()
+
+
+    def major_minor(value):
+        numbers = re.findall(r"\d+", value)
+        if len(numbers) >= 2:
+            return f"{numbers[0]}.{numbers[1]}"
+        return value.strip()
+
+
+    raw_version = config.get("version") or config.get("version_info", "")
+    version_value = normalized_version(raw_version) if raw_version else "N/A"
+    version_str = to_version(version_value) if raw_version else "N/A"
+
+    home = config.get("home", "")
+    base_executable = config.get("base-executable", "")
+    version_suffix = major_minor(version_value) if raw_version else ""
+    binary_path = base_executable or to_path(home, version_suffix)
+
+    site_packages = config.get("include-system-site-packages", "N/A")
 
     if cfg == "version":
         return version_str
