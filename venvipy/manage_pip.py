@@ -19,13 +19,11 @@
 """
 This module manages all pip processes.
 """
-import os
 import shlex
 import logging
 from pathlib import Path
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
-from PyQt5.QtWidgets import QApplication
 
 from platforms import get_platform
 
@@ -143,8 +141,11 @@ class PipManager(QObject):
 
 
 if __name__ == "__main__":
+    import os
     import sys
+    from PyQt5.QtWidgets import QApplication
     from wizard import ConsoleDialog
+    import creator
 
     app = QApplication(sys.argv)
     console = ConsoleDialog()
@@ -152,11 +153,16 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.realpath(__file__))
     _venv_name = "testenv"  # need to have a virtual env in current_dir
 
-    manager = PipManager(current_dir, _venv_name)
-    manager.text_changed.connect(console.update_status)
-    manager.started.connect(console.show)
-    manager.run_pip(
-        "freeze", ["--output", str(Path(current_dir) / _venv_name / "requirements.txt")]
-    )
+    ### TODO: use subprocess instead of QProcess for simpler output handling
+
+    #manager = PipManager(current_dir, _venv_name)
+    #manager.text_changed.connect(console.update_status)
+    #manager.started.connect(console.show)
+    #manager.run_pip(
+    #   "freeze",
+    #   [creator.opts[4],
+    #   str(Path(current_dir) / _venv_name / "requirements.txt"
+    #   )]
+    #)
 
     sys.exit(app.exec_())
