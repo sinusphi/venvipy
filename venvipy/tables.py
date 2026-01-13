@@ -395,6 +395,7 @@ class VenvTable(BaseTable):
             result = subprocess.run(
                 [str(venv_python), "-m", "pip", "--version"],
                 capture_output=True,
+                check=True,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -611,19 +612,29 @@ class VenvTable(BaseTable):
                 directory=str(venv_dir / "requirements.txt")
             )
             save_path = save_file[0]
+            print(f"Selected path: '{save_path}'")
 
-            if save_path != "":
-                # write 'pip freeze' output to selected file
-                self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(creator.cmds[2], ["--output", save_path])
-                logger.debug(f"Saved '{save_path}'")
+            platform = get_platform()
+            try:
+                with open(save_path, "w", encoding="utf-8") as f:
+                    subprocess.run([
+                        platform.python_exe_name(),
+                        "-m",
+                        "pip",
+                        "freeze"],
+                        stdout=f,
+                        check=True,
+                    )
+            except subprocess.CalledProcessError as e:
+                logger.debug(f"Failed to save requirements: {e}")
 
-                # show an info message
-                message_txt = f"Saved requirements in \n{save_path}"
-                QMessageBox.information(self, "Saved", message_txt)
+            logger.debug(f"Saved '{save_path}'")
+            message_txt = f"Saved requirements in \n{save_path}"
+            QMessageBox.information(self, "Saved", message_txt)
 
-                # comment the 'pkg_resources==0.0.0' entry
-                creator.fix_requirements(save_path)
+            # comment the 'pkg_resources==0.0.0' entry
+            # DEPRECATED: now handled in manage_pip.py
+            #creator.fix_requirements(save_path)
 
 
     def list_packages(self, event, style):
@@ -669,6 +680,7 @@ class VenvTable(BaseTable):
         pipdeptree_result = subprocess.run(
             [str(venv_python), "-m", "pipdeptree", "--version"],
             capture_output=True,
+            check=True,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -777,7 +789,7 @@ class VenvTable(BaseTable):
             if platform.is_windows():
                 os.startfile(str(venv_dir))
             else:
-                subprocess.run(["xdg-open", str(venv_dir)], check=False)
+                subprocess.run(["xdg-open", str(venv_dir)], check=True)
 
 
     def delete_venv(self, event):

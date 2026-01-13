@@ -24,6 +24,7 @@ import sys
 import os
 import csv
 import logging
+import subprocess
 from functools import partial
 from pathlib import Path
 
@@ -781,17 +782,27 @@ class InstallPackages(QWizardPage):
             )
             save_path = save_file[0]
 
-            if len(save_path) >= 1:
-                self.manager = PipManager(self.venv_location, self.venv_name)
-                self.manager.run_pip(creator.cmds[2], ["--output", save_path])
-                logger.debug(f"Saved '{save_path}'")
+            platform = get_platform()
+            try:
+                with open(save_path, "w", encoding="utf-8") as f:
+                    subprocess.run([
+                        platform.python_exe_name(),
+                        "-m",
+                        "pip",
+                        "freeze"],
+                        stdout=f,
+                        check=True,
+                    )
+            except subprocess.CalledProcessError as e:
+                logger.debug(f"Failed to save requirements: {e}")
 
-                QMessageBox.information(
-                    self,
-                    "Saved",
-                    f"Saved requirements in: \n{save_path}"
-                )
-                self.wizard().next()
+            logger.debug(f"Saved '{save_path}'")
+            QMessageBox.information(
+                self,
+                "Saved",
+                f"Saved requirements in: \n{save_path}"
+            )
+            self.wizard().next()
 
         elif self.msg_box.clickedButton() == no_button:
             self.wizard().next()
