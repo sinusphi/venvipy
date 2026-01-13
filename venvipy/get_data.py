@@ -146,7 +146,7 @@ def get_python_version(py_path):
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=False,
+        check=True,
     )
 
     python_version = (res.stdout or "").strip()
@@ -218,7 +218,7 @@ def _get_windows_python_paths():
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=False,
+        check=True,
     )
     if py_launcher.returncode == 0:
         for line in py_launcher.stdout.splitlines():
@@ -238,7 +238,7 @@ def _get_windows_python_paths():
             encoding="utf-8",
             errors="replace",
             text=True,
-            check=False,
+            check=True,
         )
         if where_python.returncode == 0:
             for line in where_python.stdout.splitlines():
@@ -812,12 +812,17 @@ def get_package_infos(pkg: str) -> list[PackageInfo]:
     package_info_list: list[PackageInfo] = []
 
     # e.g. show 15 suggestions; adjust as needed
-    for pkg_name in _get_db_names(pkg, following=8):
+    for pkg_name in _get_db_names(pkg, following=15):
         pkg_version = get_pkg_version(pkg_name)
         pkg_info_2 = get_pkg_info_2(pkg_name)
         pkg_summary = get_pkg_summary(pkg_name)
 
-        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_info_2, pkg_summary)
+        pkg_info = PackageInfo(
+            pkg_name,
+            pkg_version,
+            pkg_info_2,
+            pkg_summary
+        )
         package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
