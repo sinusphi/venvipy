@@ -44,7 +44,7 @@ opts = [
     "--upgrade",  # 0
     "--requirement",  # 1
     "--editable",  # 2
-    "--use-feature=in-tree-build"  # 3
+    "--use-feature=in-tree-build",  # 3
 ]
 
 
@@ -183,7 +183,7 @@ def create_venv(
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=False,
+        check=True,
     )
 
     return (res.stdout or "").strip()
@@ -211,6 +211,8 @@ def fix_requirements(require_file):
                 "#pkg_resources==0.0.0"
             )
             logger.debug(f"Fixed requirements in '{require_file}'")
+        else:
+            logger.debug(f"Fixing not required for '{require_file}'")
 
         new_content.append(line)
 
