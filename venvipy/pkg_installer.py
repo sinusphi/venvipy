@@ -22,6 +22,7 @@ This module contains the package installer.
 import os
 import logging
 import webbrowser
+from pathlib import Path
 
 from PyQt5.QtGui import (
     QIcon,
@@ -333,7 +334,7 @@ class PackageInstaller(QDialog):
 
             self.manager = PipManager(
                 self.venv_location,
-                f"'{self.venv_name}'"
+                self.venv_name
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
@@ -382,17 +383,17 @@ class PackageInstaller(QDialog):
         self.msg_box.exec_()
 
         if self.msg_box.clickedButton() == yes_button:
-            venv_dir = os.path.join(self.venv_location, self.venv_name)
+            venv_dir = Path(self.venv_location) / self.venv_name
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=os.path.join(venv_dir, "requirements.txt")
+                directory=str(venv_dir / "requirements.txt")
             )
             save_path = save_file[0]
 
             if len(save_path) >= 1:
                 self.manager = PipManager(self.venv_location, self.venv_name)
-                self.manager.run_pip(creator.cmds[2], [">", save_path])
+                self.manager.run_pip(creator.cmds[2], ["--output", save_path])
                 logger.debug(f"Saved '{save_path}'")
 
                 QMessageBox.information(

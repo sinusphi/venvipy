@@ -22,7 +22,8 @@ This module creates all the stuff requested.
 import logging
 import shlex
 import os
-from subprocess import Popen, PIPE, STDOUT
+from pathlib import Path
+from subprocess import Popen, PIPE, STDOUT, run
 from random import randint
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -75,11 +76,14 @@ class InstallWorker(QObject):
         os.environ["PYTHONUNBUFFERED"] = "1"
         errors = []
 
+        args = shlex.split(command) if isinstance(command, str) else command
+
         with Popen(
-            shlex.split(command),
+            args,
             stdout=PIPE,
             stderr=STDOUT,
-            encoding="utf-8"
+            encoding="utf-8",
+            errors="replace",
         ) as process:
             while process.poll() is None:
                 output = process.stdout.readline()
@@ -128,7 +132,7 @@ class CreationWorker(QObject):
         logger.debug("Creating virtual environment...")
 
         py_vers, name, location, with_pip, with_wheel, site_packages = args
-        env_dir = os.path.join(location, f"'{name}'")
+        env_dir = Path(location) / name
 
         create_venv(
             py_vers,
@@ -138,12 +142,12 @@ class CreationWorker(QObject):
         )
 
         if with_pip and not with_wheel:
-            self.manager = PipManager(location, f"'{name}'")
+            self.manager = PipManager(location, name)
             self.updating_pip.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip"])
             self.manager.finished.connect(self.finished.emit)
         elif with_pip and with_wheel:
-            self.manager = PipManager(location, f"'{name}'")
+            self.manager = PipManager(location, name)
             self.installing_wheel.emit()
             self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
             self.manager.finished.connect(self.finished.emit)
@@ -163,20 +167,26 @@ def create_venv(
     ):
     """Create a virtual environment in a directory.
     """
-    pip = " --without-pip" if not with_pip else ""
-    ssp = " --system-site-packages" if system_site_packages else ""
+    env_path = Path(env_dir)
+    env_path.parent.mkdir(parents=True, exist_ok=True)
 
-    script = f"{py_vers} -m venv {env_dir}{pip}{ssp};"
+    args = [py_vers, "-m", "venv", str(env_path)]
+    if not with_pip:
+        args.append("--without-pip")
+    if system_site_packages:
+        args.append("--system-site-packages")
 
-    with Popen(
-        ["bash", "-c", script],
+    res = run(
+        args,
         stdout=PIPE,
-        encoding="utf-8"
-    ) as res:
-        out, _ = res.communicate()
+        stderr=STDOUT,
+        encoding="utf-8",
+        errors="replace",
+        text=True,
+        check=False,
+    )
 
-    output = out.strip()
-    return output
+    return (res.stdout or "").strip()
 
 
 #]===========================================================================[#
