@@ -395,11 +395,15 @@ class PackageInstaller(QDialog):
             save_path = save_file[0]
             logger.debug(f"Selected path: '{venv_dir}'")
 
+            if not save_path:
+                return
+
             platform = get_platform()
+            venv_python = platform.venv_python_path(venv_dir)
             try:
                 with open(save_path, "w", encoding="utf-8") as f:
                     subprocess.run([
-                        platform.python_exe_name(),
+                        str(venv_python),
                         "-m",
                         "pip",
                         "freeze"],

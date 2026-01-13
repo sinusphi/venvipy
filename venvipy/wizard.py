@@ -782,11 +782,16 @@ class InstallPackages(QWizardPage):
             )
             save_path = save_file[0]
 
+            if not save_path:
+                self.setEnabled(True)
+                return
+
             platform = get_platform()
+            venv_python = platform.venv_python_path(venv_dir)
             try:
                 with open(save_path, "w", encoding="utf-8") as f:
                     subprocess.run([
-                        platform.python_exe_name(),
+                        str(venv_python),
                         "-m",
                         "pip",
                         "freeze"],
