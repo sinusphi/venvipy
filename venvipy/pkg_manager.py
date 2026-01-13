@@ -153,7 +153,7 @@ class PackagesTable(QTableView):
 
             self.manager = PipManager(
                 self.venv_location,
-                f"'{self.venv_name}'"
+                self.venv_name
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)

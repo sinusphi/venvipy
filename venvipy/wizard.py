@@ -68,6 +68,7 @@ from dialogs import ProgBarDialog, ConsoleDialog
 from pkg_installer import ResultsTable
 from creator import CreationWorker
 from manage_pip import PipManager
+from platforms import get_platform
 
 
 logger = logging.getLogger(__name__)
@@ -387,10 +388,11 @@ class BasicSettings(QWizardPage):
     def select_python(self):
         """Specify path to a custom interpreter.
         """
+        platform = get_platform()
         file_name = QFileDialog.getOpenFileName(
             self,
             "Select a Python interpreter",
-            "/usr/local/bin",
+            platform.default_python_search_path(),
             "Python3.*"
         )
         bin_file = file_name[0]
@@ -509,6 +511,7 @@ class BasicSettings(QWizardPage):
         """
         Save the description text and show an info message on finish.
         """
+        platform = get_platform()
         comment = self.comment_line.text()
         venvipy_cfg = os.path.join(
             self.venv_location,
@@ -520,7 +523,7 @@ class BasicSettings(QWizardPage):
         cfg_file = os.path.join(
             self.venv_location, self.venv_name, "pyvenv.cfg"
         )
-        binary_path = os.path.join(self.venv_location, self.venv_name, "bin")
+        binary_path = Path(self.venv_location) / self.venv_name / platform.venv_bin_dir_name()
         version = get_data.get_config(cfg_file, cfg="version")
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
@@ -659,12 +662,12 @@ class InstallPackages(QWizardPage):
         logger.debug("Installing from requirements...")
 
         # open the console when recieving signal from manager
-        self.manager = PipManager(self.venv_location, f"'{self.venv_name}'")
+        self.manager = PipManager(self.venv_location, self.venv_name)
         self.manager.started.connect(self.console.exec_)
 
         # start installing packages from requirements file
         self.manager.run_pip(
-            creator.cmds[0], [creator.opts[1], f"'{self.requirements}'"]
+            creator.cmds[0], [creator.opts[1], self.requirements]
         )
 
         # display the updated output
@@ -728,7 +731,7 @@ class InstallPackages(QWizardPage):
 
             self.manager = PipManager(
                 self.venv_location,
-                f"'{self.venv_name}'"
+                self.venv_name
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
@@ -770,17 +773,17 @@ class InstallPackages(QWizardPage):
         self.msg_box.exec_()
 
         if self.msg_box.clickedButton() == yes_button:
-            venv_dir = os.path.join(self.venv_location, self.venv_name)
+            venv_dir = Path(self.venv_location) / self.venv_name
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=os.path.join(venv_dir, "requirements.txt")
+                directory=str(venv_dir / "requirements.txt")
             )
             save_path = save_file[0]
 
             if len(save_path) >= 1:
                 self.manager = PipManager(self.venv_location, self.venv_name)
-                self.manager.run_pip(creator.cmds[2], [">", save_path])
+                self.manager.run_pip(creator.cmds[2], ["--output", save_path])
                 logger.debug(f"Saved '{save_path}'")
 
                 QMessageBox.information(

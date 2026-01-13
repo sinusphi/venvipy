@@ -20,6 +20,9 @@
 This module contains the tables.
 """
 import os
+import shlex
+import subprocess
+from pathlib import Path
 import shutil
 import logging
 from functools import partial
@@ -41,6 +44,7 @@ import creator
 from dialogs import ConsoleDialog, ProgBarDialog
 from creator import InstallWorker
 from manage_pip import PipManager
+from platforms import get_platform
 
 
 logger = logging.getLogger(__name__)
@@ -382,9 +386,20 @@ class VenvTable(BaseTable):
     def has_pip(self, venv_dir, venv_name):
         """Test if `pip` is installed.
         """
-        venv_path = os.path.join(venv_dir, venv_name)
-        pip_binary = os.path.join(venv_path, "bin", "pip")
-        has_pip = os.path.exists(pip_binary)
+        platform = get_platform()
+        venv_path = Path(venv_dir) / venv_name
+        venv_python = platform.venv_python_path(venv_path)
+        has_pip = False
+
+        if venv_python.exists():
+            result = subprocess.run(
+                [str(venv_python), "-m", "pip", "--version"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            has_pip = result.returncode == 0
 
         if self.venv_exists(venv_path) and self.valid_version(venv_path):
             if has_pip:
@@ -438,11 +453,11 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_path = os.path.join(active_dir, venv)
+        venv_path = Path(active_dir) / venv
 
         if self.has_pip(active_dir, venv):
             with open(get_data.ACTIVE_VENV, "w", encoding="utf-8") as f:
-                f.write(venv_path)
+                f.write(str(venv_path))
 
             self.start_pkg_manager.emit()
 
@@ -454,11 +469,11 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_path = os.path.join(active_dir, venv)
+        venv_path = Path(active_dir) / venv
 
         if self.has_pip(active_dir, venv):
             with open(get_data.ACTIVE_VENV, "w", encoding="utf-8") as f:
-                f.write(venv_path)
+                f.write(str(venv_path))
 
             self.start_installer.emit()
 
@@ -470,7 +485,8 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_bin = os.path.join(active_dir, venv, "bin", "python")
+        platform = get_platform()
+        venv_bin = platform.venv_python_path(Path(active_dir) / venv)
 
         if self.has_pip(active_dir, venv):
             file_name = QFileDialog.getOpenFileName(
@@ -482,9 +498,14 @@ class VenvTable(BaseTable):
             if file_path != "":
                 creator.fix_requirements(file_path)
                 logger.debug("Installing from requirements...")
-                cmd = (
-                    f"{venv_bin} -m pip {creator.cmds[0]} {creator.opts[1]} {file_path}"
-                )
+                cmd = [
+                    str(venv_bin),
+                    "-m",
+                    "pip",
+                    *shlex.split(creator.cmds[0]),
+                    creator.opts[1],
+                    file_path,
+                ]
                 self.console.setWindowTitle(
                     "Installing from requirements file"
                 )
@@ -516,7 +537,7 @@ class VenvTable(BaseTable):
 
                     self.manager = PipManager(active_dir, venv)
                     self.manager.run_pip(
-                        creator.cmds[0], [creator.opts[3], f"'{project_dir}'"]
+                        creator.cmds[0], [creator.opts[3], project_dir]
                     )
                     self.manager.started.connect(self.console.exec_)
 
@@ -541,7 +562,8 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_bin = os.path.join(active_dir, venv, "bin", "python")
+        platform = get_platform()
+        venv_bin = platform.venv_python_path(Path(active_dir) / venv)
 
         if self.has_pip(active_dir, venv):
             url, ok = QInputDialog.getText(
@@ -556,9 +578,13 @@ class VenvTable(BaseTable):
                 formatted_project_url = (
                     f"git+{self.vcs_project_url}#egg={self.vcs_project_name}"
                 )
-                cmd = (
-                    f"{venv_bin} -m pip {creator.cmds[0]} {formatted_project_url}"
-                )
+                cmd = [
+                    str(venv_bin),
+                    "-m",
+                    "pip",
+                    *shlex.split(creator.cmds[0]),
+                    formatted_project_url,
+                ]
                 self.console.setWindowTitle(
                     f"Installing {self.vcs_project_name}"
                 )
@@ -576,20 +602,20 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_dir = os.path.join(active_dir, venv)
+        venv_dir = Path(active_dir) / venv
 
         if self.has_pip(active_dir, venv):
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=os.path.join(venv_dir, "requirements.txt")
+                directory=str(venv_dir / "requirements.txt")
             )
             save_path = save_file[0]
 
             if save_path != "":
                 # write 'pip freeze' output to selected file
                 self.manager = PipManager(active_dir, venv)
-                self.manager.run_pip(creator.cmds[2], [">", save_path])
+                self.manager.run_pip(creator.cmds[2], ["--output", save_path])
                 logger.debug(f"Saved '{save_path}'")
 
                 # show an info message
@@ -613,7 +639,7 @@ class VenvTable(BaseTable):
         if self.has_pip(active_dir, venv):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
-            self.manager = PipManager(active_dir, f"'{venv}'")
+            self.manager = PipManager(active_dir, venv)
             self.manager.run_pip(creator.cmds[style])
             self.manager.started.connect(self.console.exec_)
 
@@ -638,8 +664,16 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        pipdeptree_binary = os.path.join(active_dir, venv, "bin", "pipdeptree")
-        has_pipdeptree = os.path.exists(pipdeptree_binary)
+        platform = get_platform()
+        venv_python = platform.venv_python_path(Path(active_dir) / venv)
+        pipdeptree_result = subprocess.run(
+            [str(venv_python), "-m", "pipdeptree", "--version"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        has_pipdeptree = pipdeptree_result.returncode == 0
         message_txt = (
             "This requires pipdeptree             \nto be installed.\n\n"
             "Do you want to install it?\n"
@@ -736,10 +770,14 @@ class VenvTable(BaseTable):
         """
         active_dir = get_data.get_active_dir_str()
         venv = self.get_selected_item()
-        venv_dir = os.path.join(active_dir, venv)
+        venv_dir = Path(active_dir) / venv
 
-        if os.path.isdir(venv_dir):
-            os.system(f"xdg-open '{venv_dir}'")
+        if venv_dir.is_dir():
+            platform = get_platform()
+            if platform.is_windows():
+                os.startfile(str(venv_dir))
+            else:
+                subprocess.run(["xdg-open", str(venv_dir)], check=False)
 
 
     def delete_venv(self, event):
