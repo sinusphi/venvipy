@@ -665,14 +665,12 @@ class InstallPackages(QWizardPage):
         # open the console when recieving signal from manager
         self.manager = PipManager(self.venv_location, self.venv_name)
         self.manager.started.connect(self.console.exec_)
+        self.manager.text_changed.connect(self.console.update_status)
 
         # start installing packages from requirements file
         self.manager.run_pip(
             creator.cmds[0], [creator.opts[1], self.requirements]
         )
-
-        # display the updated output
-        self.manager.text_changed.connect(self.console.update_status)
 
         # clear the contents when closing console
         if self.console.close:
@@ -736,13 +734,11 @@ class InstallPackages(QWizardPage):
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # start installing the selected package
             logger.debug(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
-
-            # display the updated output
-            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content when closing console
             if self.console.close:

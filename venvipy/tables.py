@@ -437,11 +437,10 @@ class VenvTable(BaseTable):
             logger.debug(f"Installing latest version of {pkg}...")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(creator.cmds[0], [creator.opts[0], f"{pkg}"])
             self.manager.started.connect(self.console.exec_)
-
-            # display the updated output
             self.manager.text_changed.connect(self.console.update_status)
+
+            self.manager.run_pip(creator.cmds[0], [creator.opts[0], f"{pkg}"])
 
             # clear the content on window close
             if self.console.close:
@@ -537,13 +536,11 @@ class VenvTable(BaseTable):
                     logger.debug("Installing from local project directory...")
 
                     self.manager = PipManager(active_dir, venv)
+                    self.manager.started.connect(self.console.exec_)
+                    self.manager.text_changed.connect(self.console.update_status)
                     self.manager.run_pip(
                         creator.cmds[0], [creator.opts[3], project_dir]
                     )
-                    self.manager.started.connect(self.console.exec_)
-
-                    # display the updated output
-                    self.manager.text_changed.connect(self.console.update_status)
 
                     # clear the content on window close
                     if self.console.close:
@@ -654,11 +651,10 @@ class VenvTable(BaseTable):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.run_pip(creator.cmds[style])
             self.manager.started.connect(self.console.exec_)
-
-            # display the updated output
             self.manager.text_changed.connect(self.console.update_status)
+
+            self.manager.run_pip(creator.cmds[style])
 
             # clear the content on window close
             if self.console.close:

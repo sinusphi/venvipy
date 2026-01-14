@@ -341,13 +341,11 @@ class PackageInstaller(QDialog):
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # start installing the selected package
             logger.debug(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
-
-            # display the updated output
-            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content when closing console
             if self.console.close:
