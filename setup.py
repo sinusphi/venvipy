@@ -10,7 +10,7 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))  # for setuptools.build_meta
 
 try:
-    with codecs.open(CURRENT_DIR / "README.rst", encoding="utf-8") as f:
+    with open(CURRENT_DIR / "README.rst", "r", encoding="utf-8") as f:
         long_desc = f.read()
 except FileNotFoundError:
     long_desc = ""
