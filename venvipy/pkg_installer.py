@@ -22,6 +22,8 @@ This module contains the package installer.
 import os
 import logging
 import webbrowser
+from pathlib import Path
+import subprocess
 
 from PyQt5.QtGui import (
     QIcon,
@@ -54,6 +56,8 @@ import get_data
 import creator
 from dialogs import ConsoleDialog
 from manage_pip import PipManager
+
+from platforms import get_platform
 
 logger = logging.getLogger(__name__)
 
@@ -333,17 +337,15 @@ class PackageInstaller(QDialog):
 
             self.manager = PipManager(
                 self.venv_location,
-                f"'{self.venv_name}'"
+                self.venv_name
             )
             # open the console when recieving signal from manager
             self.manager.started.connect(self.console.exec_)
+            self.manager.text_changed.connect(self.console.update_status)
 
             # start installing the selected package
             logger.debug(f"Installing '{self.pkg}'...")
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
-
-            # display the updated output
-            self.manager.text_changed.connect(self.console.update_status)
 
             # clear the content when closing console
             if self.console.close:
@@ -382,25 +384,41 @@ class PackageInstaller(QDialog):
         self.msg_box.exec_()
 
         if self.msg_box.clickedButton() == yes_button:
-            venv_dir = os.path.join(self.venv_location, self.venv_name)
+            venv_dir = Path(self.venv_location) / self.venv_name
             save_file = QFileDialog.getSaveFileName(
                 self,
                 "Save requirements",
-                directory=os.path.join(venv_dir, "requirements.txt")
+                directory=str(venv_dir / "requirements.txt")
             )
             save_path = save_file[0]
+            logger.debug(f"Selected path: '{venv_dir}'")
 
-            if len(save_path) >= 1:
-                self.manager = PipManager(self.venv_location, self.venv_name)
-                self.manager.run_pip(creator.cmds[2], [">", save_path])
-                logger.debug(f"Saved '{save_path}'")
+            if not save_path:
+                return
 
-                QMessageBox.information(
-                    self,
-                    "Saved",
-                    f"Saved requirements in: \n{save_path}"
-                )
-                self.close()
+            platform = get_platform()
+            venv_python = platform.venv_python_path(venv_dir)
+            try:
+                with open(save_path, "w", encoding="utf-8") as f:
+                    subprocess.run([
+                        str(venv_python),
+                        "-m",
+                        "pip",
+                        "freeze"],
+                        stdout=f,
+                        check=True,
+                    )
+            except subprocess.CalledProcessError as e:
+                logger.debug(f"Failed to save requirements: {e}")
+
+            logger.debug(f"Saved '{save_path}'")
+
+            QMessageBox.information(
+                self,
+                "Saved",
+                f"Saved requirements in: \n{save_path}"
+            )
+            self.close()
 
         elif self.msg_box.clickedButton() == no_button:
             self.close()

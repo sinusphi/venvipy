@@ -29,11 +29,13 @@ import sqlite3
 import logging
 from pathlib import Path
 from typing import List, Optional
-from subprocess import Popen, PIPE
+from subprocess import PIPE, STDOUT, run
 from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 import requests
+
+from platforms import get_platform
 
 __version__ = "0.3.8"
 
@@ -69,7 +71,11 @@ def to_version(value):
 def to_path(bin_path, version):
     """Return the absolute path to a python binary.
     """
-    return os.path.join(bin_path, f"python{version}")
+    platform = get_platform()
+    base_path = Path(bin_path)
+    if platform.is_windows():
+        return str(base_path / platform.python_exe_name())
+    return str(base_path / f"{platform.python_exe_name()}{version}")
 
 
 def is_writable(target_dir):
@@ -133,10 +139,17 @@ def ensure_active_venv():
 def get_python_version(py_path):
     """Return Python version.
     """
-    with Popen([py_path, "-V"], stdout=PIPE, encoding="utf-8") as res:
-        out, _ = res.communicate()
+    res = run(
+        [py_path, "-V"],
+        stdout=PIPE,
+        stderr=STDOUT,
+        encoding="utf-8",
+        errors="replace",
+        text=True,
+        check=True,
+    )
 
-    python_version = out.strip()
+    python_version = (res.stdout or "").strip()
     return python_version
 
 
@@ -148,6 +161,7 @@ def get_python_installs(relaunching=False):
     LATEST = 15
     versions = [f"3.{v}" for v in range(LATEST, 2, -1)]
     py_info_list = []
+    platform = get_platform()
 
     ensure_confdir()
 
@@ -162,9 +176,9 @@ def get_python_installs(relaunching=False):
             )
             writer.writeheader()
 
-            for i, version in enumerate(versions):
-                python_path = shutil.which(f"python{version}")
-                if python_path is not None:
+            if platform.is_windows():
+                python_paths = _get_windows_python_paths()
+                for python_path in python_paths:
                     python_version = get_python_version(python_path)
                     py_info = PythonInfo(python_version, python_path)
                     py_info_list.append(py_info)
@@ -172,6 +186,17 @@ def get_python_installs(relaunching=False):
                         "PYTHON_VERSION": py_info.py_version,
                         "PYTHON_PATH": py_info.py_path
                     })
+            else:
+                for version in versions:
+                    python_path = shutil.which(f"python{version}")
+                    if python_path is not None:
+                        python_version = get_python_version(python_path)
+                        py_info = PythonInfo(python_version, python_path)
+                        py_info_list.append(py_info)
+                        writer.writerow({
+                            "PYTHON_VERSION": py_info.py_version,
+                            "PYTHON_PATH": py_info.py_path
+                        })
 
             cf.close()
 
@@ -182,6 +207,50 @@ def get_python_installs(relaunching=False):
 
         return py_info_list[::-1]
     return False
+
+
+def _get_windows_python_paths():
+    paths = []
+    py_launcher = run(
+        ["py", "-0p"],
+        stdout=PIPE,
+        stderr=STDOUT,
+        encoding="utf-8",
+        errors="replace",
+        text=True,
+        check=True,
+    )
+    if py_launcher.returncode == 0:
+        for line in py_launcher.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            candidate = parts[-1] if parts else ""
+            if candidate and os.path.exists(candidate):
+                paths.append(candidate)
+
+    if not paths:
+        where_python = run(
+            ["where", "python"],
+            stdout=PIPE,
+            stderr=STDOUT,
+            encoding="utf-8",
+            errors="replace",
+            text=True,
+            check=True,
+        )
+        if where_python.returncode == 0:
+            for line in where_python.stdout.splitlines():
+                candidate = line.strip()
+                if candidate and os.path.exists(candidate):
+                    paths.append(candidate)
+
+    unique_paths = []
+    for path in paths:
+        if path not in unique_paths:
+            unique_paths.append(path)
+    return unique_paths
 
 
 def add_python(py_path):
@@ -743,12 +812,17 @@ def get_package_infos(pkg: str) -> list[PackageInfo]:
     package_info_list: list[PackageInfo] = []
 
     # e.g. show 15 suggestions; adjust as needed
-    for pkg_name in _get_db_names(pkg, following=8):
+    for pkg_name in _get_db_names(pkg, following=15):
         pkg_version = get_pkg_version(pkg_name)
         pkg_info_2 = get_pkg_info_2(pkg_name)
         pkg_summary = get_pkg_summary(pkg_name)
 
-        pkg_info = PackageInfo(pkg_name, pkg_version, pkg_info_2, pkg_summary)
+        pkg_info = PackageInfo(
+            pkg_name,
+            pkg_version,
+            pkg_info_2,
+            pkg_summary
+        )
         package_info_list.append(pkg_info)
 
     return package_info_list[::-1]
@@ -757,32 +831,19 @@ def get_package_infos(pkg: str) -> list[PackageInfo]:
 def get_installed_packages(venv_location, venv_name) -> list:
     """Get infos about installed packages.
     """
-    # build path to venv
-    venv_path = os.path.join(venv_location, venv_name)
-
-    # path to 'lib' folder
-    lib_dir = os.path.join(venv_path, "lib")
-
-    # list content
-    lib_dir_content = os.listdir(lib_dir)
-
-    # get 'python' folder
-    python_dir = lib_dir_content[0]
-
-    # build path to 'site-packages' folder
-    site_packages_dir = os.path.join(lib_dir, python_dir, "site-packages")
+    platform = get_platform()
+    venv_path = Path(venv_location) / venv_name
+    site_packages_dir = platform.site_packages_path(venv_path)
 
     # get list of installed packages
     package_info_list = []
+    if not site_packages_dir.exists():
+        return package_info_list
     site_packages = os.listdir(site_packages_dir)
 
     for pkg in site_packages:
         if ".dist-info" in pkg:
-            meta_file = os.path.join(
-                site_packages_dir,
-                pkg,
-                "METADATA"
-            )
+            meta_file = site_packages_dir / pkg / "METADATA"
 
             try:
                 with open(meta_file, "r", encoding="utf-8") as f:

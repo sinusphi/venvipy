@@ -19,12 +19,13 @@
 """
 This module manages all pip processes.
 """
-import os
+import shlex
 import logging
+from pathlib import Path
 
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
-from PyQt5.QtWidgets import QApplication
 
+from platforms import get_platform
 
 logger = logging.getLogger(__name__)
 
@@ -33,21 +34,6 @@ logger = logging.getLogger(__name__)
 #]===========================================================================[#
 #] INSTALL SELECTED PACKAGES [#==============================================[#
 #]===========================================================================[#
-
-def has_bash():
-    """
-    Test if bash is available.
-    """
-    process = QProcess()
-    process.start("which bash")
-    process.waitForStarted()
-    process.waitForFinished()
-
-    if process.exitStatus() == QProcess.NormalExit:
-        return bool(process.readAll())
-
-    return False
-
 
 class PipManager(QObject):
     """
@@ -88,24 +74,21 @@ class PipManager(QObject):
 
     def run_pip(self, command="", options=None):
         """
-        Activate the virtual environment and run pip commands.
+        Run pip commands using the virtual environment interpreter.
         """
-        if has_bash():
-            if options is None:
-                options = []
+        if options is None:
+            options = []
 
-            venv_path = os.path.join(self._venv_dir, self._venv_name)
-            pip = f"pip {command} {' '.join(options)}"
-            pipdeptree = f"pipdeptree {' '.join(options)}"
+        venv_path = Path(self._venv_dir) / self._venv_name
+        platform = get_platform()
+        venv_python = platform.venv_python_path(venv_path)
 
-            task = pipdeptree if command == "pipdeptree" else pip
+        if command == "pipdeptree":
+            args = ["-m", "pipdeptree"] + options
+        else:
+            args = ["-m", "pip"] + shlex.split(command) + options
 
-            script = (
-                f"source {venv_path}/bin/activate;"
-                f"{task};"
-                "deactivate;"
-            )
-            self._process.start("bash", ["-c", script])
+        self._process.start(str(venv_python), args)
 
 
     def process_stop(self):
@@ -158,8 +141,11 @@ class PipManager(QObject):
 
 
 if __name__ == "__main__":
+    import os
     import sys
+    from PyQt5.QtWidgets import QApplication
     from wizard import ConsoleDialog
+    import creator
 
     app = QApplication(sys.argv)
     console = ConsoleDialog()
@@ -167,11 +153,16 @@ if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.realpath(__file__))
     _venv_name = "testenv"  # need to have a virtual env in current_dir
 
-    manager = PipManager(current_dir, _venv_name)
-    manager.text_changed.connect(console.update_status)
-    manager.started.connect(console.show)
-    manager.run_pip(
-        "freeze", [f" > {current_dir}/{_venv_name}/requirements.txt"]
-    )
+    ### TODO: use subprocess instead of QProcess for simpler output handling
+
+    #manager = PipManager(current_dir, _venv_name)
+    #manager.text_changed.connect(console.update_status)
+    #manager.started.connect(console.show)
+    #manager.run_pip(
+    #   "freeze",
+    #   [creator.opts[4],
+    #   str(Path(current_dir) / _venv_name / "requirements.txt"
+    #   )]
+    #)
 
     sys.exit(app.exec_())
