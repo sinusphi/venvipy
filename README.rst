@@ -1,21 +1,25 @@
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/cover_slim.png
+   :alt: VenviPy cover
+
+VenviPy
+=======
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/badge/pypi-v0.3.8-blue?logo=pypi&logoColor=gold
-    :target: https://pypi.org/project/venvipy/0.3.8
+.. image:: https://img.shields.io/pypi/v/venvipy?logo=pypi&logoColor=gold
+    :target: https://pypi.org/project/venvipy/
 
-.. image:: https://img.shields.io/badge/python-3.6+-blue?logo=python&logoColor=gold
-    :target: https://www.python.org/downloads
+.. image:: https://img.shields.io/badge/python-3.7%2B-blue?logo=python&logoColor=gold
+    :target: https://www.python.org/downloads/
 
 .. image:: https://img.shields.io/badge/pyqt-5.15.9-darkgreen?logo=qt&logoColor=green
-    :target: https://pypi.org/project/PyQt5
+    :target: https://pypi.org/project/PyQt5/5.15.9/
 
 .. image:: https://pepy.tech/badge/venvipy
     :target: https://pepy.tech/project/venvipy
 
-.. image:: https://img.shields.io/badge/platform-linux-darkblue?logo=linux&logoColor=FFE873
-    :target: https://www.linux.org/pages/download
+.. image:: https://img.shields.io/badge/platform-linux-orange?logo=linux&logoColor=FFE873
+    :target: https://www.linux.org/pages/download/
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000
     :target: https://github.com/psf/black
@@ -23,179 +27,203 @@
 .. image:: https://img.shields.io/badge/license-GPL%203.0-darkviolet
     :target: https://github.com/sinusphi/venvipy/blob/main/LICENSE
 
-.. image:: https://img.shields.io/badge/donations-paypal-orange?logo=paypal&logoColor=darkblue
+.. image:: https://img.shields.io/badge/donations-paypal-darkblue?logo=paypal&logoColor=darkblue
     :target: https://paypal.me/yserestou
-
-..
-    .. image:: https://img.shields.io/travis/sinusphi/venvipy/main?label=Travis%20CI&logo=travis
-        :target: https://travis-ci.org/sinusphi/venvipy
 
 |
 
 Introduction
 ------------
 
-*VenviPy* is a graphical user interface for creating or modifing customized
-virtual environments quick and easy. It was developed for \*NIX systems and
-has been tested on various distributions.
+*VenviPy* is a desktop GUI to create, manage, and maintain many Python virtual
+environments from one place. It focuses on a fast workflow:
 
-*VenviPy* provides a set of features like a wizard, that guides the user through
-the creation process, a table that shows an overview of installed
-environments in a specific directory and a collection of context menu
-actions like listing detailed information about an environment and much
-more.
+* create environments via a wizard (Python version, name, location, packages)
+* keep an overview table of all environments in a directory
+* install / update / inspect packages with context-menu actions
+
+VenviPy was originally built for \*NIX systems. Windows support exists via a
+platform abstraction layer, but should be considered experimental unless stated otherwise.
 
 |
 
-**The main menu:**
+Screenshots
+-----------
+
+**Main menu**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
+   :alt: Main menu screenshot
 
 |
 
-**The wizard:**
+**Wizard**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2.png
+   :alt: Wizard screenshot
 
 |
 
-**Output when running pip commands:**
+**Pip output**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
+   :alt: Pip output screenshot
 
 |
 
 Key Features
 ------------
 
-*  Create virtual environments with any Python version (3.3+)
-*  Clone an environment from a requirements file
-*  Generate requirements from an existing environment
-*  Add a description to an environment
+Environment management
+~~~~~~~~~~~~~~~~~~~~~~
+
+* Create virtual environments with a selectable Python version (3.3+)
+* Clone an environment from a requirements file
+* Generate requirements from an existing environment
+* Add a description to an environment
+
+Package management
+~~~~~~~~~~~~~~~~~~
+
+* Install and update Pip and Wheel with one click
+* Search and install packages from `PyPI <https://pypi.org/>`__
+* Install from requirements files
+* Install from local project directories
+* Install from a VCS URL *(currently git only)*
+* Install from local or remote source archives
+
+Inspection & tooling
+~~~~~~~~~~~~~~~~~~~~
+
+* List detailed information about installed packages
+* Show dependency tree *(via* `pipdeptree <https://pypi.org/project/pipdeptree/>`__ *)*
+* Open a project's PyPI page in your browser
 
 |
 
-*  Install and update Pip and Wheel with one click
-*  Search and install packages from `PyPI <https://pypi.org/>`__
-*  Install from requirements files
-*  Install from local stored project directories
-*  Install from a VCS project url *(currently git only)*
-*  Install from local or remote source archives
+Prerequisites
+-------------
 
-|
+* Python **3.7+** (PyQt5 5.15.9 requires Python >= 3.7)
+* A working ``venv`` module for the Python versions you want to use
 
-*  List detailed information about installed packages
-*  Show dependency tree (using
-   `pipdeptree <https://pypi.org/project/pipdeptree/#description>`__ package)
-*  Open a project's `PyPI <https://pypi.org/>`__ website in your browser
+Linux (Debian/Ubuntu)
+~~~~~~~~~~~~~~~~~~~~~
 
-|
-
-Prerequisits
-------------
-
-If you don't have a Python built from source, you'll have to run *VenviPy* 
-using your operating system's Python (3.6+). In this case please make sure 
-that the following packages are installed on your system: 
+Install the basics:
 
 .. code-block:: bash
 
-    python3-pip
-    python3-venv
-    python3.10-venv
+    sudo apt update
+    sudo apt install python3-pip python3-venv
+
+If you want to create venvs for a specific Python version, install its ``-venv`` package as well
+(example for Python 3.10):
+
+.. code-block:: bash
+
+    sudo apt install python3.10-venv
+
+Windows
+~~~~~~~
+
+Install Python from python.org and make sure it is on ``PATH``. No additional system packages are required.
 
 |
 
 Installation
 ------------
 
-Installing packages directly into your operating system's Python is
-discouraged. If you want to do it anyway, do it like this:
+Installing into the system Python is discouraged. Use a dedicated venv (recommended) or ``pipx``.
+
+Recommended: install into a venv
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-    $ python3.x -m pip install venvipy
+    python -m venv .venv
 
-The better way however is to create a virtual environment and install
-*VenviPy* into it:
+    # on Linux/macOS:
+    source .venv/bin/activate
 
-.. code-block:: bash
+    # on Windows (PowerShell):
+    # .venv\\Scripts\\Activate.ps1
 
-    $ python3.x -m venv [your_venv]
-    $ source [your_venv]/bin/activate
+    pip install -U pip
+    pip install venvipy
 
-To install the latest stable version of *VenviPy*:
-
-.. code-block:: bash
-
-    $ (your_venv) pip install venvipy
-
-for the developement version:
+Development version (GitHub):
 
 .. code-block:: bash
 
-    $ (your_venv) pip install git+https://github.com/sinusphi/venvipy.git
+    pip install -U pip
+    pip install git+https://github.com/sinusphi/venvipy.git
 
-Now you can launch 
+Alternative: install with pipx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- the main menu via:
+.. code-block:: bash
 
-  - .. code-block:: bash
+    pipx install venvipy
 
-        $ (your_venv) venvipy
+|
 
-- or run the wizard standalone to quickly create and set up an environment:
+Usage
+-----
 
-  - .. code-block:: bash
+After installation you get the entry point:
 
-        $ (your_venv) venvipy-wizard
+.. code-block:: bash
+
+    venvipy
+
+For command line options run:
+
+.. code-block:: bash
+
+    venvipy --help
 
 |
 
 Running from source
 -------------------
 
-Clone the repository (use the ``--depth`` option):
+Clone and install dependencies:
 
 .. code-block:: bash
 
-    $ (your_venv) git clone --depth 50 git@github.com:sinusphi/venvipy.git
+    git clone --depth 50 https://github.com/sinusphi/venvipy.git
+    cd venvipy
+    python -m venv .venv
 
-Cd into the repo folder and install the dependencies. On Python 3.6 you will also
-need to install the ``dataclasses`` package if you're not using the provided 
-`requirements.txt <https://github.com/sinusphi/venvipy/blob/main/requirements.txt>`__:
+    # on Linux/macOS:
+    source .venv/bin/activate
+
+    # on Windows (PowerShell):
+    # .venv\\Scripts\\Activate.ps1
+
+    pip install -U pip
+    pip install -r requirements.txt
+
+If you prefer a minimal manual install:
 
 .. code-block:: bash
 
-    $ (your_venv) pip install -r requirements.txt
+    pip install requests beautifulsoup4 PyQt5==5.15.9
 
-or manually: 
+Run:
 
 .. code-block:: bash
 
-    $ (your_venv) pip install requests beautifoulsoup4 pyqt5==5.15.9
-
-Then you can
-
-- launch the main menu:
-
-  - .. code-block:: bash
-  
-        $ (your_venv) python venvipy/venvi.py
-
-- or run the wizard standalone to quickly create and set up an environment:
-
-  - .. code-block:: bash
-
-        $ (your_venv) python venvipy/wizard.py
+    python venvipy/venvi.py
 
 |
 
 Contributing
 ------------
 
-Contributions are welcomed, as well as `Pull
-requests <https://github.com/sinusphi/venvipy/pulls>`__, `bug
-reports <https://github.com/sinusphi/venvipy/issues>`__, and `feature
-requests <https://github.com/sinusphi/venvipy/issues>`__.
+Contributions are welcome:
 
+* `Pull requests <https://github.com/sinusphi/venvipy/pulls>`__
+* `Bug reports <https://github.com/sinusphi/venvipy/issues>`__
+* `Feature requests <https://github.com/sinusphi/venvipy/issues>`__
