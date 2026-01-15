@@ -30,12 +30,11 @@ install_requires = [
     "PyQt5==5.15.9",
     "requests",
     "beautifulsoup4",
-    "dataclasses ; python_version<'3.7'"
 ]
 
 setup(
     name="venvipy",
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     packages=find_packages(),
     include_package_data=True,
     version=version,
@@ -46,7 +45,7 @@ setup(
     author="Youssef Serestou",
     author_email="sinusphi.sq@gmail.com",
     url="https://github.com/sinusphi/venvipy",
-    download_url="https://github.com/sinusphi/venvipy/archive/v0.3.7.tar.gz",
+    download_url=f"https://github.com/sinusphi/venvipy/archive/v{version}.tar.gz",
     keywords=[
         "python",
         "python3",
@@ -62,7 +61,6 @@ setup(
     entry_points={
         "console_scripts": [
             "venvipy=venvipy.venvi:main",
-            "venvipy-wizard=venvipy.wizard:main"
         ]
     },
     classifiers=[
@@ -73,7 +71,7 @@ setup(
         "Intended Audience :: Other Audience",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: User Interfaces",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
