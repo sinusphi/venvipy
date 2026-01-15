@@ -2,6 +2,3 @@
 PyQt5==5.15.9
 beautifulsoup4
 requests
-
-# install dataclasses if running python 3.6
-dataclasses ; python_version<"3.7"
