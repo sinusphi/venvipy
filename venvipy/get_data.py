@@ -37,7 +37,7 @@ import requests
 
 from platforms import get_platform
 
-__version__ = "0.3.8"
+__version__ = "0.3.9"
 
 CFG_DIR = Path.home() / ".venvipy"
 DB_FILE = Path.home() / ".venvipy" / "py-installs"
