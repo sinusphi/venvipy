@@ -114,6 +114,15 @@ class VenvTable(BaseTable):
         self.info_icon = QIcon(
             self.style().standardIcon(QStyle.SP_FileDialogInfoView)
         )
+        self.reload_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_BrowserReload)
+        )
+        self.desk_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_DesktopIcon)
+        )
+        self.computer_icon = QIcon(
+            self.style().standardIcon(QStyle.SP_ComputerIcon)
+        )
 
         self.progress_bar = ProgBarDialog()
         self.console = ConsoleDialog()
@@ -141,7 +150,7 @@ class VenvTable(BaseTable):
         #]===================================================================[#
 
         upgrade_pip_action = QAction(
-            QIcon.fromTheme("system-software-update"),
+            self.reload_icon,
             "&Upgrade Pip to latest",
             self,
             statusTip="Upgrade Pip to the latest version"
@@ -151,7 +160,7 @@ class VenvTable(BaseTable):
         )
 
         install_wheel_action = QAction(
-            QIcon.fromTheme("system-software-update"),
+            self.desk_icon,
             "Install &Wheel",
             self,
             statusTip="Install wheel package"
@@ -302,7 +311,7 @@ class VenvTable(BaseTable):
         manage_sub_menu = QMenu(
             "&Manage",
             self,
-            icon=QIcon.fromTheme("software-install")
+            icon=self.computer_icon
         )
         comment_sub_menu = QMenu(
             "&Description",
@@ -325,7 +334,7 @@ class VenvTable(BaseTable):
         context_menu.addMenu(details_sub_menu)
         details_sub_menu.addAction(list_packages_action)
         details_sub_menu.addAction(list_freeze_action)
-        details_sub_menu.addAction(list_deptree_action)
+        #details_sub_menu.addAction(list_deptree_action)
 
         # comment sub menu
         context_menu.addMenu(comment_sub_menu)
