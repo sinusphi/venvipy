@@ -19,8 +19,8 @@ keywords = [
     "virtualenvironment",
     "virtual-environment",
     "pyqt",
-    "pyqt5",
-    "pyqt5-desktop-application",
+    "pyqt6",
+    "pyqt6-desktop-application",
     "gui"
 ]
 license = "GPL-3.0-or-later"
@@ -50,7 +50,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-    "PyQt5==5.15.9",
+    "PyQt6==6.6.1",
     "requests",
     "beautifulsoup4",
 ]

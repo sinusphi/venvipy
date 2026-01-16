@@ -17,7 +17,7 @@
 """
 Qt resource file
 """
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 qt_resource_data = b"\
 \x00\x00\xed\x5a\

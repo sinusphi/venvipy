@@ -23,7 +23,7 @@ import shlex
 import logging
 from pathlib import Path
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QObject, QProcess
 
 from platforms import get_platform
 
@@ -68,7 +68,9 @@ class PipManager(QObject):
         self._process.stateChanged.connect(self.on_state_changed)
 
         # finished
-        self._process.finished.connect(self.finished)
+        self._process.finished.connect(
+            lambda _code, _status: self.finished.emit()
+        )
         self._process.finished.connect(self.on_finished)
 
 
@@ -100,11 +102,11 @@ class PipManager(QObject):
     def on_state_changed(self, state):
         """Show the current process state.
         """
-        if state == QProcess.Starting:
+        if state == QProcess.ProcessState.Starting:
             logger.debug("Started")
-        elif state == QProcess.Running:
+        elif state == QProcess.ProcessState.Running:
             logger.debug("Running")
-        elif state == QProcess.NotRunning:
+        elif state == QProcess.ProcessState.NotRunning:
             logger.debug("Done")
             self.text_changed.emit(
                 "\n\nPress [ESC] to continue...\n"
@@ -112,7 +114,7 @@ class PipManager(QObject):
 
 
     @pyqtSlot(int, QProcess.ExitStatus)
-    def on_finished(self, exitCode):
+    def on_finished(self, exitCode, exitStatus):
         """Show exit code when finished.
         """
         logger.debug(f"Exit code: {exitCode}")
@@ -143,7 +145,7 @@ class PipManager(QObject):
 if __name__ == "__main__":
     import os
     import sys
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
     from wizard import ConsoleDialog
     import creator
 
@@ -165,4 +167,4 @@ if __name__ == "__main__":
     #   )]
     #)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

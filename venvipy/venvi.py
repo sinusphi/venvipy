@@ -31,19 +31,19 @@ CURRENT_DIR = Path(__file__).parent
 sys.path.insert(0, str(CURRENT_DIR))
 os.chdir(CURRENT_DIR)
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QRect, QSize, pyqtSlot
-from PyQt5.QtGui import (
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QRect, QSize, pyqtSlot
+from PyQt6.QtGui import (
     QIcon,
     QPixmap,
     QStandardItemModel,
-    QStandardItem
+    QStandardItem,
+    QAction
 )
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QStyle,
     QMainWindow,
     QApplication,
-    QAction,
     QFileDialog,
     QLabel,
     QToolButton,
@@ -58,7 +58,6 @@ from PyQt5.QtWidgets import (
     QStatusBar,
     QAbstractItemView,
     QMessageBox,
-    QDesktopWidget,
     QHBoxLayout,
     QLineEdit
 )
@@ -158,25 +157,25 @@ class MainWindow(QMainWindow):
         settings_icon = QIcon.fromTheme("preferences-system")
 
         new_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogNewFolder)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
         )
         exit_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_BrowserStop)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop)
         )
         reload_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_BrowserReload)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
         )
         delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         folder_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_DirOpenIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
         )
         qt_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TitleBarMenuButton)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMenuButton)
         )
         info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
 
         #]===================================================================[#
@@ -196,7 +195,7 @@ class MainWindow(QMainWindow):
         # python logo
         self.logo = QLabel(centralwidget)
         self.logo.setPixmap(QPixmap(":/img/pypower.png"))
-        self.logo.setAlignment(Qt.AlignRight)
+        self.logo.setAlignment(Qt.AlignmentFlag.AlignRight)
 
 
         #]===================================================================[#
@@ -215,7 +214,7 @@ class MainWindow(QMainWindow):
             "&New Venv",
             centralwidget,
             statusTip="Create a new virtual environment",
-            clicked=self.venv_wizard.exec_
+            clicked=self.venv_wizard.exec
         )
         self.new_venv_button.setMinimumSize(QSize(135, 0))
 
@@ -276,8 +275,8 @@ class MainWindow(QMainWindow):
         # interpreter table
         self.interpreter_table = InterpreterTable(
             centralwidget,
-            selectionBehavior=QAbstractItemView.SelectRows,
-            editTriggers=QAbstractItemView.NoEditTriggers,
+            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
             drop_item=self.pop_interpreter_table
@@ -288,7 +287,7 @@ class MainWindow(QMainWindow):
 
         # adjust (horizontal) headers
         h_header_interpreter_table = self.interpreter_table.horizontalHeader()
-        h_header_interpreter_table.setDefaultAlignment(Qt.AlignLeft)
+        h_header_interpreter_table.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
         h_header_interpreter_table.setDefaultSectionSize(180)
         h_header_interpreter_table.setStretchLastSection(True)
 
@@ -312,8 +311,8 @@ class MainWindow(QMainWindow):
         # venv table
         self.venv_table = VenvTable(
             centralwidget,
-            selectionBehavior=QAbstractItemView.SelectRows,
-            editTriggers=QAbstractItemView.NoEditTriggers,
+            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
             refresh=self.pop_venv_table,
@@ -326,7 +325,7 @@ class MainWindow(QMainWindow):
 
         # adjust horizontal headers
         h_header_venv_table = self.venv_table.horizontalHeader()
-        h_header_venv_table.setDefaultAlignment(Qt.AlignLeft)
+        h_header_venv_table.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
         h_header_venv_table.setStretchLastSection(True)
 
         # set table view model
@@ -381,7 +380,7 @@ class MainWindow(QMainWindow):
             self,
             statusTip="Create a new virtual environment",
             shortcut="Ctrl+N",
-            triggered=self.venv_wizard.exec_
+            triggered=self.venv_wizard.exec
         )
 
         self.action_select_active_dir = QAction(
@@ -408,7 +407,7 @@ class MainWindow(QMainWindow):
             self,
             statusTip="About VenviPy",
             shortcut="Ctrl+A",
-            triggered=self.info_about_venvipy.exec_
+            triggered=self.info_about_venvipy.exec
         )
 
         self.action_about_qt = QAction(
@@ -463,15 +462,18 @@ class MainWindow(QMainWindow):
             "interpreter or click 'Continue' to go on anyway.\n\n"
         )
         self.msg_box = QMessageBox(
-            QMessageBox.Critical,
+            QMessageBox.Icon.Critical,
             "VenviPy",
             msg_txt, QMessageBox.NoButton,
             self
         )
-        self.msg_box.addButton("&Select", QMessageBox.AcceptRole)
-        self.msg_box.addButton("&Continue", QMessageBox.RejectRole)
+        select_button = self.msg_box.addButton(
+            "&Select", QMessageBox.ButtonRole.AcceptRole
+        )
+        self.msg_box.addButton("&Continue", QMessageBox.ButtonRole.RejectRole)
 
-        if self.msg_box.exec_() == QMessageBox.AcceptRole:
+        self.msg_box.exec()
+        if self.msg_box.clickedButton() == select_button:
             # let user specify path to an interpreter
             self.add_interpreter()
         else:
@@ -482,9 +484,11 @@ class MainWindow(QMainWindow):
         """Center window.
         """
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
     def on_close(self):
@@ -551,7 +555,7 @@ class MainWindow(QMainWindow):
             )):
                 self.model_venv_table.setItem(0, i, QStandardItem(text))
 
-        self.model_venv_table.sort(0, QtCore.Qt.AscendingOrder)
+        self.model_venv_table.sort(0, Qt.SortOrder.AscendingOrder)
 
 
     def update_label(self):
@@ -668,7 +672,7 @@ def main():
     main_window.update_label()
     main_window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 
