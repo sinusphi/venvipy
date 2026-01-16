@@ -1,4 +1,4 @@
-# latest pyqt 5 working
-PyQt5==5.15.9
+# latest pyqt 6 working
+PyQt6==6.6.1
 beautifulsoup4
 requests

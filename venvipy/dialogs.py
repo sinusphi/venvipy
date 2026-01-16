@@ -23,14 +23,13 @@ import sys
 import logging
 from datetime import date
 
-from PyQt5.QtGui import QIcon, QPixmap, QFontMetrics
-from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtWidgets import (
+from PyQt6.QtGui import QIcon, QPixmap, QFontMetrics
+from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QVBoxLayout,
     QLabel,
-    QDesktopWidget,
     QTextEdit,
     QProgressBar,
     QPushButton,
@@ -64,8 +63,8 @@ class ProgBarDialog(QDialog):
         self.setFixedSize(420, 85)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
 
         self.status_label = QLabel(self)
         self.place_holder = QLabel(self)
@@ -89,9 +88,11 @@ class ProgBarDialog(QDialog):
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
 
@@ -114,8 +115,8 @@ class ConsoleDialog(QDialog):
         self.resize(1115, 705)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
 
         self.setStyleSheet(
             """
@@ -140,9 +141,11 @@ class ConsoleDialog(QDialog):
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
     @pyqtSlot(str)
@@ -152,7 +155,9 @@ class ConsoleDialog(QDialog):
         """
         metrix = QFontMetrics(self.console_window.font())
         formatted_text = metrix.elidedText(
-            message, Qt.ElideNone, self.console_window.width()
+            message,
+            Qt.TextElideMode.ElideNone,
+            self.console_window.width()
         )
         self.console_window.append(formatted_text)
 
@@ -177,12 +182,14 @@ class InfoAboutVenviPy(QDialog):
         self.setFixedSize(500, 405)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
 
         # logo
         logo = QLabel()
         pixmap = QPixmap(":/img/default.png")
-        logo_scaled = pixmap.scaled(156, 156, Qt.KeepAspectRatio)
+        logo_scaled = pixmap.scaled(
+            156, 156, Qt.AspectRatioMode.KeepAspectRatio
+        )
         logo.setPixmap(logo_scaled)
 
         # add some space
@@ -238,24 +245,36 @@ class InfoAboutVenviPy(QDialog):
         grid_layout = QGridLayout(self)
         grid_layout.setContentsMargins(15, 15, 10, 15)
 
-        grid_layout.addWidget(logo, 0, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(place_holder_1, 1, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(title_label, 2, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(version_label, 3, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(subtitle_label, 4, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(repo_label, 5, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(copyright_label, 6, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(place_holder_2, 7, 0, Qt.AlignHCenter)
-        grid_layout.addWidget(close_button, 8, 0, Qt.AlignRight)
+        grid_layout.addWidget(logo, 0, 0, Qt.AlignmentFlag.AlignHCenter)
+        grid_layout.addWidget(
+            place_holder_1, 1, 0, Qt.AlignmentFlag.AlignHCenter
+        )
+        grid_layout.addWidget(title_label, 2, 0, Qt.AlignmentFlag.AlignHCenter)
+        grid_layout.addWidget(
+            version_label, 3, 0, Qt.AlignmentFlag.AlignHCenter
+        )
+        grid_layout.addWidget(
+            subtitle_label, 4, 0, Qt.AlignmentFlag.AlignHCenter
+        )
+        grid_layout.addWidget(repo_label, 5, 0, Qt.AlignmentFlag.AlignHCenter)
+        grid_layout.addWidget(
+            copyright_label, 6, 0, Qt.AlignmentFlag.AlignHCenter
+        )
+        grid_layout.addWidget(
+            place_holder_2, 7, 0, Qt.AlignmentFlag.AlignHCenter
+        )
+        grid_layout.addWidget(close_button, 8, 0, Qt.AlignmentFlag.AlignRight)
         self.setLayout(grid_layout)
 
 
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
 
@@ -272,4 +291,4 @@ if __name__ == "__main__":
     info_about_venvipy = InfoAboutVenviPy()
     info_about_venvipy.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

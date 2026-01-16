@@ -23,27 +23,27 @@ import os
 import logging
 import webbrowser
 
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QIcon,
     QCursor,
     QPixmap,
     QStandardItem,
-    QStandardItemModel
+    QStandardItemModel,
+    QAction
 )
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt6.QtWidgets import (
     QFileDialog,
     QDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QDesktopWidget,
+    QApplication,
     QPushButton,
     QGridLayout,
     QMessageBox,
     QAbstractItemView,
     QStyle,
-    QAction,
     QTableView,
     QMenu,
     QFrame
@@ -69,10 +69,10 @@ class PackagesTable(QTableView):
         super().__init__(*args, **kwargs)
 
         self.delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
 
         self.console = ConsoleDialog()
@@ -143,12 +143,13 @@ class PackagesTable(QTableView):
         self.venv_name = os.path.basename(venv_path)
         self.pkg = self.get_selected_item()
 
-        msg_box_question = QMessageBox.question(self,
+        msg_box_question = QMessageBox.question(
+            self,
             "Confirm", f"Are you sure you want to update '{self.pkg}'?      ",
-            QMessageBox.Cancel | QMessageBox.Yes
+            QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Yes
         )
 
-        if msg_box_question == QMessageBox.Yes:
+        if msg_box_question == QMessageBox.StandardButton.Yes:
             self.console.setWindowTitle(f"Updating {self.pkg}")
 
             self.manager = PipManager(
@@ -156,7 +157,7 @@ class PackagesTable(QTableView):
                 self.venv_name
             )
             # open the console when recieving signal from manager
-            self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.console.exec)
             self.manager.text_changed.connect(self.console.update_status)
 
             # start installing the selected package
@@ -186,7 +187,7 @@ class PackageManager(QDialog):
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
         reload_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_BrowserReload)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
         )
 
         # get the venv path from file
@@ -218,7 +219,9 @@ class PackageManager(QDialog):
 
         logo = QLabel()
         pixmap = QPixmap(":/img/pypi.png")
-        logo_scaled = pixmap.scaled(92, 92, Qt.KeepAspectRatio)
+        logo_scaled = pixmap.scaled(
+            92, 92, Qt.AspectRatioMode.KeepAspectRatio
+        )
         logo.setPixmap(logo_scaled)
 
         venv_name_colored = (
@@ -239,8 +242,8 @@ class PackageManager(QDialog):
 
         line_1 = QFrame(self)
         line_1.setFixedHeight(15)
-        line_1.setFrameShape(QFrame.HLine)
-        line_1.setFrameShadow(QFrame.Sunken)
+        line_1.setFrameShape(QFrame.Shape.HLine)
+        line_1.setFrameShadow(QFrame.Shadow.Sunken)
 
         pkg_name_label = QLabel("Package &name:")
         self.pkg_name_line = QLineEdit()
@@ -259,8 +262,8 @@ class PackageManager(QDialog):
 
         # packages table
         self.packages_table = PackagesTable(
-            selectionBehavior=QAbstractItemView.SelectRows,
-            editTriggers=QAbstractItemView.NoEditTriggers,
+            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
             #refresh_packages=self.pop_packages_table
@@ -273,7 +276,7 @@ class PackageManager(QDialog):
 
         # adjust horizontal headers
         h_header = self.packages_table.horizontalHeader()
-        h_header.setDefaultAlignment(Qt.AlignLeft)
+        h_header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
         h_header.setStretchLastSection(True)
 
         # set table view model
@@ -282,8 +285,8 @@ class PackageManager(QDialog):
 
         line_2 = QFrame(self)
         line_2.setFixedHeight(8)
-        line_2.setFrameShape(QFrame.HLine)
-        line_2.setFrameShadow(QFrame.Sunken)
+        line_2.setFrameShape(QFrame.Shape.HLine)
+        line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
         grid_layout.addWidget(title_label, 0, 0, 1, 2)
         grid_layout.addWidget(logo, 0, 2, 1, 1)
@@ -303,9 +306,11 @@ class PackageManager(QDialog):
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
     def on_close(self):
@@ -343,7 +348,7 @@ class PackageManager(QDialog):
         self.refresh_packages.emit()
 
         # launch the dialog via exec_() method
-        self.exec_()
+        self.exec()
 
 
     def pop_packages_table(self):

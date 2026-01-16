@@ -25,27 +25,27 @@ import webbrowser
 from pathlib import Path
 import subprocess
 
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QIcon,
     QCursor,
     QPixmap,
     QStandardItem,
-    QStandardItemModel
+    QStandardItemModel,
+    QAction
 )
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import (
     QFileDialog,
     QDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QDesktopWidget,
+    QApplication,
     QPushButton,
     QGridLayout,
     QMessageBox,
     QAbstractItemView,
     QStyle,
-    QAction,
     QTableView,
     QMenu,
     QFrame
@@ -72,10 +72,10 @@ class ResultsTable(QTableView):
         super().__init__(*args, **kwargs)
 
         self.delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
 
 
@@ -162,7 +162,9 @@ class PackageInstaller(QDialog):
 
         logo = QLabel()
         pixmap = QPixmap(":/img/pypi.png")
-        logo_scaled = pixmap.scaled(92, 92, Qt.KeepAspectRatio)
+        logo_scaled = pixmap.scaled(
+            92, 92, Qt.AspectRatioMode.KeepAspectRatio
+        )
         logo.setPixmap(logo_scaled)
 
         subtitle_label_1 = QLabel(
@@ -175,8 +177,8 @@ class PackageInstaller(QDialog):
 
         line_1 = QFrame(self)
         line_1.setFixedHeight(15)
-        line_1.setFrameShape(QFrame.HLine)
-        line_1.setFrameShadow(QFrame.Sunken)
+        line_1.setFrameShape(QFrame.Shape.HLine)
+        line_1.setFrameShadow(QFrame.Shadow.Sunken)
 
         pkg_name_label = QLabel("Package &name:")
         self.pkg_name_line = QLineEdit()
@@ -194,8 +196,8 @@ class PackageInstaller(QDialog):
 
         # results table
         self.results_table = ResultsTable(
-            selectionBehavior=QAbstractItemView.SelectRows,
-            editTriggers=QAbstractItemView.NoEditTriggers,
+            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
             doubleClicked=self.install_package,
@@ -207,7 +209,7 @@ class PackageInstaller(QDialog):
 
         # adjust horizontal headers
         h_header = self.results_table.horizontalHeader()
-        h_header.setDefaultAlignment(Qt.AlignLeft)
+        h_header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
         h_header.setStretchLastSection(True)
 
         # set table view model
@@ -216,8 +218,8 @@ class PackageInstaller(QDialog):
 
         line_2 = QFrame(self)
         line_2.setFixedHeight(8)
-        line_2.setFrameShape(QFrame.HLine)
-        line_2.setFrameShadow(QFrame.Sunken)
+        line_2.setFrameShape(QFrame.Shape.HLine)
+        line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
         grid_layout.addWidget(title_label, 0, 0, 1, 2)
         grid_layout.addWidget(logo, 0, 2, 1, 1)
@@ -237,9 +239,11 @@ class PackageInstaller(QDialog):
     def center(self):
         """Center window."""
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
 
 
     def on_close(self):
@@ -284,7 +288,7 @@ class PackageInstaller(QDialog):
         self.results_table.setColumnWidth(2, 150)  # release
 
         # launch the dialog via exec_() method
-        self.exec_()
+        self.exec()
 
 
     def pop_results_table(self):
@@ -324,12 +328,13 @@ class PackageInstaller(QDialog):
         for index in sorted(indexes):
             self.pkg = index.data()
 
-        msg_box_question = QMessageBox.question(self,
+        msg_box_question = QMessageBox.question(
+            self,
             "Confirm", f"Are you sure you want to install '{self.pkg}'?",
-            QMessageBox.Yes | QMessageBox.Cancel
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
         )
 
-        if msg_box_question == QMessageBox.Yes:
+        if msg_box_question == QMessageBox.StandardButton.Yes:
             self.console.setWindowTitle(f"Installing {self.pkg}")
 
             # changes (may) have been made to venv
@@ -340,7 +345,7 @@ class PackageInstaller(QDialog):
                 self.venv_name
             )
             # open the console when recieving signal from manager
-            self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.console.exec)
             self.manager.text_changed.connect(self.console.update_status)
 
             # start installing the selected package
@@ -362,7 +367,7 @@ class PackageInstaller(QDialog):
         updated environment.
         """
         self.msg_box = QMessageBox(
-            QMessageBox.Question,
+            QMessageBox.Icon.Question,
             "Save requirements",
             "Do you want to generate a requirements?          ",
             QMessageBox.NoButton,
@@ -370,18 +375,18 @@ class PackageInstaller(QDialog):
         )
         yes_button = self.msg_box.addButton(
             "&Yes",
-            QMessageBox.YesRole
+            QMessageBox.ButtonRole.YesRole
         )
         no_button = self.msg_box.addButton(
             "&No",
-            QMessageBox.NoRole
+            QMessageBox.ButtonRole.NoRole
         )
         cancel_button = self.msg_box.addButton(
             "&Cancel",
-            QMessageBox.RejectRole
+            QMessageBox.ButtonRole.RejectRole
         )
 
-        self.msg_box.exec_()
+        self.msg_box.exec()
 
         if self.msg_box.clickedButton() == yes_button:
             venv_dir = Path(self.venv_location) / self.venv_name
