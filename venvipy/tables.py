@@ -22,6 +22,7 @@ This module contains the tables.
 import os
 import shlex
 import subprocess
+import tempfile
 from pathlib import Path
 import shutil
 import logging
@@ -286,6 +287,14 @@ class VenvTable(BaseTable):
             lambda: self.open_venv_dir(event)
         )
 
+        open_terminal_action = QAction(
+            self.desk_icon,
+            "Open &terminal (activated)",
+            self,
+            statusTip="Open a terminal with this environment activated"
+        )
+        open_terminal_action.triggered.connect(lambda: self.open_terminal(event))
+
         delete_venv_action = QAction(
             self.delete_icon,
             "Delete &environment",
@@ -325,6 +334,7 @@ class VenvTable(BaseTable):
 
         context_menu.addAction(save_requires_action)
         context_menu.addAction(open_venv_dir_action)
+        context_menu.addAction(open_terminal_action)
         context_menu.addAction(delete_venv_action)
 
         context_menu.exec(event.globalPos())
@@ -792,6 +802,137 @@ class VenvTable(BaseTable):
             else:
                 subprocess.run(["xdg-open", str(venv_dir)], check=False)
 
+ 
+    def open_terminal(self, event):
+        """Open a terminal with the selected environment activated.
+
+        Note: there is no single "default terminal" API on Linux, so this is
+        a best-effort launcher for common terminal emulators.
+        """
+        active_dir = get_data.get_active_dir_str()
+        venv = self.get_selected_item()
+        venv_dir = Path(active_dir) / venv
+
+        if not self.venv_exists(str(venv_dir)):
+            return
+
+        platform = get_platform()
+
+        if platform.is_windows():
+            try:
+                platform.open_activated_terminal(
+                    venv_dir=venv_dir,
+                    workdir=Path.home(),
+                    env=env,
+                    banner=True,
+                )
+            except Exception as e:
+                QMessageBox.information(
+                    self, "Info", f"Failed to open terminal: {e}"
+                )
+            return
+
+        activate = platform.activate_script_path(venv_dir)
+
+        if not activate.exists():
+            QMessageBox.information(
+                self, "Info", "Activate script not found in this environment."
+            )
+            return
+
+        workdir = Path.home()
+
+        # real rcfile -> works reliably from Python
+        fd, rc_path = tempfile.mkstemp(prefix="venvipy-", suffix=".bashrc")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(f"source {shlex.quote(str(activate))}\n")
+            f.write(f"cd {shlex.quote(str(workdir))}\n\n")
+            f.write("# quick self-checks\n")
+            f.write("echo Active environment: \"$VIRTUAL_ENV\"\n")
+            f.write("echo Python interpreter: \"$(command -v python)\"\n")
+            f.write("echo ' '\n")
+        os.chmod(rc_path, 0o600)
+
+        env = os.environ.copy()
+
+        # remove inherited venv (the one VenviPy was launched with)
+        dev_venv = env.pop("VIRTUAL_ENV", None)
+        for k in ("VIRTUAL_ENV_PROMPT", "_OLD_VIRTUAL_PATH", "_OLD_VIRTUAL_PYTHONHOME", "PYTHONHOME"):
+            env.pop(k, None)
+
+        # optional: conda leftovers
+        for k in ("CONDA_PREFIX", "CONDA_DEFAULT_ENV", "CONDA_SHLVL"):
+            env.pop(k, None)
+
+        # also remove the dev venv bin prefix from PATH (otherwise python/pip may still resolve to dev)
+        if dev_venv:
+            dev_bin = str(Path(dev_venv) / platform.venv_bin_dir_name())
+            parts = env.get("PATH", "").split(os.pathsep)
+            env["PATH"] = os.pathsep.join(
+                p for p in parts
+                if Path(p).expanduser().resolve() != Path(dev_bin).expanduser().resolve()
+            )
+
+        shell = env.get("SHELL", "/bin/bash")
+        shell_name = Path(shell).name
+
+        if shell_name == "zsh" and shutil.which("zsh"):
+            zd = tempfile.mkdtemp(prefix="venvipy-zsh-")
+            zrc = Path(zd) / ".zshrc"
+
+            zrc.write_text(
+                (
+                    '[[ -f ~/.zshrc ]] && source ~/.zshrc\n'
+                    f"source {shlex.quote(str(activate))}\n"
+                    f"cd {shlex.quote(str(workdir))}\n"
+                    'echo VIRTUAL_ENV="$VIRTUAL_ENV"\n'
+                    "which python\n"
+                ),
+                encoding="utf-8",
+            )
+            env["ZDOTDIR"] = zd
+            shell_cmd = ["zsh", "-i"]
+
+        else:
+            # fallback: your existing bash --rcfile method
+            shell_cmd = ["bash", "--rcfile", rc_path, "-i"]
+
+        bash_cmd = ["bash", "--rcfile", rc_path, "-i"]
+        candidates = [
+            ["xfce4-terminal", "-x", *bash_cmd],
+            ["gnome-terminal", "--", *bash_cmd],
+            ["konsole", "-e", *bash_cmd],
+            ["mate-terminal", "--", *bash_cmd],
+            ["x-terminal-emulator", "-e", *bash_cmd],
+            ["qterminal", "-e", *bash_cmd],
+            ["terminator", "-x", *bash_cmd],
+            ["alacritty", "-e", *bash_cmd],
+            ["kitty", *bash_cmd],
+            ["xterm", "-e", *bash_cmd],
+        ]
+
+        last_err = None
+
+        for cmd in candidates:
+            if not shutil.which(cmd[0]):
+                continue
+
+            try:
+                subprocess.Popen(cmd, start_new_session=True, env=env)
+                return
+
+            except Exception as e:
+                last_err = e
+
+        if last_err:
+            logger.debug(f"Terminal launch failed: {last_err}")
+
+        QMessageBox.information(
+            self,
+            "Info",
+            "No supported terminal emulator found. Install one and try again."
+        )
+
 
     def delete_venv(self, event):
         """
@@ -807,7 +948,7 @@ class VenvTable(BaseTable):
                 self,
                 "Delete venv",
                 f"Delete '{venv}'?           \n"
-                "Are you sure?\n",
+                "Are you sure? This can't be undone.\n",
                 QMessageBox.StandardButton.Yes
                 | QMessageBox.StandardButton.Cancel
             )
