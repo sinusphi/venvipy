@@ -1,0 +1,7 @@
+# include base requirements
+-r base.txt
+
+# dev tools
+black
+pylint
+rstcheck
