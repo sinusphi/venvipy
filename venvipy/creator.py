@@ -149,7 +149,7 @@ class CreationWorker(QObject):
         elif with_pip and with_wheel:
             self.manager = PipManager(location, name)
             self.installing_wheel.emit()
-            self.manager.run_pip(cmds[0], [opts[0], "pip wheel"])
+            self.manager.run_pip(cmds[0], [opts[0], "pip", "wheel"])
             self.manager.finished.connect(self.finished.emit)
         else:
             self.finished.emit()
