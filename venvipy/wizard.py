@@ -443,6 +443,7 @@ class BasicSettings(QWizardPage):
             self.requirements_line.setEnabled(False)
             self.select_file_button.setEnabled(False)
             self.with_wheel_check_box.setEnabled(False)
+            self.with_wheel_check_box.setChecked(False)
 
 
     def execute_venv_create(self):
