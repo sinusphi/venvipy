@@ -96,8 +96,13 @@ Inspection & tooling
 ~~~~~~~~~~~~~~~~~~~~
 
 * List detailed information about installed packages
-* Show dependency tree *(via* `pipdeptree <https://pypi.org/project/pipdeptree/>`__ *)*
-* Open a project's PyPI page in your browser
+* Open a project's PyPI page in your browser. 
+
+And a lot more to come ...
+- *Open a terminal / shell in the environment's context and add a launcher for example to your taskbar or startmenu*
+- *Run scripts in the environment's context*
+- *Uninstall packages in a selected environment in Package Manager*
+- *Clone environments, created by non-installed Python versions without having to install anything*
 
 |
 
@@ -152,12 +157,16 @@ Recommended: install into a venv
     pip install -U pip
     pip install venvipy
 
+|
+
 Development version (GitHub):
 
 .. code-block:: bash
 
     pip install -U pip
     pip install git+https://github.com/sinusphi/venvipy.git
+
+|
 
 Alternative: install with pipx
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -176,6 +185,8 @@ After installation you get the entry point:
 .. code-block:: bash
 
     venvipy
+
+|
 
 For command line options run:
 
@@ -203,13 +214,25 @@ Clone and install dependencies:
     # .venv\\Scripts\\Activate.ps1
 
     pip install -U pip
-    pip install -r requirements.txt
+
+    # minimal requirements to run VenviPy
+    pip install -r requirements/base.txt
+
+    # for development and testing
+    pip install -r requirements/dev.txt
+
+    # deployement and build deps 
+    pip install -r requirements/deploy.txt
+
+|
 
 If you prefer a minimal manual install:
 
 .. code-block:: bash
 
     pip install requests beautifulsoup4 PyQt6==6.6.1
+
+|
 
 Run:
 
