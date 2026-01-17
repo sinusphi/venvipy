@@ -1,0 +1,7 @@
+# include base requirements
+-r base.txt
+
+# deployment and build deps
+setuptools
+build
+twine
