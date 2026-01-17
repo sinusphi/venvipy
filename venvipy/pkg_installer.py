@@ -90,34 +90,29 @@ class ResultsTable(QTableView):
 
 
     def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            idx = self.currentIndex()
+            if not idx.isValid():
+                return
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
+        self.selectRow(idx.row())
 
-        install_action = QAction(
-            QIcon.fromTheme("software-install"),
-            "&Install module",
-            self,
-            statusTip="Install module"
-        )
-        context_menu.addAction(install_action)
-        # connect to install_package() in InstallPackages() in wizard
-        install_action.triggered.connect(
-            lambda: self.context_triggered.emit()
-        )
+        menu = QMenu(self)
 
-        open_pypi_action = QAction(
-            self.info_icon,
-            "&Open on PyPI",
-            self,
-            statusTip="Open on Python Package Index"
-        )
-        context_menu.addAction(open_pypi_action)
-        open_pypi_action.triggered.connect(
-            lambda: self.open_on_pypi(event)
-        )
+        install_action = QAction(QIcon.fromTheme("software-install"), "&Install module", self)
+        install_action.triggered.connect(self.context_triggered.emit)
+        menu.addAction(install_action)
+
+        open_pypi_action = QAction(self.info_icon, "&Open on PyPI", self)
+        open_pypi_action.triggered.connect(lambda: self.open_on_pypi(event))
+        menu.addAction(open_pypi_action)
+
+        pos = event.globalPos()
+        if pos.x() == 0 and pos.y() == 0:
+            pos = self.viewport().mapToGlobal(self.visualRect(idx).center())
+
+        menu.exec(pos)
 
 
     def open_on_pypi(self, event):
@@ -272,7 +267,7 @@ class PackageInstaller(QDialog):
         # clear input
         self.results_table_model.clear()
         self.pkg_name_line.clear()
-        self.pkg_name_line.setFocus(True)
+        self.pkg_name_line.setFocus()
 
         # set text in column headers
         self.results_table_model.setHorizontalHeaderLabels([
@@ -316,7 +311,7 @@ class PackageInstaller(QDialog):
                     "No results",
                     f"No results matching '{search_item}'.\n"
                 )
-                self.pkg_name_line.setFocus(True)
+                self.pkg_name_line.setFocus()
 
 
     def install_package(self):
@@ -358,7 +353,7 @@ class PackageInstaller(QDialog):
 
                 # clear input
                 self.pkg_name_line.clear()
-                self.pkg_name_line.setFocus(True)
+                self.pkg_name_line.setFocus()
 
 
     def save_requirements(self):
@@ -370,7 +365,7 @@ class PackageInstaller(QDialog):
             QMessageBox.Icon.Question,
             "Save requirements",
             "Do you want to generate a requirements?          ",
-            QMessageBox.NoButton,
+            QMessageBox.StandardButton.NoButton,
             self
         )
         yes_button = self.msg_box.addButton(
@@ -411,7 +406,7 @@ class PackageInstaller(QDialog):
                         "pip",
                         "freeze"],
                         stdout=f,
-                        check=True,
+                        check=False,
                     )
             except subprocess.CalledProcessError as e:
                 logger.debug(f"Failed to save requirements: {e}")

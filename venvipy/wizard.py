@@ -628,7 +628,7 @@ class InstallPackages(QWizardPage):
         # clear all inputs and contents
         self.results_table_model.clear()
         self.pkg_name_line.clear()
-        self.pkg_name_line.setFocus(True)
+        self.pkg_name_line.setFocus()
 
         # set text in column headers
         self.results_table_model.setHorizontalHeaderLabels([
@@ -748,7 +748,7 @@ class InstallPackages(QWizardPage):
 
                 # clear search input line
                 self.pkg_name_line.clear()
-                self.pkg_name_line.setFocus(True)
+                self.pkg_name_line.setFocus()
 
 
     def save_requirements(self):
@@ -762,7 +762,7 @@ class InstallPackages(QWizardPage):
             QMessageBox.Icon.Question,
             "Save requirements",
             "Do you want to generate a requirements?          ",
-            QMessageBox.NoButton,
+            QMessageBox.StandardButton.NoButton,
             self
         )
         yes_button = self.msg_box.addButton(
@@ -800,7 +800,7 @@ class InstallPackages(QWizardPage):
                         "pip",
                         "freeze"],
                         stdout=f,
-                        check=True,
+                        check=False,
                     )
             except subprocess.CalledProcessError as e:
                 logger.debug(f"Failed to save requirements: {e}")

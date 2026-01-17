@@ -144,6 +144,12 @@ class VenvTable(BaseTable):
 
     def contextMenuEvent(self, event):
 
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            return
+
+        self.selectRow(idx.row())
+
         #]===================================================================[#
         #] ACTIONS [#========================================================[#
         #]===================================================================[#
@@ -290,52 +296,29 @@ class VenvTable(BaseTable):
             lambda: self.delete_venv(event)
         )
 
-
         #]===================================================================[#
         #] MENUS [#==========================================================[#
         #]===================================================================[#
 
         context_menu = QMenu(self)
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
-
-        # sub menus
-        details_sub_menu = QMenu(
-            "Det&ails",
-            self,
-            icon=self.info_icon
-        )
-        manage_sub_menu = QMenu(
-            "&Manage",
-            self,
-            icon=self.computer_icon
-        )
-        comment_sub_menu = QMenu(
-            "&Description",
-            self,
-            icon=self.info_icon
-        )
+        details_sub_menu = QMenu("Det&ails", self, icon=self.info_icon)
+        manage_sub_menu  = QMenu("&Manage", self, icon=self.computer_icon)
+        comment_sub_menu = QMenu("&Description", self, icon=self.info_icon)
 
         context_menu.addAction(upgrade_pip_action)
         context_menu.addAction(install_wheel_action)
 
-        # install sub menu
         context_menu.addMenu(manage_sub_menu)
-        #manage_sub_menu.addAction(manage_packages_action)
         manage_sub_menu.addAction(install_packages_action)
         manage_sub_menu.addAction(install_requires_action)
         manage_sub_menu.addAction(install_local_action)
         manage_sub_menu.addAction(install_vcs_action)
 
-        # details sub meun
         context_menu.addMenu(details_sub_menu)
         details_sub_menu.addAction(list_packages_action)
         details_sub_menu.addAction(list_freeze_action)
-        #details_sub_menu.addAction(list_deptree_action)
 
-        # comment sub menu
         context_menu.addMenu(comment_sub_menu)
         comment_sub_menu.addAction(comment_add_action)
         comment_sub_menu.addAction(comment_remove_action)
@@ -343,6 +326,8 @@ class VenvTable(BaseTable):
         context_menu.addAction(save_requires_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
+
+        context_menu.exec(event.globalPos())
 
 
     def valid_version(self, venv_path):
@@ -392,33 +377,40 @@ class VenvTable(BaseTable):
 
 
     def has_pip(self, venv_dir, venv_name):
-        """Test if `pip` is installed.
-        """
         platform = get_platform()
         venv_path = Path(venv_dir) / venv_name
-        venv_python = platform.venv_python_path(venv_path)
-        has_pip = False
 
-        if venv_python.exists():
+        if not self.venv_exists(venv_path):
+            return False
+
+        if not self.valid_version(venv_path):
+            return False
+
+        venv_python = platform.venv_python_path(venv_path)
+        if not venv_python.exists():
+            QMessageBox.information(self, "Info", "Python binary not found in this environment.")
+            return False
+
+        try:
             result = subprocess.run(
                 [str(venv_python), "-m", "pip", "--version"],
                 capture_output=True,
-                check=True,
+                check=False,          # <-- wichtig
                 text=True,
                 encoding="utf-8",
                 errors="replace",
             )
-            has_pip = result.returncode == 0
 
-        if self.venv_exists(venv_path) and self.valid_version(venv_path):
-            if has_pip:
-                return True
-            QMessageBox.information(
-                self,
-                "Info",
-                "This environment has no Pip installed."
-            )
+        except OSError as e:
+            QMessageBox.information(self, "Info", f"Could not run Python:\n{e}")
             return False
+
+        if result.returncode == 0:
+            return True
+
+        details = (result.stderr or result.stdout or "").strip()
+        logger.debug(f"pip --version failed (rc={result.returncode}):\n{details}")
+        QMessageBox.information(self, "Info", "This environment has no Pip installed.")
         return False
 
 
@@ -544,7 +536,7 @@ class VenvTable(BaseTable):
                     logger.debug("Installing from local project directory...")
 
                     self.manager = PipManager(active_dir, venv)
-                    self.manager.started.connect(self.console.exec_)
+                    self.manager.started.connect(self.console.exec)
                     self.manager.text_changed.connect(self.console.update_status)
                     self.manager.run_pip(
                         creator.cmds[0], [creator.opts[3], project_dir]
@@ -631,7 +623,7 @@ class VenvTable(BaseTable):
                         "pip",
                         "freeze"],
                         stdout=f,
-                        check=True,
+                        check=False,
                     )
             except subprocess.CalledProcessError as e:
                 logger.debug(f"Failed to save requirements: {e}")
@@ -659,7 +651,7 @@ class VenvTable(BaseTable):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.console.exec)
             self.manager.text_changed.connect(self.console.update_status)
 
             self.manager.run_pip(creator.cmds[style])
@@ -687,7 +679,7 @@ class VenvTable(BaseTable):
         pipdeptree_result = subprocess.run(
             [str(venv_python), "-m", "pipdeptree", "--version"],
             capture_output=True,
-            check=True,
+            check=False,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -702,7 +694,7 @@ class VenvTable(BaseTable):
             self.list_packages(event, style)
         else:
             if self.has_pip(active_dir, venv):
-            msg_box_confirm = QMessageBox.question(
+                msg_box_confirm = QMessageBox.question(
                     self,
                     "Confirm",
                     message_txt,
@@ -798,7 +790,7 @@ class VenvTable(BaseTable):
             if platform.is_windows():
                 os.startfile(str(venv_dir))
             else:
-                subprocess.run(["xdg-open", str(venv_dir)], check=True)
+                subprocess.run(["xdg-open", str(venv_dir)], check=False)
 
 
     def delete_venv(self, event):
@@ -837,11 +829,13 @@ class InterpreterTable(BaseTable):
 
 
     def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            return
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
+        self.selectRow(idx.row())
+
+        context_menu = QMenu(self)
 
         remove_py_action = QAction(
             self.delete_icon,
@@ -849,10 +843,10 @@ class InterpreterTable(BaseTable):
             self,
             statusTip="Remove this item from the table"
         )
+        remove_py_action.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.remove_python(event)))
         context_menu.addAction(remove_py_action)
-        remove_py_action.triggered.connect(
-            lambda: self.remove_python(event)
-        )
+
+        context_menu.exec(event.globalPos())
 
 
     def remove_python(self, event):

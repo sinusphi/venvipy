@@ -89,34 +89,29 @@ class PackagesTable(QTableView):
 
 
     def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            idx = self.currentIndex()
+            if not idx.isValid():
+                return
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
+        self.selectRow(idx.row())
 
-        update_action = QAction(
-            QIcon.fromTheme("software-install"),
-            "&Update package",
-            self,
-            statusTip="Update package via pip"
-        )
-        context_menu.addAction(update_action)
-        # connect to install_package() in InstallPackages() in wizard
-        update_action.triggered.connect(
-            lambda: self.update_package(event)
-        )
+        menu = QMenu(self)
 
-        open_pypi_action = QAction(
-            self.info_icon,
-            "&Open on PyPI",
-            self,
-            statusTip="Open on Python Package Index"
-        )
-        context_menu.addAction(open_pypi_action)
-        open_pypi_action.triggered.connect(
-            lambda: self.open_on_pypi(event)
-        )
+        install_action = QAction(QIcon.fromTheme("software-install"), "&Install module", self)
+        install_action.triggered.connect(self.context_triggered.emit)
+        menu.addAction(install_action)
+
+        open_pypi_action = QAction(self.info_icon, "&Open on PyPI", self)
+        open_pypi_action.triggered.connect(lambda: self.open_on_pypi(event))
+        menu.addAction(open_pypi_action)
+
+        pos = event.globalPos()
+        if pos.x() == 0 and pos.y() == 0:
+            pos = self.viewport().mapToGlobal(self.visualRect(idx).center())
+
+        menu.exec(pos)
 
 
     def open_on_pypi(self, event):
@@ -328,7 +323,7 @@ class PackageManager(QDialog):
         # clear input
         self.packages_table_model.clear()
         self.pkg_name_line.clear()
-        self.pkg_name_line.setFocus(True)
+        self.pkg_name_line.setFocus()
 
         # set text in column headers
         self.packages_table_model.setHorizontalHeaderLabels([

@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("VenviPy")
-        self.resize(1150, 770)
+        self.resize(1500, 830)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
@@ -247,7 +247,7 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
         # spacer between manage button and exit button
         spacer_item_1 = QSpacerItem(
-            20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
+            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
         )
         #]===================================================================[#
 
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
         # spacer between interpreter table and venv table title
         spacer_item_2 = QSpacerItem(
-            20, 12, QSizePolicy.Minimum, QSizePolicy.Fixed
+            20, 12, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
         )
         #]===================================================================[#
 
@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
         self.msg_box = QMessageBox(
             QMessageBox.Icon.Critical,
             "VenviPy",
-            msg_txt, QMessageBox.NoButton,
+            msg_txt, QMessageBox.StandardButton.NoButton,
             self
         )
         select_button = self.msg_box.addButton(

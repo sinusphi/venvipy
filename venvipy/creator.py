@@ -183,7 +183,7 @@ def create_venv(
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=True,
+        check=False,
     )
 
     return (res.stdout or "").strip()
