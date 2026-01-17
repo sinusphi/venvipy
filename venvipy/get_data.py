@@ -146,7 +146,7 @@ def get_python_version(py_path):
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=True,
+        check=False,
     )
 
     python_version = (res.stdout or "").strip()
@@ -218,7 +218,7 @@ def _get_windows_python_paths():
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=True,
+        check=False,
     )
     if py_launcher.returncode == 0:
         for line in py_launcher.stdout.splitlines():
@@ -238,7 +238,7 @@ def _get_windows_python_paths():
             encoding="utf-8",
             errors="replace",
             text=True,
-            check=True,
+            check=False,
         )
         if where_python.returncode == 0:
             for line in where_python.stdout.splitlines():

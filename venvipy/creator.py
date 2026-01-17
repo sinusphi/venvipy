@@ -26,7 +26,7 @@ from pathlib import Path
 from subprocess import Popen, PIPE, STDOUT, run
 from random import randint
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from manage_pip import PipManager
 
@@ -183,7 +183,7 @@ def create_venv(
         encoding="utf-8",
         errors="replace",
         text=True,
-        check=True,
+        check=False,
     )
 
     return (res.stdout or "").strip()

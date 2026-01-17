@@ -27,11 +27,10 @@ import shutil
 import logging
 from functools import partial
 
-from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtCore import pyqtSignal, QThread, QTimer
-from PyQt5.QtWidgets import (
+from PyQt6.QtGui import QIcon, QCursor, QAction
+from PyQt6.QtCore import pyqtSignal, QThread, QTimer
+from PyQt6.QtWidgets import (
     QStyle,
-    QAction,
     QTableView,
     QMenu,
     QMessageBox,
@@ -58,10 +57,10 @@ class BaseTable(QTableView):
         super().__init__(*args, **kwargs)
 
         self.delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
 
     def get_selected_item(self):
@@ -100,28 +99,28 @@ class VenvTable(BaseTable):
         super().__init__(*args, **kwargs)
 
         self.drive_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_DriveHDIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DriveHDIcon)
         )
         self.delete_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_TrashIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         self.save_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_DialogSaveButton)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
         )
         self.folder_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_DirOpenIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
         )
         self.info_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_FileDialogInfoView)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
         self.reload_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_BrowserReload)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
         )
         self.desk_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_DesktopIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DesktopIcon)
         )
         self.computer_icon = QIcon(
-            self.style().standardIcon(QStyle.SP_ComputerIcon)
+            self.style().standardIcon(QStyle.StandardPixmap.SP_ComputerIcon)
         )
 
         self.progress_bar = ProgBarDialog()
@@ -133,7 +132,7 @@ class VenvTable(BaseTable):
         self.thread.start()
         self.m_install_worker.moveToThread(self.thread)
 
-        self.m_install_worker.started.connect(self.console.exec_)
+        self.m_install_worker.started.connect(self.console.exec)
         self.m_install_worker.text_changed.connect(
             self.console.update_status
         )
@@ -144,6 +143,12 @@ class VenvTable(BaseTable):
 
 
     def contextMenuEvent(self, event):
+
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            return
+
+        self.selectRow(idx.row())
 
         #]===================================================================[#
         #] ACTIONS [#========================================================[#
@@ -291,52 +296,29 @@ class VenvTable(BaseTable):
             lambda: self.delete_venv(event)
         )
 
-
         #]===================================================================[#
         #] MENUS [#==========================================================[#
         #]===================================================================[#
 
         context_menu = QMenu(self)
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
-
-        # sub menus
-        details_sub_menu = QMenu(
-            "Det&ails",
-            self,
-            icon=self.info_icon
-        )
-        manage_sub_menu = QMenu(
-            "&Manage",
-            self,
-            icon=self.computer_icon
-        )
-        comment_sub_menu = QMenu(
-            "&Description",
-            self,
-            icon=self.info_icon
-        )
+        details_sub_menu = QMenu("Det&ails", self, icon=self.info_icon)
+        manage_sub_menu  = QMenu("&Manage", self, icon=self.computer_icon)
+        comment_sub_menu = QMenu("&Description", self, icon=self.info_icon)
 
         context_menu.addAction(upgrade_pip_action)
         context_menu.addAction(install_wheel_action)
 
-        # install sub menu
         context_menu.addMenu(manage_sub_menu)
-        #manage_sub_menu.addAction(manage_packages_action)
         manage_sub_menu.addAction(install_packages_action)
         manage_sub_menu.addAction(install_requires_action)
         manage_sub_menu.addAction(install_local_action)
         manage_sub_menu.addAction(install_vcs_action)
 
-        # details sub meun
         context_menu.addMenu(details_sub_menu)
         details_sub_menu.addAction(list_packages_action)
         details_sub_menu.addAction(list_freeze_action)
-        #details_sub_menu.addAction(list_deptree_action)
 
-        # comment sub menu
         context_menu.addMenu(comment_sub_menu)
         comment_sub_menu.addAction(comment_add_action)
         comment_sub_menu.addAction(comment_remove_action)
@@ -344,6 +326,8 @@ class VenvTable(BaseTable):
         context_menu.addAction(save_requires_action)
         context_menu.addAction(open_venv_dir_action)
         context_menu.addAction(delete_venv_action)
+
+        context_menu.exec(event.globalPos())
 
 
     def valid_version(self, venv_path):
@@ -360,13 +344,13 @@ class VenvTable(BaseTable):
 
         if is_installed == "no":
             msg_box = QMessageBox(
-                QMessageBox.Critical,
+                QMessageBox.Icon.Critical,
                 "Error",
                 msg_txt,
-                QMessageBox.Ok,
+                QMessageBox.StandardButton.Ok,
                 self
             )
-            msg_box.exec_()
+            msg_box.exec()
             return False
         return True
 
@@ -379,13 +363,13 @@ class VenvTable(BaseTable):
             return True
 
         msg_box = QMessageBox(
-            QMessageBox.Critical,
+            QMessageBox.Icon.Critical,
             "Error",
             "Selected environment could not be found.",
-            QMessageBox.Ok,
+            QMessageBox.StandardButton.Ok,
             self
         )
-        msg_box.exec_()
+        msg_box.exec()
 
         # refresh venv table
         self.refresh.emit()
@@ -393,33 +377,40 @@ class VenvTable(BaseTable):
 
 
     def has_pip(self, venv_dir, venv_name):
-        """Test if `pip` is installed.
-        """
         platform = get_platform()
         venv_path = Path(venv_dir) / venv_name
-        venv_python = platform.venv_python_path(venv_path)
-        has_pip = False
 
-        if venv_python.exists():
+        if not self.venv_exists(venv_path):
+            return False
+
+        if not self.valid_version(venv_path):
+            return False
+
+        venv_python = platform.venv_python_path(venv_path)
+        if not venv_python.exists():
+            QMessageBox.information(self, "Info", "Python binary not found in this environment.")
+            return False
+
+        try:
             result = subprocess.run(
                 [str(venv_python), "-m", "pip", "--version"],
                 capture_output=True,
-                check=True,
+                check=False,          # <-- wichtig
                 text=True,
                 encoding="utf-8",
                 errors="replace",
             )
-            has_pip = result.returncode == 0
 
-        if self.venv_exists(venv_path) and self.valid_version(venv_path):
-            if has_pip:
-                return True
-            QMessageBox.information(
-                self,
-                "Info",
-                "This environment has no Pip installed."
-            )
+        except OSError as e:
+            QMessageBox.information(self, "Info", f"Could not run Python:\n{e}")
             return False
+
+        if result.returncode == 0:
+            return True
+
+        details = (result.stderr or result.stdout or "").strip()
+        logger.debug(f"pip --version failed (rc={result.returncode}):\n{details}")
+        QMessageBox.information(self, "Info", "This environment has no Pip installed.")
         return False
 
 
@@ -446,7 +437,7 @@ class VenvTable(BaseTable):
             logger.debug(f"Installing latest version of {pkg}...")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.console.exec)
             self.manager.text_changed.connect(self.console.update_status)
 
             self.manager.run_pip(creator.cmds[0], [creator.opts[0], f"{pkg}"])
@@ -545,7 +536,7 @@ class VenvTable(BaseTable):
                     logger.debug("Installing from local project directory...")
 
                     self.manager = PipManager(active_dir, venv)
-                    self.manager.started.connect(self.console.exec_)
+                    self.manager.started.connect(self.console.exec)
                     self.manager.text_changed.connect(self.console.update_status)
                     self.manager.run_pip(
                         creator.cmds[0], [creator.opts[3], project_dir]
@@ -632,7 +623,7 @@ class VenvTable(BaseTable):
                         "pip",
                         "freeze"],
                         stdout=f,
-                        check=True,
+                        check=False,
                     )
             except subprocess.CalledProcessError as e:
                 logger.debug(f"Failed to save requirements: {e}")
@@ -660,7 +651,7 @@ class VenvTable(BaseTable):
             self.console.setWindowTitle(f"Packages installed in:  {venv}")
 
             self.manager = PipManager(active_dir, venv)
-            self.manager.started.connect(self.console.exec_)
+            self.manager.started.connect(self.console.exec)
             self.manager.text_changed.connect(self.console.update_status)
 
             self.manager.run_pip(creator.cmds[style])
@@ -688,7 +679,7 @@ class VenvTable(BaseTable):
         pipdeptree_result = subprocess.run(
             [str(venv_python), "-m", "pipdeptree", "--version"],
             capture_output=True,
-            check=True,
+            check=False,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -707,9 +698,10 @@ class VenvTable(BaseTable):
                     self,
                     "Confirm",
                     message_txt,
-                    QMessageBox.Yes | QMessageBox.Cancel
+                    QMessageBox.StandardButton.Yes
+                    | QMessageBox.StandardButton.Cancel
                 )
-                if msg_box_confirm == QMessageBox.Yes:
+                if msg_box_confirm == QMessageBox.StandardButton.Yes:
                     self.progress_bar.setWindowTitle("Installing")
                     self.progress_bar.status_label.setText(
                         "Installing pipdeptree..."
@@ -720,7 +712,7 @@ class VenvTable(BaseTable):
                     self.manager.run_pip(
                         creator.cmds[0], [creator.opts[0], "pipdeptree"]
                     )
-                    self.manager.started.connect(self.progress_bar.exec_)
+                    self.manager.started.connect(self.progress_bar.exec)
                     self.manager.finished.connect(self.progress_bar.close)
                     self.manager.process_stop()
                     self.list_packages(event, style)
@@ -777,9 +769,10 @@ class VenvTable(BaseTable):
                 "Remove comment",
                 "Delete this comment.        \n"
                 "Are you sure?\n",
-                QMessageBox.Yes | QMessageBox.Cancel
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.Cancel
             )
-            if msg_box_warning == QMessageBox.Yes:
+            if msg_box_warning == QMessageBox.StandardButton.Yes:
                 os.remove(venvipy_cfg)
                 logger.debug(f"Successfully deleted '{venvipy_cfg}'")
                 self.refresh.emit()
@@ -797,7 +790,7 @@ class VenvTable(BaseTable):
             if platform.is_windows():
                 os.startfile(str(venv_dir))
             else:
-                subprocess.run(["xdg-open", str(venv_dir)], check=True)
+                subprocess.run(["xdg-open", str(venv_dir)], check=False)
 
 
     def delete_venv(self, event):
@@ -815,9 +808,10 @@ class VenvTable(BaseTable):
                 "Delete venv",
                 f"Delete '{venv}'?           \n"
                 "Are you sure?\n",
-                QMessageBox.Yes | QMessageBox.Cancel
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.Cancel
             )
-            if msg_box_critical == QMessageBox.Yes:
+            if msg_box_critical == QMessageBox.StandardButton.Yes:
                 shutil.rmtree(venv_path)
                 logger.debug(f"Successfully deleted '{venv_path}'")
                 self.refresh.emit()
@@ -835,11 +829,13 @@ class InterpreterTable(BaseTable):
 
 
     def contextMenuEvent(self, event):
-        context_menu = QMenu(self)
+        idx = self.indexAt(event.pos())
+        if not idx.isValid():
+            return
 
-        # pop up only if clicking on a row
-        if self.indexAt(event.pos()).isValid():
-            context_menu.popup(QCursor.pos())
+        self.selectRow(idx.row())
+
+        context_menu = QMenu(self)
 
         remove_py_action = QAction(
             self.delete_icon,
@@ -847,10 +843,10 @@ class InterpreterTable(BaseTable):
             self,
             statusTip="Remove this item from the table"
         )
+        remove_py_action.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.remove_python(event)))
         context_menu.addAction(remove_py_action)
-        remove_py_action.triggered.connect(
-            lambda: self.remove_python(event)
-        )
+
+        context_menu.exec(event.globalPos())
 
 
     def remove_python(self, event):
@@ -863,9 +859,9 @@ class InterpreterTable(BaseTable):
             "Confirm",
             "Remove this item from list.       \n"
             "Are you sure?\n",
-            QMessageBox.Yes | QMessageBox.Cancel
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
         )
-        if msg_box_warning == QMessageBox.Yes:
+        if msg_box_warning == QMessageBox.StandardButton.Yes:
             with open(get_data.DB_FILE, "r", encoding="utf-8") as f:
                 lines = f.readlines()
             with open(get_data.DB_FILE, "w", encoding="utf-8") as f:
