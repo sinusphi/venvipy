@@ -27,7 +27,7 @@ except FileNotFoundError:
     version = "latest"
 
 install_requires = [
-    "PyQt5==5.15.9",
+    "PyQt6==6.6.1",
     "requests",
     "beautifulsoup4",
 ]
@@ -53,8 +53,8 @@ setup(
         "virtualenvironment",
         "virtual-environment",
         "pyqt",
-        "pyqt5",
-        "pyqt5-desktop-application",
+        "pyqt6",
+        "pyqt6-desktop-application",
         "gui"
     ],
     install_requires=install_requires,
