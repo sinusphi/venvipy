@@ -37,7 +37,7 @@ import requests
 
 from platforms import get_platform
 
-__version__ = "0.3.9"
+__version__ = "0.4.0"
 
 CFG_DIR = Path.home() / ".venvipy"
 DB_FILE = Path.home() / ".venvipy" / "py-installs"
@@ -50,6 +50,7 @@ DB_TABLE = "projects"
 DB_COL = "name"
 
 logger = logging.getLogger(__name__)
+
 
 #]===========================================================================[#
 #] FIND PYTHON 3 INSTALLATIONS [#============================================[#
