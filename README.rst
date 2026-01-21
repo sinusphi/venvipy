@@ -6,7 +6,7 @@ VenviPy
 
 **A GUI for managing multiple Python virtual environments**
 
-.. image:: https://img.shields.io/pypi/v/venvipy?logo=pypi&logoColor=gold
+.. image:: https://img.shields.io/pypi/v/venvipy?logo=pypi&logoColor=gold&color=00C853
     :target: https://pypi.org/project/venvipy/
 
 .. image:: https://img.shields.io/badge/python-3.7%2B-blue?logo=python&logoColor=gold
