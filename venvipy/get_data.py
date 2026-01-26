@@ -180,6 +180,8 @@ def get_python_installs(relaunching=False):
             if platform.is_windows():
                 python_paths = _get_windows_python_paths()
                 for python_path in python_paths:
+                    if _is_venv_interpreter(python_path):
+                        continue
                     python_version = get_python_version(python_path)
                     py_info = PythonInfo(python_version, python_path)
                     py_info_list.append(py_info)
@@ -191,6 +193,8 @@ def get_python_installs(relaunching=False):
                 for version in versions:
                     python_path = shutil.which(f"python{version}")
                     if python_path is not None:
+                        if _is_venv_interpreter(python_path):
+                            continue
                         python_version = get_python_version(python_path)
                         py_info = PythonInfo(python_version, python_path)
                         py_info_list.append(py_info)
@@ -198,7 +202,6 @@ def get_python_installs(relaunching=False):
                             "PYTHON_VERSION": py_info.py_version,
                             "PYTHON_PATH": py_info.py_path
                         })
-
             cf.close()
 
             # add the system's Python manually if running in a virtual env
@@ -278,18 +281,61 @@ def add_python(py_path):
     if "VIRTUAL_ENV" in os.environ:
         remove_env()
 
+def _is_venv_interpreter(py_path):
+    """
+    Return True if py_path points to the active venv interpreter.
+    """
+    venv_root = os.environ.get("VIRTUAL_ENV")
+    if not venv_root:
+        return False
+
+    venv_root = os.path.realpath(venv_root)
+    candidate = os.path.realpath(py_path)
+    candidate_raw = os.path.abspath(py_path)
+
+    def _within(root, path):
+        try:
+            return os.path.commonpath([root, path]) == root
+        except ValueError:
+            return False
+
+    return _within(venv_root, candidate) or _within(venv_root, candidate_raw)
+
+
 
 def remove_env():
     """
-    Remove our interpreter if we're running in a virtual
-    environment.
+    Remove interpreters that belong to the active virtual environment.
     """
+    if "VIRTUAL_ENV" not in os.environ:
+        return
+
     with open(DB_FILE, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-        for line in lines:
-            if sys.executable not in line.strip("\n"):
-                f.write(line)
+        rows = list(csv.DictReader(f, delimiter=","))
+
+    with open(DB_FILE, "w", newline="", encoding="utf-8") as f:
+        fields = ["PYTHON_VERSION", "PYTHON_PATH"]
+        writer = csv.DictWriter(
+            f,
+            delimiter=",",
+            quoting=csv.QUOTE_ALL,
+            fieldnames=fields
+        )
+        writer.writeheader()
+        for row in rows:
+            python_path = row.get("PYTHON_PATH", "")
+            if python_path and _is_venv_interpreter(python_path):
+                continue
+            writer.writerow({
+                "PYTHON_VERSION": row.get("PYTHON_VERSION", ""),
+                "PYTHON_PATH": python_path,
+            })
+
+
+
+
+
+
 
 
 #]===========================================================================[#
