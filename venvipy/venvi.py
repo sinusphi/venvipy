@@ -96,12 +96,12 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(
             """
             QMenuBar {
-                background-color: rgb(47, 52, 63);
+                background-color: rgb(32, 35, 38);
                 color: rgb(210, 210, 210)
             }
 
             QMenuBar::item {
-                background-color: rgb(47, 52, 63);
+                background-color: rgb(32, 35, 38);
                 color: rgb(210, 210, 210)
             }
 
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
             }
 
             QMenu {
-                background-color: rgb(47, 52, 63);
+                background-color: rgb(20, 23, 26);
                 color: rgb(210, 210, 210)
             }
 
@@ -139,9 +139,10 @@ class MainWindow(QMainWindow):
 
         self.info_about_venvipy = InfoAboutVenviPy()
         self.venv_wizard = wizard.VenvWizard()
+        self._wizard_refresh_tab = None
 
         # refresh venv table on wizard close
-        self.venv_wizard.refresh.connect(self.pop_venv_table)
+        self.venv_wizard.refresh.connect(self.refresh_wizard_tab)
 
         # refresh interpreter table if 'py-installs' changes
         self.venv_wizard.update_table.connect(self.pop_interpreter_table)
@@ -211,7 +212,7 @@ class MainWindow(QMainWindow):
             "&New Venv",
             centralwidget,
             statusTip="Create a new virtual environment",
-            clicked=self.venv_wizard.exec
+            clicked=self.launch_venv_wizard
         )
         self.new_venv_button.setMinimumSize(QSize(135, 0))
 
@@ -290,6 +291,8 @@ class MainWindow(QMainWindow):
 
         self.venv_tabs = QTabWidget(centralwidget)
         self.venv_tabs.currentChanged.connect(self.on_venv_tab_changed)
+        self.venv_tabs.setTabsClosable(True)
+        self.venv_tabs.tabCloseRequested.connect(self.close_venv_tab)
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
@@ -323,7 +326,7 @@ class MainWindow(QMainWindow):
             self,
             statusTip="Create a new virtual environment",
             shortcut="Ctrl+N",
-            triggered=self.venv_wizard.exec
+            triggered=self.launch_venv_wizard
         )
 
         self.action_select_active_dir = QAction(
@@ -589,8 +592,18 @@ class MainWindow(QMainWindow):
         header_layout = QHBoxLayout()
 
         label = QLabel(tab_widget)
-        add_tab_button = QToolButton(
+        new_venv_button = QToolButton(
             text="+",
+            toolTip="New venv",
+            statusTip="Create a new virtual environment",
+            clicked=self.launch_venv_wizard
+        )
+        new_venv_button.setFixedSize(30, 30)
+
+        add_tab_button = QToolButton(
+            icon=self.style().standardIcon(
+                QStyle.StandardPixmap.SP_FileDialogNewFolder
+            ),
             toolTip="Add a venv tab",
             statusTip="Open a new venv tab",
             clicked=self.add_venv_tab
@@ -615,6 +628,7 @@ class MainWindow(QMainWindow):
 
         header_layout.addWidget(label)
         header_layout.addStretch(1)
+        header_layout.addWidget(new_venv_button)
         header_layout.addWidget(add_tab_button)
         header_layout.addWidget(reload_button)
         header_layout.addWidget(active_dir_button)
@@ -705,6 +719,41 @@ class MainWindow(QMainWindow):
             return
         self.set_active_dir(tab_data["path"])
         self.update_label(tab_data)
+
+    def launch_venv_wizard(self):
+        """Launch the venv wizard and remember the active tab."""
+        tab_data = self.get_tab_data()
+        self._wizard_refresh_tab = tab_data["widget"] if tab_data else None
+        self.venv_wizard.exec()
+
+
+    def refresh_wizard_tab(self):
+        """Refresh the tab captured when launching the wizard."""
+        tab_widget = self._wizard_refresh_tab
+        if tab_widget is not None and tab_widget in self.venv_tab_map:
+            self.pop_venv_table(tab_widget)
+        else:
+            self.pop_venv_table()
+        self._wizard_refresh_tab = None
+
+
+    def close_venv_tab(self, index):
+        """Close a venv tab without confirmation."""
+        if self.venv_tabs.count() <= 1:
+            return
+        tab_widget = self.venv_tabs.widget(index)
+        if tab_widget is None:
+            return
+        tab_data = self.venv_tab_map.pop(tab_widget, None)
+        if tab_data and tab_data in self.venv_tabs_data:
+            self.venv_tabs_data.remove(tab_data)
+        self.venv_tabs.removeTab(index)
+        if self._wizard_refresh_tab == tab_widget:
+            self._wizard_refresh_tab = None
+        current_data = self.get_tab_data()
+        if current_data:
+            self.set_active_dir(current_data["path"])
+            self.update_label(current_data)
 
 
 
