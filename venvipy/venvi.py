@@ -24,6 +24,7 @@ import os
 import csv
 import getopt
 import logging
+from functools import partial
 from pathlib import Path
 
 # need to set the correct cwd
@@ -59,7 +60,8 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QMessageBox,
     QHBoxLayout,
-    QLineEdit
+    QLineEdit,
+    QTabWidget
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -162,9 +164,6 @@ class MainWindow(QMainWindow):
         exit_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop)
         )
-        reload_icon = QIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
-        )
         delete_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
@@ -187,8 +186,6 @@ class MainWindow(QMainWindow):
 
         v_layout_1 = QVBoxLayout()
         v_layout_2 = QVBoxLayout()
-        h_layout_1 = QHBoxLayout()
-
         v_layout_1.setContentsMargins(12, 19, 5, -1)
         v_layout_2.setContentsMargins(-1, 4, 6, -1)
 
@@ -225,24 +222,10 @@ class MainWindow(QMainWindow):
             clicked=self.on_close
         )
 
-        self.active_dir_button = QToolButton(
-            icon=folder_icon,
-            toolTip="Switch directory",
-            statusTip="Select another directory",
-            clicked=self.select_active_dir
-        )
-        self.active_dir_button.setFixedSize(30, 30)
-
         # use line edit to store the str
         self.directory_line = QLineEdit()
-
-        self.reload_button = QToolButton(
-            icon=reload_icon,
-            toolTip="Reload",
-            statusTip="Reload venv table content",
-            clicked=self.pop_venv_table
-        )
-        self.reload_button.setFixedSize(30, 30)
+        self.venv_tab_map = {}
+        self.venv_tabs_data = []
 
         #]===================================================================[#
         # spacer between manage button and exit button
@@ -305,59 +288,19 @@ class MainWindow(QMainWindow):
         )
         #]===================================================================[#
 
-        # venv table header
-        self.venv_table_label = QLabel(centralwidget)
-
-        # venv table
-        self.venv_table = VenvTable(
-            centralwidget,
-            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
-            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
-            alternatingRowColors=True,
-            sortingEnabled=True,
-            refresh=self.pop_venv_table,
-            start_installer=self.pkg_installer.launch,
-            start_pkg_manager=self.pkg_manager.launch
-        )
-
-        # hide vertical header
-        self.venv_table.verticalHeader().hide()
-
-        # adjust horizontal headers
-        h_header_venv_table = self.venv_table.horizontalHeader()
-        h_header_venv_table.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
-        h_header_venv_table.setStretchLastSection(True)
-
-        # set table view model
-        self.model_venv_table = QStandardItemModel(0, 4, centralwidget)
-        self.model_venv_table.setHorizontalHeaderLabels([
-            "Venv",
-            "Version",
-            "Packages",
-            "Installed",
-            "Description"
-        ])
-        self.venv_table.setModel(self.model_venv_table)
-
-        # adjust column width
-        self.venv_table.setColumnWidth(0, 225)
-        self.venv_table.setColumnWidth(1, 120)
-        self.venv_table.setColumnWidth(2, 100)
-        self.venv_table.setColumnWidth(3, 80)
+        self.venv_tabs = QTabWidget(centralwidget)
+        self.venv_tabs.currentChanged.connect(self.on_venv_tab_changed)
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_label)
         v_layout_1.addWidget(self.interpreter_table)
         v_layout_1.addItem(spacer_item_2)
-        v_layout_1.addLayout(h_layout_1)
-        h_layout_1.addWidget(self.venv_table_label)
-        h_layout_1.addWidget(self.reload_button)
-        h_layout_1.addWidget(self.active_dir_button)
-        v_layout_1.addWidget(self.venv_table)
+        v_layout_1.addWidget(self.venv_tabs)
 
         grid_layout.addLayout(v_layout_1, 0, 0, 1, 1)
 
         self.setCentralWidget(centralwidget)
+        self.create_venv_tab("venv #01", get_data.get_active_dir_str())
 
 
         #]===================================================================[#
@@ -495,7 +438,8 @@ class MainWindow(QMainWindow):
         """Stop all threads, then close the application.
         """
         self.venv_wizard.basic_settings.thread.exit()
-        self.venv_table.thread.exit()
+        for tab_data in self.venv_tabs_data:
+            tab_data["table"].thread.exit()
         self.close()
 
 
@@ -515,7 +459,8 @@ class MainWindow(QMainWindow):
     def enable_features(self, state):
         """Enable or disable features.
         """
-        self.venv_table.setEnabled(state)
+        for tab_data in self.venv_tabs_data:
+            tab_data["table"].setEnabled(state)
 
 
     @pyqtSlot()
@@ -539,13 +484,18 @@ class MainWindow(QMainWindow):
         self.venv_wizard.basic_settings.pop_combo_box()
 
 
-    def pop_venv_table(self):
+    def pop_venv_table(self, tab_widget=None):
         """Populate the venv table view.
         """
-        self.model_venv_table.setRowCount(0)
+        tab_data = self.get_tab_data(tab_widget)
+        if tab_data is None:
+            return
 
-        for info in get_data.get_selected_dir():
-            self.model_venv_table.insertRow(0)
+        model = tab_data["model"]
+        model.setRowCount(0)
+
+        for info in get_data.get_venvs(tab_data["path"]):
+            model.insertRow(0)
             for i, text in enumerate((
                     info.venv_name,
                     info.venv_version,
@@ -553,16 +503,20 @@ class MainWindow(QMainWindow):
                     info.is_installed,
                     info.venv_comment
             )):
-                self.model_venv_table.setItem(0, i, QStandardItem(text))
+                model.setItem(0, i, QStandardItem(text))
 
-        self.model_venv_table.sort(0, Qt.SortOrder.AscendingOrder)
+        model.sort(0, Qt.SortOrder.AscendingOrder)
 
 
-    def update_label(self):
+    def update_label(self, tab_data=None):
         """
         Show the currently selected folder containing
         virtual environments.
         """
+        tab_data = self.get_tab_data(tab_data)
+        if tab_data is None:
+            return
+
         head = (
             '<span style="font-size: 13pt;">\
                     <b>Virtual environments:</b>\
@@ -575,23 +529,26 @@ class MainWindow(QMainWindow):
         )
         with_folder = (
             f'<span style="font-size: 13pt; color: #0059ff;">\
-                {get_data.get_active_dir_str()}\
+                {tab_data["path"]}\
             </span>'
         )
 
-        if get_data.get_active_dir_str() != "":
-            self.venv_table_label.setText(f"{head}{with_folder}")
+        if tab_data["path"] != "":
+            tab_data["label"].setText(f"{head}{with_folder}")
         else:
-            self.venv_table_label.setText(f"{head}{no_folder}")
+            tab_data["label"].setText(f"{head}{no_folder}")
 
 
-    def select_active_dir(self):
+    def select_active_dir(self, tab_widget=None):
         """
         Select the active directory of which the content
         should be shown in venv table.
         """
-        with open(get_data.ACTIVE_DIR, "r", encoding="utf-8") as f:
-            current_dir = f.read()
+        tab_data = self.get_tab_data(tab_widget)
+        if tab_data is None:
+            return
+
+        current_dir = tab_data["path"] or get_data.get_active_dir_str()
 
         directory = QFileDialog.getExistingDirectory(
             self,
@@ -602,11 +559,152 @@ class MainWindow(QMainWindow):
         active_dir = self.directory_line.text()
 
         if active_dir != "":
-            if os.path.exists(get_data.ACTIVE_DIR):
-                with open(get_data.ACTIVE_DIR, "w", encoding="utf-8") as f:
-                    f.write(active_dir)
-                self.pop_venv_table()
-                self.update_label()
+            tab_data["path"] = active_dir
+            self.set_active_dir(active_dir)
+            self.pop_venv_table(tab_data["widget"])
+            self.update_label(tab_data)
+
+
+    def add_venv_tab(self):
+        """Create a new venv tab for another directory.
+        """
+        current_dir = get_data.get_active_dir_str()
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            "Open a folder containing virtual environments",
+            directory=current_dir
+        )
+        if directory != "":
+            title = self.next_venv_tab_title()
+            tab_data = self.create_venv_tab(title, directory)
+            self.venv_tabs.setCurrentWidget(tab_data["widget"])
+            self.set_active_dir(directory)
+
+
+    def create_venv_tab(self, title, active_dir):
+        """Create a new venv tab.
+        """
+        tab_widget = QWidget(self)
+        tab_layout = QVBoxLayout(tab_widget)
+        header_layout = QHBoxLayout()
+
+        label = QLabel(tab_widget)
+        add_tab_button = QToolButton(
+            text="+",
+            toolTip="Add a venv tab",
+            statusTip="Open a new venv tab",
+            clicked=self.add_venv_tab
+        )
+        add_tab_button.setFixedSize(30, 30)
+
+        reload_button = QToolButton(
+            icon=self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload),
+            toolTip="Reload",
+            statusTip="Reload venv table content",
+            clicked=partial(self.pop_venv_table, tab_widget)
+        )
+        reload_button.setFixedSize(30, 30)
+
+        active_dir_button = QToolButton(
+            icon=self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon),
+            toolTip="Switch directory",
+            statusTip="Select another directory",
+            clicked=partial(self.select_active_dir, tab_widget)
+        )
+        active_dir_button.setFixedSize(30, 30)
+
+        header_layout.addWidget(label)
+        header_layout.addStretch(1)
+        header_layout.addWidget(add_tab_button)
+        header_layout.addWidget(reload_button)
+        header_layout.addWidget(active_dir_button)
+
+        venv_table = VenvTable(
+            tab_widget,
+            selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
+            alternatingRowColors=True,
+            sortingEnabled=True,
+            refresh=partial(self.pop_venv_table, tab_widget),
+            start_installer=self.pkg_installer.launch,
+            start_pkg_manager=self.pkg_manager.launch
+        )
+
+        # hide vertical header
+        venv_table.verticalHeader().hide()
+
+        # adjust horizontal headers
+        h_header_venv_table = venv_table.horizontalHeader()
+        h_header_venv_table.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft)
+        h_header_venv_table.setStretchLastSection(True)
+
+        # set table view model
+        model_venv_table = QStandardItemModel(0, 4, tab_widget)
+        model_venv_table.setHorizontalHeaderLabels([
+            "Venv",
+            "Version",
+            "Packages",
+            "Installed",
+            "Description"
+        ])
+        venv_table.setModel(model_venv_table)
+
+        # adjust column width
+        venv_table.setColumnWidth(0, 225)
+        venv_table.setColumnWidth(1, 120)
+        venv_table.setColumnWidth(2, 100)
+        venv_table.setColumnWidth(3, 80)
+
+        tab_layout.addLayout(header_layout)
+        tab_layout.addWidget(venv_table)
+
+        self.venv_tabs.addTab(tab_widget, title)
+        tab_data = {
+            "widget": tab_widget,
+            "label": label,
+            "table": venv_table,
+            "model": model_venv_table,
+            "path": active_dir
+        }
+        self.venv_tabs_data.append(tab_data)
+        self.venv_tab_map[tab_widget] = tab_data
+
+        self.update_label(tab_data)
+        self.pop_venv_table(tab_widget)
+        return tab_data
+
+
+    def next_venv_tab_title(self):
+        """Return the next numbered venv tab title.
+        """
+        return f"venv #{len(self.venv_tabs_data) + 1:02d}"
+
+
+    def get_tab_data(self, tab_widget=None):
+        """Return tab data for a widget (or the current tab).
+        """
+        if isinstance(tab_widget, dict):
+            return tab_widget
+        if tab_widget is None:
+            tab_widget = self.venv_tabs.currentWidget()
+        return self.venv_tab_map.get(tab_widget)
+
+
+    def set_active_dir(self, active_dir):
+        """Persist the active directory to disk."""
+        get_data.ensure_active_dir()
+        with open(get_data.ACTIVE_DIR, "w", encoding="utf-8") as f:
+            f.write(active_dir)
+
+
+    def on_venv_tab_changed(self, index):
+        """Update active directory when switching tabs."""
+        tab_widget = self.venv_tabs.widget(index)
+        tab_data = self.get_tab_data(tab_widget)
+        if tab_data is None:
+            return
+        self.set_active_dir(tab_data["path"])
+        self.update_label(tab_data)
 
 
 
