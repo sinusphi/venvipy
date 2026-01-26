@@ -1,4 +1,4 @@
 # user specific requirements
-PyQt6==6.6.1  # latest pyqt 6 working
+PyQt6==6.10.2
 beautifulsoup4
 requests

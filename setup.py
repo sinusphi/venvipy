@@ -27,7 +27,7 @@ except FileNotFoundError:
     version = "latest"
 
 install_requires = [
-    "PyQt6==6.6.1",
+    "PyQt6==6.10.2",
     "requests",
     "beautifulsoup4",
 ]
@@ -81,6 +81,11 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython"
     ]
 )
