@@ -12,8 +12,8 @@ VenviPy
 .. image:: https://img.shields.io/badge/python-3.7%2B-blue?logo=python&logoColor=gold
     :target: https://www.python.org/downloads/
 
-.. image:: https://img.shields.io/badge/pyqt-6.6.1-darkgreen?logo=qt&logoColor=green
-    :target: https://pypi.org/project/PyQt6/6.6.1/
+.. image:: https://img.shields.io/badge/pyqt-6.10.2-darkgreen?logo=qt&logoColor=green
+    :target: https://pypi.org/project/PyQt6/6.10.2/
 
 .. image:: https://pepy.tech/badge/venvipy
     :target: https://pepy.tech/project/venvipy
@@ -109,7 +109,7 @@ And a lot more to come ...
 Prerequisites
 -------------
 
-* Python **3.7+** (PyQt6 6.6.1 requires Python >= 3.7)
+* Python **3.7+** (PyQt6 6.10.2 requires Python >= 3.7)
 * A working ``venv`` module for the Python versions you want to use
 
 Linux (Debian/Ubuntu)
@@ -230,7 +230,7 @@ If you prefer a minimal manual install:
 
 .. code-block:: bash
 
-    pip install requests beautifulsoup4 PyQt6==6.6.1
+    pip install requests beautifulsoup4 PyQt6==6.10.2
 
 |
 
