@@ -50,7 +50,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-    "PyQt6==6.6.1",
+    "PyQt6==6.10.2",
     "requests",
     "beautifulsoup4",
 ]
