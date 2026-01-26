@@ -900,18 +900,17 @@ class VenvTable(BaseTable):
             # fallback: your existing bash --rcfile method
             shell_cmd = ["bash", "--rcfile", rc_path, "-i"]
 
-        bash_cmd = ["bash", "--rcfile", rc_path, "-i"]
         candidates = [
-            ["xfce4-terminal", "-x", *bash_cmd],
-            ["gnome-terminal", "--", *bash_cmd],
-            ["konsole", "-e", *bash_cmd],
-            ["mate-terminal", "--", *bash_cmd],
-            ["x-terminal-emulator", "-e", *bash_cmd],
-            ["qterminal", "-e", *bash_cmd],
-            ["terminator", "-x", *bash_cmd],
-            ["alacritty", "-e", *bash_cmd],
-            ["kitty", *bash_cmd],
-            ["xterm", "-e", *bash_cmd],
+            ["xfce4-terminal", "-x", *shell_cmd],
+            ["gnome-terminal", "--", *shell_cmd],
+            ["konsole", "-e", *shell_cmd],
+            ["mate-terminal", "--", *shell_cmd],
+            ["x-terminal-emulator", "-e", *shell_cmd],
+            ["qterminal", "-e", *shell_cmd],
+            ["terminator", "-x", *shell_cmd],
+            ["alacritty", "-e", *shell_cmd],
+            ["kitty", *shell_cmd],
+            ["xterm", "-e", *shell_cmd],
         ]
 
         last_err = None
