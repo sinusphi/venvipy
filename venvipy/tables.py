@@ -815,6 +815,9 @@ class VenvTable(BaseTable):
 
         if not self.venv_exists(str(venv_dir)):
             return
+        
+        if not self.valid_version(str(venv_dir)):
+            return
 
         platform = get_platform()
 
