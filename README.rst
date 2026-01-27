@@ -59,15 +59,32 @@ Screenshots
 
 **Wizard**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2.png
-   :alt: Wizard screenshot
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2_1.png
+   :alt: Wizard screenshot 1
 
 |
 
-**Pip output**
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2_2.png
+   :alt: Wizard screenshot 2
+
+|
+
+**Package installer**
+
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-4_1.png
+   :alt: Package installer screenshot 1
+
+|
+
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-4_2.png
+   :alt: Package installer screenshot 2
+
+|
+
+**Console output**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
-   :alt: Pip output screenshot
+   :alt: Console output screenshot
 
 |
 
