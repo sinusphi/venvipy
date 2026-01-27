@@ -150,6 +150,7 @@ class MainWindow(QMainWindow):
         self.pkg_installer = PackageInstaller()
         self.pkg_manager = PackageManager()
 
+
         #]===================================================================[#
         #] ICONS [#==========================================================[#
         #]===================================================================[#
@@ -177,6 +178,16 @@ class MainWindow(QMainWindow):
         info_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
+        self.new_folder_icon = QIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
+        )
+        self.reload_icon = QIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
+        )
+        self.dir_open_icon = QIcon(
+            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
+        )
+
 
         #]===================================================================[#
         #] LAYOUTS [#========================================================[#
@@ -208,13 +219,13 @@ class MainWindow(QMainWindow):
         )
         self.add_interpreter_button.setMinimumSize(QSize(150, 0))
 
-        self.new_venv_button = QPushButton(
-            "&New Venv",
-            centralwidget,
-            statusTip="Create a new virtual environment",
-            clicked=self.launch_venv_wizard
-        )
-        self.new_venv_button.setMinimumSize(QSize(135, 0))
+        #self.new_venv_button = QPushButton(
+        #    "&New Venv",
+        #    centralwidget,
+        #    statusTip="Create a new virtual environment",
+        #    clicked=self.launch_venv_wizard
+        #)
+        #self.new_venv_button.setMinimumSize(QSize(135, 0))
 
         self.exit_button = QPushButton(
             "Quit",
@@ -237,7 +248,7 @@ class MainWindow(QMainWindow):
 
         v_layout_2.addWidget(self.logo)
         v_layout_2.addWidget(self.add_interpreter_button)
-        v_layout_2.addWidget(self.new_venv_button)
+        #v_layout_2.addWidget(self.new_venv_button)
         v_layout_2.addItem(spacer_item_1)
         v_layout_2.addWidget(self.exit_button)
 
@@ -364,6 +375,7 @@ class MainWindow(QMainWindow):
             shortcut="Ctrl+Q",
             triggered=self.info_about_qt
         )
+
 
         #]===================================================================[#
         #] MENUS [#==========================================================[#
@@ -601,9 +613,7 @@ class MainWindow(QMainWindow):
         new_venv_button.setFixedSize(30, 30)
 
         add_tab_button = QToolButton(
-            icon=self.style().standardIcon(
-                QStyle.StandardPixmap.SP_FileDialogNewFolder
-            ),
+            icon=self.new_folder_icon,
             toolTip="Add a venv tab",
             statusTip="Open a new venv tab",
             clicked=self.add_venv_tab
@@ -611,7 +621,7 @@ class MainWindow(QMainWindow):
         add_tab_button.setFixedSize(30, 30)
 
         reload_button = QToolButton(
-            icon=self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload),
+            icon=self.reload_icon,
             toolTip="Reload",
             statusTip="Reload venv table content",
             clicked=partial(self.pop_venv_table, tab_widget)
@@ -619,7 +629,7 @@ class MainWindow(QMainWindow):
         reload_button.setFixedSize(30, 30)
 
         active_dir_button = QToolButton(
-            icon=self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon),
+            icon=self.dir_open_icon,
             toolTip="Switch directory",
             statusTip="Select another directory",
             clicked=partial(self.select_active_dir, tab_widget)
@@ -685,6 +695,7 @@ class MainWindow(QMainWindow):
 
         self.update_label(tab_data)
         self.pop_venv_table(tab_widget)
+
         return tab_data
 
 
@@ -699,58 +710,87 @@ class MainWindow(QMainWindow):
         """
         if isinstance(tab_widget, dict):
             return tab_widget
+
         if tab_widget is None:
             tab_widget = self.venv_tabs.currentWidget()
+
         return self.venv_tab_map.get(tab_widget)
 
 
     def set_active_dir(self, active_dir):
-        """Persist the active directory to disk."""
+        """Persist the active directory to disk.
+        """
         get_data.ensure_active_dir()
         with open(get_data.ACTIVE_DIR, "w", encoding="utf-8") as f:
             f.write(active_dir)
 
 
     def on_venv_tab_changed(self, index):
-        """Update active directory when switching tabs."""
+        """Update active directory when switching tabs.
+        """
         tab_widget = self.venv_tabs.widget(index)
         tab_data = self.get_tab_data(tab_widget)
+
         if tab_data is None:
             return
+
         self.set_active_dir(tab_data["path"])
         self.update_label(tab_data)
 
+
     def launch_venv_wizard(self):
-        """Launch the venv wizard and remember the active tab."""
+        """Launch the venv wizard and remember the active tab.
+        """
         tab_data = self.get_tab_data()
         self._wizard_refresh_tab = tab_data["widget"] if tab_data else None
         self.venv_wizard.exec()
 
 
     def refresh_wizard_tab(self):
-        """Refresh the tab captured when launching the wizard."""
+        """Refresh the tab captured when launching the wizard.
+        """
         tab_widget = self._wizard_refresh_tab
+
         if tab_widget is not None and tab_widget in self.venv_tab_map:
             self.pop_venv_table(tab_widget)
         else:
             self.pop_venv_table()
+
         self._wizard_refresh_tab = None
 
 
     def close_venv_tab(self, index):
-        """Close a venv tab without confirmation."""
+        """Close a venv tab without confirmation.
+        """
         if self.venv_tabs.count() <= 1:
             return
+
         tab_widget = self.venv_tabs.widget(index)
+
         if tab_widget is None:
             return
+
         tab_data = self.venv_tab_map.pop(tab_widget, None)
+
         if tab_data and tab_data in self.venv_tabs_data:
             self.venv_tabs_data.remove(tab_data)
+
+        if tab_data:
+            table = tab_data.get("table")
+
+            if table and hasattr(table, "thread"):
+                table.thread.quit()
+                table.thread.wait()
+
+            tab_widget.deleteLater()
+
         self.venv_tabs.removeTab(index)
+
         if self._wizard_refresh_tab == tab_widget:
             self._wizard_refresh_tab = None
+
         current_data = self.get_tab_data()
+
         if current_data:
             self.set_active_dir(current_data["path"])
             self.update_label(current_data)
