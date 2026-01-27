@@ -19,6 +19,8 @@
 """
 Custom Styles
 """
+from .theme import COLORS
+
 
 from .theme import COLORS
 
