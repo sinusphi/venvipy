@@ -19,9 +19,11 @@
 """
 Custom Styles
 """
+from .theme import COLORS
+
 
 interpreter_table_title_text = (
-    '<span style="font-size: 13.5pt;">\
-        <b>Interpreters avalable</b>\
+    f'<span style="font-size: 13.5pt; color: {COLORS["text"]};">\
+        <b>Interpreters available</b>\
     </span>'
 )
