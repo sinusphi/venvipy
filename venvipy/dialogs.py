@@ -39,6 +39,7 @@ from PyQt6.QtWidgets import (
 
 import venvipy_rc  # pylint: disable=unused-import
 from get_data import __version__
+from styles.theme import DIALOG_QSS
 
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,7 @@ class ProgBarDialog(QDialog):
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
+        self.setStyleSheet(DIALOG_QSS)
 
         self.status_label = QLabel(self)
         self.place_holder = QLabel(self)
@@ -119,7 +121,7 @@ class ConsoleDialog(QDialog):
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
 
         self.setStyleSheet(
-            """
+            DIALOG_QSS + """
             QTextEdit {
                 background-color: black;
                 color: lightgrey;
@@ -183,6 +185,7 @@ class InfoAboutVenviPy(QDialog):
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
+        self.setStyleSheet(DIALOG_QSS)
 
         # logo
         logo = QLabel()
