@@ -75,6 +75,17 @@ logger = logging.getLogger(__name__)
 
 
 
+def disconnect_button_clicked(button):
+    """Safely disconnect all clicked handlers for a button.
+    """
+    try:
+        button.clicked.disconnect()
+    except TypeError:
+        logger.debug(
+            "No slots connected to button.clicked signal."
+        )
+
+
 #]===========================================================================[#
 #] WIZARD [#=================================================================[#
 #]===========================================================================[#
@@ -173,6 +184,8 @@ class BasicSettings(QWizardPage):
     """
     Basic settings of the virtual environment to create.
     """
+    start_install = pyqtSignal(tuple)
+
     def __init__(self):
         super().__init__()
 
@@ -198,6 +211,7 @@ class BasicSettings(QWizardPage):
 
         self.m_install_venv_worker = CreationWorker()
         self.m_install_venv_worker.moveToThread(self.thread)
+        self.start_install.connect(self.m_install_venv_worker.install_venv)
 
         # started
         self.m_install_venv_worker.started.connect(self.progress_bar.exec)
@@ -362,7 +376,7 @@ class BasicSettings(QWizardPage):
     def initializePage(self):
         # connect 'next' button to self.execute_venv_create()
         next_button = self.wizard().button(QWizard.WizardButton.NextButton)
-        next_button.disconnect()
+        disconnect_button_clicked(next_button)
         next_button.clicked.connect(self.execute_venv_create)
 
         # clear comment line
@@ -489,8 +503,7 @@ class BasicSettings(QWizardPage):
             self.site_pkgs
         )
 
-        wrapper = partial(self.m_install_venv_worker.install_venv, args)
-        QTimer.singleShot(0, wrapper)
+        self.start_install.emit(args)
 
 
     def update_pip_msg(self):
@@ -650,9 +663,8 @@ class InstallPackages(QWizardPage):
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         if self.wizard().basic_settings.with_pip_check_box.isChecked():
-            # connect 'next' button to self.save_requirements()
+            disconnect_button_clicked(self.next_button)
             self.next_button = self.wizard().button(QWizard.WizardButton.NextButton)
-            self.next_button.disconnect()
             self.next_button.clicked.connect(self.save_requirements)
 
 
@@ -881,7 +893,7 @@ class FinalPage(QWizardPage):
     def initializePage(self):
         # reconnect 'next' button to self.wizard().next()
         next_button = self.wizard().button(QWizard.WizardButton.NextButton)
-        next_button.disconnect()
+        disconnect_button_clicked(next_button)
         next_button.clicked.connect(self.wizard().next)
 
         # hide back button
