@@ -79,6 +79,49 @@ dark = f"""
         background-color: {COLORS["panel_alt"]};
     }}
 
+    QDialog,
+    QMessageBox,
+    QInputDialog {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QDialog QLabel,
+    QMessageBox QLabel,
+    QInputDialog QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QDialog QLineEdit,
+    QMessageBox QLineEdit,
+    QInputDialog QLineEdit {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        padding: 6px 8px;
+    }}
+
+    QDialog QLineEdit:focus,
+    QMessageBox QLineEdit:focus,
+    QInputDialog QLineEdit:focus {{
+        border-color: {COLORS["accent"]};
+    }}
+
+    QDialogButtonBox QPushButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QDialogButtonBox QPushButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
+
     QToolTip {{
         background-color: {COLORS["tooltip"]};
         border: 1px solid {COLORS["border"]};
@@ -364,6 +407,49 @@ light = f"""
     QTableView QHeaderView {{
         background-color: {COLORS["panel"]};
     }}
+
+    QDialog,
+    QMessageBox,
+    QInputDialog {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QDialog QLabel,
+    QMessageBox QLabel,
+    QInputDialog QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QDialog QLineEdit,
+    QMessageBox QLineEdit,
+    QInputDialog QLineEdit {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        padding: 6px 8px;
+    }}
+
+    QDialog QLineEdit:focus,
+    QMessageBox QLineEdit:focus,
+    QInputDialog QLineEdit:focus {{
+        border-color: {COLORS["accent"]};
+    }}
+
+    QDialogButtonBox QPushButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QDialogButtonBox QPushButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
 """
 
 WIZARD_QSS = f"""
@@ -393,6 +479,34 @@ WIZARD_QSS = f"""
     QLineEdit:focus,
     QComboBox:focus {{
         border-color: {COLORS["accent"]};
+    }}
+
+    QComboBox::drop-down {{
+        subcontrol-origin: padding;
+        subcontrol-position: top right;
+        width: 22px;
+        border-left: 1px solid {COLORS["border"]};
+        background-color: {COLORS["panel"]};
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }}
+
+    QComboBox::down-arrow {{
+        image: none;
+        width: 0px;
+        height: 0px;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 6px solid {COLORS["text_muted"]};
+    }}
+
+    QComboBox QAbstractItemView {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        selection-background-color: {COLORS["accent_soft"]};
+        selection-color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        outline: 0;
     }}
 
     QToolButton {{
@@ -464,6 +578,29 @@ WIZARD_QSS = f"""
         selection-background-color: {COLORS["accent_soft"]};
         selection-color: {COLORS["text"]};
     }}
+
+    QMessageBox {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QMessageBox QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QMessageBox QPushButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QMessageBox QPushButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
 """
 
 PACKAGE_DIALOG_QSS = f"""
@@ -521,5 +658,66 @@ PACKAGE_DIALOG_QSS = f"""
 
     QMenu::item:selected {{
         background-color: {COLORS["panel_alt"]};
+    }}
+
+    QMessageBox {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QMessageBox QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QMessageBox QPushButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QMessageBox QPushButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
+"""
+
+DIALOG_QSS = f"""
+    QDialog {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QPushButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QPushButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
+
+    QProgressBar {{
+        background-color: {COLORS["surface_alt"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        text-align: center;
+        color: {COLORS["text"]};
+    }}
+
+    QProgressBar::chunk {{
+        background-color: {COLORS["accent"]};
+        border-radius: 6px;
     }}
 """
