@@ -22,8 +22,6 @@ Custom Styles
 from .theme import COLORS
 
 
-from .theme import COLORS
-
 package_installer_title_text = (
     f'<p><span style="font-size:12.5pt; color: {COLORS["text"]};">\
         <b>Package Installer</b>\

@@ -636,8 +636,8 @@ class InstallPackages(QWizardPage):
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         if self.wizard().basic_settings.with_pip_check_box.isChecked():
-            disconnect_button_clicked(self.next_button)
             self.next_button = self.wizard().button(QWizard.WizardButton.NextButton)
+            disconnect_button_clicked(self.next_button)
             self.next_button.clicked.connect(self.save_requirements)
 
 
