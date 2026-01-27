@@ -53,7 +53,7 @@ Screenshots
 **Main menu**
 
 .. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
-   :alt: Main menu screenshot
+   :alt: Application Main menu screenshot
 
 |
 
