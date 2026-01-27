@@ -22,6 +22,28 @@ Custom Styles
 from .theme import COLORS
 
 
+from .theme import COLORS
+
+package_installer_title_text = (
+    f'<p><span style="font-size:12.5pt; color: {COLORS["text"]};">\
+        <b>Package Installer</b>\
+    </span></p>'
+)
+
+package_manager_title_text = (
+    f'<p><span style="font-size:12.5pt; color: {COLORS["text"]};">\
+        <b>Package Manager</b>\
+    </span></p>'
+)
+
+
+def package_manager_venv_name_text(venv_name):
+    return (
+        f'<b><span style="font-size: 13pt; color: {COLORS["accent"]};">\
+            {venv_name}\
+        </span></B>'
+    )
+
 interpreter_table_title_text = (
     f'<span style="font-size: 13.5pt; color: {COLORS["text"]};">\
         <b>Interpreters available</b>\

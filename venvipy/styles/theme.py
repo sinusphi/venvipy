@@ -365,3 +365,161 @@ light = f"""
         background-color: {COLORS["panel"]};
     }}
 """
+
+WIZARD_QSS = f"""
+    QWizard {{
+        background-color: {COLORS["bg"]};
+        color: {COLORS["text"]};
+    }}
+
+    QWizardPage {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QLineEdit,
+    QComboBox {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        padding: 6px 8px;
+    }}
+
+    QLineEdit:focus,
+    QComboBox:focus {{
+        border-color: {COLORS["accent"]};
+    }}
+
+    QToolButton {{
+        background-color: {COLORS["panel"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        padding: 4px;
+    }}
+
+    QToolButton:hover {{
+        background-color: {COLORS["hover"]};
+        border-color: {COLORS["border_strong"]};
+    }}
+
+    QGroupBox {{
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 8px;
+        margin-top: 10px;
+    }}
+
+    QGroupBox::title {{
+        subcontrol-origin: margin;
+        subcontrol-position: top left;
+        padding: 2px 6px;
+        color: {COLORS["text_muted"]};
+    }}
+
+    QCheckBox {{
+        color: {COLORS["text"]};
+    }}
+
+    QCheckBox::indicator {{
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        border: 1px solid {COLORS["border"]};
+        background-color: {COLORS["surface_alt"]};
+    }}
+
+    QCheckBox::indicator:checked {{
+        background-color: {COLORS["accent"]};
+        border-color: {COLORS["accent"]};
+    }}
+
+    QMenu {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+    }}
+
+    QMenu::item::selected {{
+        background-color: {COLORS["panel_alt"]};
+    }}
+
+    QToolTip {{
+        background-color: {COLORS["tooltip"]};
+        border: 1px solid {COLORS["border"]};
+        color: {COLORS["tooltip_text"]};
+        padding: 4px 6px;
+        opacity: 220;
+    }}
+
+    QTableView {{
+        gridline-color: {COLORS["border"]};
+    }}
+
+    QTableView::item:selected {{
+        selection-background-color: {COLORS["accent_soft"]};
+        selection-color: {COLORS["text"]};
+    }}
+"""
+
+PACKAGE_DIALOG_QSS = f"""
+    QDialog {{
+        background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+    }}
+
+    QLabel {{
+        color: {COLORS["text"]};
+    }}
+
+    QLineEdit {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
+        padding: 6px 8px;
+    }}
+
+    QLineEdit:focus {{
+        border-color: {COLORS["accent"]};
+    }}
+
+    QFrame[frameShape="4"] {{
+        color: {COLORS["border"]};
+        border: 1px solid {COLORS["border"]};
+    }}
+
+    QTableView {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        gridline-color: {COLORS["border"]};
+        border-radius: 6px;
+    }}
+
+    QHeaderView::section {{
+        background-color: {COLORS["panel"]};
+        color: {COLORS["text"]};
+        padding: 6px;
+        border: 1px solid {COLORS["border"]};
+    }}
+
+    QTableView::item:selected {{
+        background-color: {COLORS["accent_soft"]};
+        color: {COLORS["text"]};
+    }}
+
+    QMenu {{
+        background-color: {COLORS["surface_alt"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+    }}
+
+    QMenu::item:selected {{
+        background-color: {COLORS["panel_alt"]};
+    }}
+"""
