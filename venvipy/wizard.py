@@ -69,6 +69,7 @@ from pkg_installer import ResultsTable
 from creator import CreationWorker
 from manage_pip import PipManager
 from platforms import get_platform
+from styles.theme import WIZARD_QSS
 
 
 logger = logging.getLogger(__name__)
@@ -105,35 +106,7 @@ class VenvWizard(QWizard):
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
-        self.setStyleSheet(
-            """
-            QMenu {
-                background-color: rgb(47, 52, 63);
-                color: rgb(210, 210, 210)
-            }
-
-            QMenu::item::selected {
-                background-color: rgb(72, 72, 82)
-            }
-
-            QToolTip {
-                background-color: rgb(47, 52, 63);
-                border: rgb(47, 52, 63);
-                color: rgb(210, 210, 210);
-                padding: 1px;
-                opacity: 325
-            }
-
-            QTableView {
-                gridline-color: rgb(230, 230, 230)
-            }
-
-            QTableView::item {
-                selection-background-color: rgb(120, 120, 130);
-                selection-color: rgb(255, 255, 255)
-            }
-            """
-        )
+        self.setStyleSheet(WIZARD_QSS)
 
         self.basic_settings = BasicSettings()
         self.basic_settings_id = self.addPage(self.basic_settings)

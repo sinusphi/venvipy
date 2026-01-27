@@ -54,6 +54,11 @@ import get_data
 import creator
 from manage_pip import PipManager
 from dialogs import ConsoleDialog
+from styles.theme import PACKAGE_DIALOG_QSS
+from styles.custom import (
+    package_manager_title_text,
+    package_manager_venv_name_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -199,6 +204,8 @@ class PackageManager(QDialog):
         self.venv_location = split_venv_path[0]
         self.venv_name = os.path.basename(venv_path)
 
+        self.setStyleSheet(PACKAGE_DIALOG_QSS)
+
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
@@ -209,11 +216,7 @@ class PackageManager(QDialog):
 
         grid_layout = QGridLayout()
 
-        title_label = QLabel(
-            '<p><span style="font-size:12.5pt;">\
-                <b>Package Manager</b>\
-            </span></p>'
-        )
+        title_label = QLabel(package_manager_title_text)
 
         logo = QLabel()
         pixmap = QPixmap(":/img/pypi.png")
@@ -222,11 +225,7 @@ class PackageManager(QDialog):
         )
         logo.setPixmap(logo_scaled)
 
-        venv_name_colored = (
-            f'<b><span style="font-size: 13pt; color: #0059ff;">\
-                {self.venv_name}\
-            </span></B>'
-        )
+        venv_name_colored = package_manager_venv_name_text(self.venv_name)
 
         subtitle_label_1 = QLabel(
             f"Listet below are the Python packages installed in {venv_name_colored} "
