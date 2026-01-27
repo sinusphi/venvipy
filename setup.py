@@ -1,5 +1,4 @@
 import sys
-import codecs
 import ast
 import re
 from pathlib import Path
@@ -35,7 +34,7 @@ install_requires = [
 setup(
     name="venvipy",
     python_requires=">=3.7",
-    packages=find_packages(),
+    packages=["venvipy", "venvipy.platforms", "venvipy.styles"],
     include_package_data=True,
     version=version,
     license="GPLv3+",

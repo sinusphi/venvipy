@@ -59,6 +59,6 @@ dependencies = [
 venvipy = "venvipy.venvi:main"
 
 [tool.setuptools]
-packages = ["venvipy", "venvipy.platforms"]
+packages = ["venvipy", "venvipy.platforms", "venvipy.styles"]
 dynamic = {version = {attr = "venvipy.get_data.__version__"}}
 

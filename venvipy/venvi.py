@@ -67,6 +67,8 @@ from PyQt6.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
+from styles import theme
+from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
 from dialogs import InfoAboutVenviPy
@@ -92,50 +94,7 @@ class MainWindow(QMainWindow):
         self.resize(1500, 830)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-
-        self.setStyleSheet(
-            """
-            QMenuBar {
-                background-color: rgb(32, 35, 38);
-                color: rgb(210, 210, 210)
-            }
-
-            QMenuBar::item {
-                background-color: rgb(32, 35, 38);
-                color: rgb(210, 210, 210)
-            }
-
-            QMenuBar::item::selected {
-                background-color: rgb(72, 72, 82)
-            }
-
-            QMenu {
-                background-color: rgb(20, 23, 26);
-                color: rgb(210, 210, 210)
-            }
-
-            QMenu::item::selected {
-                background-color: rgb(72, 72, 82)
-            }
-
-            QToolTip {
-                background-color: rgb(47, 52, 63);
-                border: rgb(47, 52, 63);
-                color: rgb(210, 210, 210);
-                padding: 2px;
-                opacity: 325
-            }
-
-            QTableView {
-                gridline-color: rgb(230, 230, 230)
-            }
-
-            QTableView::item {
-                selection-background-color: rgb(120, 120, 130);
-                selection-color: rgb(255, 255, 255)
-            }
-            """
-        )
+        self.setStyleSheet(theme.dark)
 
         self.info_about_venvipy = InfoAboutVenviPy()
         self.venv_wizard = wizard.VenvWizard()
@@ -260,10 +219,8 @@ class MainWindow(QMainWindow):
         #]===================================================================[#
 
         # interpreter table header
-        interpreter_table_label = QLabel(
-            '<span style="font-size: 13pt;">\
-                <b>Available Interpreters</b>\
-            </span>',
+        interpreter_table_title = QLabel(
+            custom.interpreter_table_title_text,
             centralwidget
         )
 
@@ -306,7 +263,7 @@ class MainWindow(QMainWindow):
         self.venv_tabs.tabCloseRequested.connect(self.close_venv_tab)
 
         # add widgets to layout
-        v_layout_1.addWidget(interpreter_table_label)
+        v_layout_1.addWidget(interpreter_table_title)
         v_layout_1.addWidget(self.interpreter_table)
         v_layout_1.addItem(spacer_item_2)
         v_layout_1.addWidget(self.venv_tabs)

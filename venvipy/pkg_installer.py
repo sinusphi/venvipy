@@ -58,6 +58,8 @@ from dialogs import ConsoleDialog
 from manage_pip import PipManager
 
 from platforms import get_platform
+from styles.theme import PACKAGE_DIALOG_QSS
+from styles.custom import package_installer_title_text
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +145,8 @@ class PackageInstaller(QDialog):
 
         self.console = ConsoleDialog()
 
+        self.setStyleSheet(PACKAGE_DIALOG_QSS)
+
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#
         #]===================================================================[#
@@ -152,11 +156,7 @@ class PackageInstaller(QDialog):
 
         grid_layout = QGridLayout()
 
-        title_label = QLabel(
-            '<p><span style="font-size:12.5pt;">\
-                <b>Package Installer</b>\
-            </span></p>'
-        )
+        title_label = QLabel(package_installer_title_text)
 
         logo = QLabel()
         pixmap = QPixmap(":/img/pypi.png")
