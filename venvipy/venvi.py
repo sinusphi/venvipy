@@ -349,11 +349,19 @@ class MainWindow(QMainWindow):
         self.title_bar = bars.TitleBar(self)
         menu_container = QWidget(self)
         menu_container.setObjectName("menuContainer")
+
         menu_layout = QVBoxLayout(menu_container)
         menu_layout.setContentsMargins(2, 0, 2, 0)
-        menu_layout.setSpacing(0)
+        menu_layout.setSpacing(2)
+
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
+
         menu_layout.addWidget(self.title_bar)
+        menu_layout.addWidget(title_separator)
         menu_layout.addWidget(menu_bar)
+
         self.setMenuWidget(menu_container)
 
         menu_venv = QMenu("&Venv", menu_bar)
