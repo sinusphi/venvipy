@@ -75,9 +75,12 @@ dark = f"""
 
     QWidget#titleBar {{
         background-color: {COLORS["surface_alt"]};
-        border-bottom: 1px solid {COLORS["border"]};
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
+    }}
+
+    QWidget#titleSeparator {{
+        background-color: {COLORS["border"]};
     }}
 
     QLabel#titleLabel {{

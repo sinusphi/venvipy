@@ -44,7 +44,7 @@ class TitleBar(QWidget):
         self.setObjectName("titleBar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 6, 12, 6)
+        layout.setContentsMargins(12, 6, 12, 3)
         layout.setSpacing(8)
 
         icon_label = QLabel(self)
