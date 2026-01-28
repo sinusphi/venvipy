@@ -57,14 +57,17 @@ dark = f"""
     }}
 
     QMenuBar {{
-        background-color: {COLORS["surface_alt"]};
+        background-color: {COLORS["bg"]};
         color: {COLORS["text"]};
+        font: 600 13px;
+        border: none;
     }}
 
     QMenuBar::item {{
-        background-color: {COLORS["surface_alt"]};
+        background-color: {COLORS["bg"]};
         color: {COLORS["text"]};
     }}
+
 
     QMenuBar::item::selected {{
         background-color: {COLORS["panel_alt"]};
@@ -73,6 +76,8 @@ dark = f"""
     QWidget#titleBar {{
         background-color: {COLORS["surface_alt"]};
         border-bottom: 1px solid {COLORS["border"]};
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
     }}
 
     QLabel#titleLabel {{
