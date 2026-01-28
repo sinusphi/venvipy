@@ -348,8 +348,9 @@ class MainWindow(QMainWindow):
 
         self.title_bar = bars.TitleBar(self)
         menu_container = QWidget(self)
+        menu_container.setObjectName("menuContainer")
         menu_layout = QVBoxLayout(menu_container)
-        menu_layout.setContentsMargins(0, 0, 0, 0)
+        menu_layout.setContentsMargins(2, 0, 2, 0)
         menu_layout.setSpacing(0)
         menu_layout.addWidget(self.title_bar)
         menu_layout.addWidget(menu_bar)
