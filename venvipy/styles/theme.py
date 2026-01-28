@@ -70,6 +70,38 @@ dark = f"""
         background-color: {COLORS["panel_alt"]};
     }}
 
+    QWidget#titleBar {{
+        background-color: {COLORS["surface_alt"]};
+        border-bottom: 1px solid {COLORS["border"]};
+    }}
+
+    QLabel#titleLabel {{
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QToolButton#titleButton {{
+        background-color: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+    }}
+
+    QToolButton#titleButton:hover {{
+        background-color: {COLORS["hover"]};
+    }}
+
+    QToolButton#closeButton {{
+        background-color: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+    }}
+
+    QToolButton#closeButton:hover {{
+        background-color: {COLORS["danger"]};
+    }}
+
     QMenu {{
         background-color: {COLORS["surface_alt"]};
         color: {COLORS["text"]};
