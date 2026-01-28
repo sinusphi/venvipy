@@ -75,7 +75,11 @@ class TitleBar(QWidget):
 
         self.icon_label = QLabel(self)
         self.icon_label.setObjectName("titleIcon")
-        self.set_icon(icon_pixmap=icon_pixmap, icon_path=icon_path, icon_size=icon_size)
+        self.set_icon(
+            icon_pixmap=icon_pixmap,
+            icon_path=icon_path,
+            icon_size=icon_size
+        )
         if self.icon_label.pixmap() is None:
             self.icon_label.hide()
 
@@ -84,12 +88,14 @@ class TitleBar(QWidget):
             font-family: 'DejaVu Sans';
             font-size: 15px;
             font-weight: bold;
-        """)
+            """
+        )
         self.title_label.setObjectName("titleLabel")
         if not title:
             self.title_label.hide()
 
         layout.addWidget(self.icon_label)
+        layout.addStretch(1)
         layout.addWidget(self.title_label)
         layout.addStretch(1)
 
@@ -101,8 +107,10 @@ class TitleBar(QWidget):
             self.min_button = QToolButton(self)
             self.min_button.setIcon(self.win_min_icon)
             self.min_button.setObjectName("titleButton")
+
             if hasattr(self._window, "showMinimized"):
                 self.min_button.clicked.connect(self._window.showMinimized)
+
             layout.addWidget(self.min_button)
 
         if show_maximize:
@@ -121,13 +129,15 @@ class TitleBar(QWidget):
 
 
     def set_title(self, title):
-        """Update title label text and visibility."""
+        """Update title label text and visibility.
+        """
         self.title_label.setText(title)
         self.title_label.setVisible(bool(title))
 
 
     def set_icon(self, *, icon_pixmap=None, icon_path=None, icon_size=(24, 22)):
-        """Update the icon label."""
+        """Update the icon label.
+        """
         pixmap = None
         if icon_pixmap is not None:
             pixmap = icon_pixmap
