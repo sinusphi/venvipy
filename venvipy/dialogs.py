@@ -23,8 +23,9 @@ import sys
 import logging
 from datetime import date
 
+from PyQt6 import QtCore
 from PyQt6.QtGui import QIcon, QPixmap, QFontMetrics
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, qVersion
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -34,10 +35,12 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QApplication,
-    QGridLayout
+    QGridLayout,
+    QWidget
 )
 
 import venvipy_rc  # pylint: disable=unused-import
+import bars
 from get_data import __version__
 from styles.theme import DIALOG_QSS
 
@@ -61,12 +64,25 @@ class ProgBarDialog(QDialog):
 
 
     def initUI(self):
-        self.setFixedSize(420, 85)
+        self.setFixedSize(420, 125)
         self.center()
+        self.setWindowTitle("VenviPy")
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet(DIALOG_QSS)
+
+        self.title_bar = bars.TitleBar(
+            self,
+            window=self,
+            title=self.windowTitle(),
+            icon_path=":/img/profile.png",
+            show_minimize=False,
+            show_maximize=False,
+            show_close=False,
+        )
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
 
         self.status_label = QLabel(self)
         self.place_holder = QLabel(self)
@@ -84,7 +100,12 @@ class ProgBarDialog(QDialog):
         h_layout.setContentsMargins(0, 15, 0, 0)
         h_layout.addLayout(v_layout)
 
-        self.setLayout(h_layout)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.title_bar)
+        main_layout.addWidget(title_separator)
+        main_layout.addLayout(h_layout)
 
 
     def center(self):
@@ -116,9 +137,9 @@ class ConsoleDialog(QDialog):
     def initUI(self):
         self.resize(1115, 705)
         self.center()
+        self.setWindowTitle("VenviPy")
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
         self.setStyleSheet(
             DIALOG_QSS + """
@@ -131,13 +152,31 @@ class ConsoleDialog(QDialog):
             """
         )
 
+        self.title_bar = bars.TitleBar(
+            self,
+            window=self,
+            title=self.windowTitle(),
+            icon_path=":/img/profile.png",
+            show_minimize=False,
+        )
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
+
         self.console_window = QTextEdit()
         self.console_window.setReadOnly(True)
         self.console_window.setFontFamily("Monospace")
         self.console_window.setFontPointSize(11)
 
-        v_layout = QVBoxLayout(self)
+        v_layout = QVBoxLayout()
         v_layout.addWidget(self.console_window)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.title_bar)
+        main_layout.addWidget(title_separator)
+        main_layout.addLayout(v_layout)
 
 
     def center(self):
@@ -164,6 +203,13 @@ class ConsoleDialog(QDialog):
         self.console_window.append(formatted_text)
 
 
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QtCore.QEvent.Type.WindowStateChange:
+            if hasattr(self, "title_bar"):
+                self.title_bar.update_maximize_icon()
+
+
 
 #]===========================================================================[#
 #] APPLICATION INFO DIALOG [#================================================[#
@@ -181,11 +227,23 @@ class InfoAboutVenviPy(QDialog):
 
     def initUI(self):
         self.setWindowTitle("About VenviPy")
-        self.setFixedSize(500, 405)
+        self.setFixedSize(500, 445)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
-        self.setWindowFlag(Qt.WindowType.WindowMinimizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setStyleSheet(DIALOG_QSS)
+
+        self.title_bar = bars.TitleBar(
+            self,
+            window=self,
+            title=self.windowTitle(),
+            icon_path=":/img/profile.png",
+            show_minimize=False,
+            show_maximize=False,
+        )
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
 
         # logo
         logo = QLabel()
@@ -245,7 +303,7 @@ class InfoAboutVenviPy(QDialog):
         close_button.setFixedHeight(30)
 
         # layout
-        grid_layout = QGridLayout(self)
+        grid_layout = QGridLayout()
         grid_layout.setContentsMargins(15, 15, 10, 15)
 
         grid_layout.addWidget(logo, 0, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -267,7 +325,72 @@ class InfoAboutVenviPy(QDialog):
             place_holder_2, 7, 0, Qt.AlignmentFlag.AlignHCenter
         )
         grid_layout.addWidget(close_button, 8, 0, Qt.AlignmentFlag.AlignRight)
-        self.setLayout(grid_layout)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.title_bar)
+        main_layout.addWidget(title_separator)
+        main_layout.addLayout(grid_layout)
+
+
+class AboutQtDialog(QDialog):
+    """
+    The "About Qt" dialog.
+    """
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+
+    def initUI(self):
+        self.setWindowTitle("About Qt")
+        self.setFixedSize(420, 240)
+        self.center()
+        self.setWindowIcon(QIcon(":/img/profile.png"))
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setStyleSheet(DIALOG_QSS)
+
+        self.title_bar = bars.TitleBar(
+            self,
+            window=self,
+            title=self.windowTitle(),
+            icon_path=":/img/profile.png",
+            show_minimize=False,
+            show_maximize=False,
+        )
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
+
+        header_label = QLabel("<b>About Qt</b>")
+        header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        body_label = QLabel(
+            f"This application uses Qt version {qVersion()}."
+        )
+        body_label.setWordWrap(True)
+        body_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        close_button = QPushButton("Close", clicked=self.close)
+        close_button.setFixedWidth(135)
+        close_button.setFixedHeight(30)
+
+        body_layout = QVBoxLayout()
+        body_layout.setContentsMargins(20, 20, 20, 20)
+        body_layout.setSpacing(12)
+        body_layout.addWidget(header_label)
+        body_layout.addWidget(body_label)
+        body_layout.addStretch(1)
+        body_layout.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(0)
+        main_layout.addWidget(self.title_bar)
+        main_layout.addWidget(title_separator)
+        main_layout.addLayout(body_layout)
 
 
     def center(self):
