@@ -67,12 +67,14 @@ from PyQt6.QtWidgets import (
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
 import wizard
+import bars
 from styles import theme
 from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
 from dialogs import InfoAboutVenviPy
 from tables import VenvTable, InterpreterTable
+
 
 LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
 logger = logging.getLogger()
@@ -90,8 +92,10 @@ class MainWindow(QMainWindow):
 
 
     def init_ui(self):
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setWindowTitle("VenviPy")
-        self.resize(1500, 830)
+        self.resize(1600, 880)
+        self.setContentsMargins(4, 0, 4, 0)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setStyleSheet(theme.dark)
@@ -178,13 +182,13 @@ class MainWindow(QMainWindow):
         )
         self.add_interpreter_button.setMinimumSize(QSize(150, 0))
 
-        #self.new_venv_button = QPushButton(
-        #    "&New Venv",
-        #    centralwidget,
-        #    statusTip="Create a new virtual environment",
-        #    clicked=self.launch_venv_wizard
-        #)
-        #self.new_venv_button.setMinimumSize(QSize(135, 0))
+        self.new_venv_button = QPushButton(
+            "&New Venv",
+            centralwidget,
+            statusTip="Create a new virtual environment",
+            clicked=self.launch_venv_wizard
+        )
+        self.new_venv_button.setMinimumSize(QSize(135, 0))
 
         self.exit_button = QPushButton(
             "Quit",
@@ -207,7 +211,7 @@ class MainWindow(QMainWindow):
 
         v_layout_2.addWidget(self.logo)
         v_layout_2.addWidget(self.add_interpreter_button)
-        #v_layout_2.addWidget(self.new_venv_button)
+        v_layout_2.addWidget(self.new_venv_button)
         v_layout_2.addItem(spacer_item_1)
         v_layout_2.addWidget(self.exit_button)
 
@@ -342,8 +346,24 @@ class MainWindow(QMainWindow):
         self.setStatusBar(status_bar)
 
         menu_bar = QMenuBar(self)
-        menu_bar.setGeometry(QRect(0, 0, 740, 24))
-        self.setMenuBar(menu_bar)
+
+        self.title_bar = bars.TitleBar(self)
+        menu_container = QWidget(self)
+        menu_container.setObjectName("menuContainer")
+
+        menu_layout = QVBoxLayout(menu_container)
+        menu_layout.setContentsMargins(2, 0, 2, 0)
+        menu_layout.setSpacing(2)
+
+        title_separator = QWidget(self)
+        title_separator.setObjectName("titleSeparator")
+        title_separator.setFixedHeight(1)
+
+        menu_layout.addWidget(self.title_bar)
+        menu_layout.addWidget(title_separator)
+        menu_layout.addWidget(menu_bar)
+
+        self.setMenuWidget(menu_container)
 
         menu_venv = QMenu("&Venv", menu_bar)
         menu_venv.addAction(self.action_add_interpreter)
@@ -413,6 +433,13 @@ class MainWindow(QMainWindow):
         for tab_data in self.venv_tabs_data:
             tab_data["table"].thread.exit()
         self.close()
+
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QtCore.QEvent.Type.WindowStateChange:
+            if hasattr(self, "title_bar"):
+                self.title_bar.update_maximize_icon()
 
 
     def info_about_qt(self):
