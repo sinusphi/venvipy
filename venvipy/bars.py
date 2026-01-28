@@ -19,7 +19,6 @@
 """
 Custom bars for VenviPy.
 """
-#from PyQt6 import QtCore
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
@@ -44,19 +43,36 @@ class TitleBar(QWidget):
         self.setObjectName("titleBar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 6, 12, 2)
+        layout.setContentsMargins(5, 8, 2, 3)
         layout.setSpacing(8)
+
+        self.win_min_icon = self.style().standardIcon(
+                QStyle.StandardPixmap.SP_TitleBarMinButton
+            )
+        self.win_max_icon = self.style().standardIcon(
+                QStyle.StandardPixmap.SP_TitleBarMaxButton
+            )
+        self.win_normal_icon = self.style().standardIcon(
+                QStyle.StandardPixmap.SP_TitleBarNormalButton
+            )
+        self.win_close_icon = self.style().standardIcon(
+                QStyle.StandardPixmap.SP_TitleBarCloseButton
+            )
 
         icon_label = QLabel(self)
         icon_pixmap = QPixmap(":/img/profile.png").scaled(
-            18,
-            18,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
+            24,
+            22,
+            transformMode=Qt.TransformationMode.SmoothTransformation
         )
         icon_label.setPixmap(icon_pixmap)
 
         title_label = QLabel("VenviPy", self)
+        title_label.setStyleSheet("""
+            font-family: 'DejaVu Sans';
+            font-size: 15px;
+            font-weight: bold;
+        """)
         title_label.setObjectName("titleLabel")
 
         layout.addWidget(icon_label)
@@ -64,9 +80,7 @@ class TitleBar(QWidget):
         layout.addStretch(1)
 
         self.min_button = QToolButton(self)
-        self.min_button.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarMinButton)
-        )
+        self.min_button.setIcon(self.win_min_icon)
         self.min_button.setObjectName("titleButton")
         self.min_button.clicked.connect(self._window.showMinimized)
 
@@ -76,9 +90,7 @@ class TitleBar(QWidget):
         self.update_maximize_icon()
 
         self.close_button = QToolButton(self)
-        self.close_button.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarCloseButton)
-        )
+        self.close_button.setIcon(self.win_close_icon)
         self.close_button.setObjectName("closeButton")
         self.close_button.clicked.connect(self._window.on_close)
 
@@ -91,13 +103,9 @@ class TitleBar(QWidget):
         """Update maximize/restore icon.
         """
         if self._window.isMaximized():
-            icon = self.style().standardIcon(
-                QStyle.StandardPixmap.SP_TitleBarNormalButton
-            )
+            icon = self.win_normal_icon
         else:
-            icon = self.style().standardIcon(
-                QStyle.StandardPixmap.SP_TitleBarMaxButton
-            )
+            icon = self.win_max_icon
         self.max_button.setIcon(icon)
 
 
