@@ -334,6 +334,17 @@ class InfoAboutVenviPy(QDialog):
         main_layout.addLayout(grid_layout)
 
 
+    def center(self):
+        """Center window."""
+        qr = self.frameGeometry()
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            cp = screen.availableGeometry().center()
+            qr.moveCenter(cp)
+            self.move(qr.topLeft())
+
+
+
 class AboutQtDialog(QDialog):
     """
     The "About Qt" dialog.
