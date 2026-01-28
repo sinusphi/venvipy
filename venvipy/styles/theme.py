@@ -730,6 +730,43 @@ DIALOG_QSS = f"""
         color: {COLORS["text"]};
     }}
 
+    QWidget#titleBar {{
+        background-color: {COLORS["surface_alt"]};
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+    }}
+
+    QWidget#titleSeparator {{
+        background-color: {COLORS["border"]};
+    }}
+
+    QLabel#titleLabel {{
+        color: {COLORS["text"]};
+        font: 600 13px;
+    }}
+
+    QToolButton#titleButton {{
+        background-color: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+    }}
+
+    QToolButton#titleButton:hover {{
+        background-color: {COLORS["hover"]};
+    }}
+
+    QToolButton#closeButton {{
+        background-color: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+    }}
+
+    QToolButton#closeButton:hover {{
+        background-color: {COLORS["danger"]};
+    }}
+
     QLabel {{
         color: {COLORS["text"]};
     }}

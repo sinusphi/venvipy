@@ -72,7 +72,7 @@ from styles import theme
 from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
-from dialogs import InfoAboutVenviPy
+from dialogs import InfoAboutVenviPy, AboutQtDialog
 from tables import VenvTable, InterpreterTable
 
 
@@ -451,7 +451,8 @@ class MainWindow(QMainWindow):
     def info_about_qt(self):
         """Open the "About Qt" dialog.
         """
-        QMessageBox.aboutQt(self)
+        about_qt = AboutQtDialog()
+        about_qt.exec()
 
 
     def add_interpreter(self):
