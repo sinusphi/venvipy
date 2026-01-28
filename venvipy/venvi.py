@@ -347,7 +347,13 @@ class MainWindow(QMainWindow):
 
         menu_bar = QMenuBar(self)
 
-        self.title_bar = bars.TitleBar(self)
+        self.title_bar = bars.TitleBar(
+            self,
+            window=self,
+            title="VenviPy",
+            icon_path=":/img/profile.png",
+            on_close=self.on_close,
+        )
         menu_container = QWidget(self)
         menu_container.setObjectName("menuContainer")
 
