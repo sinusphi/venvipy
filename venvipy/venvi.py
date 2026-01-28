@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setWindowTitle("VenviPy")
         self.resize(1600, 880)
+        self.setContentsMargins(4, 0, 4, 0)
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
         self.setStyleSheet(theme.dark)
@@ -181,13 +182,13 @@ class MainWindow(QMainWindow):
         )
         self.add_interpreter_button.setMinimumSize(QSize(150, 0))
 
-        #self.new_venv_button = QPushButton(
-        #    "&New Venv",
-        #    centralwidget,
-        #    statusTip="Create a new virtual environment",
-        #    clicked=self.launch_venv_wizard
-        #)
-        #self.new_venv_button.setMinimumSize(QSize(135, 0))
+        self.new_venv_button = QPushButton(
+            "&New Venv",
+            centralwidget,
+            statusTip="Create a new virtual environment",
+            clicked=self.launch_venv_wizard
+        )
+        self.new_venv_button.setMinimumSize(QSize(135, 0))
 
         self.exit_button = QPushButton(
             "Quit",
@@ -210,7 +211,7 @@ class MainWindow(QMainWindow):
 
         v_layout_2.addWidget(self.logo)
         v_layout_2.addWidget(self.add_interpreter_button)
-        #v_layout_2.addWidget(self.new_venv_button)
+        v_layout_2.addWidget(self.new_venv_button)
         v_layout_2.addItem(spacer_item_1)
         v_layout_2.addWidget(self.exit_button)
 
