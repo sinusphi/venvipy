@@ -36,6 +36,8 @@ class TitleBar(QWidget):
     """
     Custom title bar widget.
     """
+    _icon_pixmap = None
+
     def __init__(self, parent):
         super().__init__(parent)
         self._window = parent
@@ -61,12 +63,7 @@ class TitleBar(QWidget):
             )
 
         icon_label = QLabel(self)
-        icon_pixmap = QPixmap(":/img/profile.png").scaled(
-            24,
-            22,
-            transformMode=Qt.TransformationMode.SmoothTransformation
-        )
-        icon_label.setPixmap(icon_pixmap)
+        icon_label.setPixmap(self._get_icon_pixmap())
 
         title_label = QLabel(title_bar_title_text, self)
         title_label.setStyleSheet("""
@@ -98,6 +95,16 @@ class TitleBar(QWidget):
         layout.addWidget(self.min_button)
         layout.addWidget(self.max_button)
         layout.addWidget(self.close_button)
+
+    @classmethod
+    def _get_icon_pixmap(cls):
+        if cls._icon_pixmap is None:
+            cls._icon_pixmap = QPixmap(":/img/profile.png").scaled(
+                24,
+                22,
+                transformMode=Qt.TransformationMode.SmoothTransformation
+            )
+        return cls._icon_pixmap
 
 
     def update_maximize_icon(self):
