@@ -10,7 +10,7 @@ tests/
 dist/
 
 dev_requirements.txt
-MODEL.md
+AGENT.md
 *.egg-info/
 *.qrc
 *.in
