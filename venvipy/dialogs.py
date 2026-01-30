@@ -49,7 +49,8 @@ ABOUT_LOGO_PATH = ":/img/default.png"
 
 
 def center_window(dialog):
-    """Center dialog on the active screen."""
+    """Center dialog on the active screen.
+    """
     qr = dialog.frameGeometry()
     screen = dialog.screen() or QApplication.primaryScreen()
     if screen:
@@ -59,7 +60,9 @@ def center_window(dialog):
 
 
 def disable_window_buttons(dialog, *, close=True, minimize=True):
-    """Disable specific window buttons without resetting other flags."""
+    """
+    Disable specific window buttons without resetting other flags.
+    """
     flags = dialog.windowFlags()
     if close:
         flags &= ~Qt.WindowType.WindowCloseButtonHint
@@ -68,12 +71,23 @@ def disable_window_buttons(dialog, *, close=True, minimize=True):
     dialog.setWindowFlags(flags)
 
 
+class BaseDialog(QDialog):
+    """Base dialog with shared helpers.
+    """
+    def center(self):
+        """Center window."""
+        center_window(self)
+
+    def disable_window_buttons(self, *, close=True, minimize=True):
+        disable_window_buttons(self, close=close, minimize=minimize)
+
+
 
 #]===========================================================================[#
 #] PROGRESS BAR DIALOG [#====================================================[#
 #]===========================================================================[#
 
-class ProgBarDialog(QDialog):
+class ProgBarDialog(BaseDialog):
     """
     Dialog showing a progress bar during processes.
     """
@@ -85,9 +99,9 @@ class ProgBarDialog(QDialog):
 
     def initUI(self):
         self.setFixedSize(420, 85)
-        center_window(self)
+        self.center()
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
-        disable_window_buttons(self, close=True, minimize=True)
+        self.disable_window_buttons(close=True, minimize=True)
         self.setStyleSheet(DIALOG_QSS)
 
         self.status_label = QLabel(self)
@@ -95,6 +109,7 @@ class ProgBarDialog(QDialog):
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFixedSize(395, 23)
         self.progress_bar.setRange(0, 0)
+        self.progress_bar.setTextVisible(False)
 
         v_layout = QVBoxLayout()
         v_layout.addWidget(self.status_label)
@@ -114,10 +129,10 @@ class ProgBarDialog(QDialog):
 #] CONSOLE DIALOG [#=========================================================[#
 #]===========================================================================[#
 
-class ConsoleDialog(QDialog):
+class ConsoleDialog(BaseDialog):
     """
-    Dialog box printing the output to a console-like widget when running
-    commands.
+    Dialog box printing the output to a console-like 
+    widget when running commands.
     """
     def __init__(self):
         super().__init__()
@@ -129,7 +144,7 @@ class ConsoleDialog(QDialog):
         self.resize(1115, 705)
         self.center()
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
-        disable_window_buttons(self, close=True, minimize=True)
+        self.disable_window_buttons(close=True, minimize=True)
 
         self.setStyleSheet(
             DIALOG_QSS + """
@@ -148,13 +163,10 @@ class ConsoleDialog(QDialog):
         self.console_window.setLineWrapMode(
             QPlainTextEdit.LineWrapMode.NoWrap
         )
+        self.console_window.setMaximumBlockCount(5000)
 
         v_layout = QVBoxLayout(self)
         v_layout.addWidget(self.console_window)
-
-    def center(self):
-        """Center window."""
-        center_window(self)
 
 
     @pyqtSlot(str)
@@ -172,7 +184,7 @@ class ConsoleDialog(QDialog):
 #] APPLICATION INFO DIALOG [#================================================[#
 #]===========================================================================[#
 
-class InfoAboutVenviPy(QDialog):
+class InfoAboutVenviPy(BaseDialog):
     """
     The "Info about VenviPy" dialog.
     """
@@ -185,9 +197,9 @@ class InfoAboutVenviPy(QDialog):
     def initUI(self):
         self.setWindowTitle("About VenviPy")
         self.setFixedSize(500, 405)
-        center_window(self)
+        self.center()
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
-        disable_window_buttons(self, close=False, minimize=True)
+        self.disable_window_buttons(close=False, minimize=True)
         self.setStyleSheet(DIALOG_QSS)
 
         # logo
