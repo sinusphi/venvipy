@@ -29,6 +29,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout
 )
 
+from styles.custom import title_bar_title_text
 
 
 class TitleBar(QWidget):
@@ -43,7 +44,7 @@ class TitleBar(QWidget):
         self.setObjectName("titleBar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 8, 2, 3)
+        layout.setContentsMargins(5, 7, 2, 2)
         layout.setSpacing(8)
 
         self.win_min_icon = self.style().standardIcon(
@@ -67,15 +68,15 @@ class TitleBar(QWidget):
         )
         icon_label.setPixmap(icon_pixmap)
 
-        title_label = QLabel("VenviPy", self)
+        title_label = QLabel(title_bar_title_text, self)
         title_label.setStyleSheet("""
             font-family: 'DejaVu Sans';
-            font-size: 15px;
-            font-weight: bold;
+            font-size: 16px;
         """)
         title_label.setObjectName("titleLabel")
 
         layout.addWidget(icon_label)
+        layout.addStretch(1)
         layout.addWidget(title_label)
         layout.addStretch(1)
 
