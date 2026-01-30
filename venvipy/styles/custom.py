@@ -47,3 +47,9 @@ interpreter_table_title_text = (
         <b>Interpreters available</b>\
     </span>'
 )
+
+title_bar_title_text = (
+    f'<span style="font-size: 13pt; color: {COLORS["text"]};">\
+        <p>VenviPy</p>\
+    </span>'
+)
