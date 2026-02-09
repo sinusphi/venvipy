@@ -119,6 +119,9 @@ class VenvWizard(QWizard):
 
         self.cancel_button = self.button(QWizard.WizardButton.CancelButton)
         self.cancel_button.clicked.connect(self.force_exit)
+        self.finished.connect(self.force_exit)
+        self.rejected.connect(self.force_exit)
+        self.accepted.connect(self.force_exit)
 
 
     def nextId(self):
@@ -144,9 +147,29 @@ class VenvWizard(QWizard):
             self.move(qr.topLeft())
 
 
-    def force_exit(self):
+    def closeEvent(self, event):
+        """Ensure worker thread is stopped when the wizard closes.
         """
-        Stop the thread, then close the wizard.
+        self.force_exit()
+        super().closeEvent(event)
+
+
+    def reject(self):
+        """Handle dialog rejection and stop the worker thread.
+        """
+        self.force_exit()
+        super().reject()
+
+
+    def accept(self):
+        """Handle dialog acceptance and stop the worker thread.
+        """
+        self.force_exit()
+        super().accept()
+
+
+    def force_exit(self):
+        """Stop the thread, then close the wizard.
         """
         if self.basic_settings.thread.isRunning():
             self.basic_settings.thread.quit()
@@ -167,10 +190,14 @@ class BasicSettings(QWizardPage):
                          "a virtual environment for Python. ")
 
         folder_icon = QIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
+            self.style().standardIcon(
+                QStyle.StandardPixmap.SP_DirOpenIcon
+            )
         )
         file_icon = QIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogContentsView)
+            self.style().standardIcon(
+                QStyle.StandardPixmap.SP_FileDialogContentsView
+            )
         )
 
         #]===================================================================[#
@@ -512,7 +539,9 @@ class BasicSettings(QWizardPage):
         cfg_file = os.path.join(
             self.venv_location, self.venv_name, "pyvenv.cfg"
         )
-        binary_path = Path(self.venv_location) / self.venv_name / platform.venv_bin_dir_name()
+        binary_path = Path(
+            self.venv_location
+        ) / self.venv_name / platform.venv_bin_dir_name()
         version = get_data.get_config(cfg_file, cfg="version")
         default_msg = (
             f"Virtual environment created \nsuccessfully. \n\n"
@@ -576,7 +605,7 @@ class InstallPackages(QWizardPage):
             alternatingRowColors=True,
             sortingEnabled=True,
             doubleClicked=self.install_package,
-            context_triggered=self.install_package  # signal
+            context_triggered=self.install_package
         )
 
         # hide vertical header
@@ -636,7 +665,9 @@ class InstallPackages(QWizardPage):
         QTimer.singleShot(0, lambda: back_button.setEnabled(False))
 
         if self.wizard().basic_settings.with_pip_check_box.isChecked():
-            self.next_button = self.wizard().button(QWizard.WizardButton.NextButton)
+            self.next_button = self.wizard().button(
+                QWizard.WizardButton.NextButton
+            )
             disconnect_button_clicked(self.next_button)
             self.next_button.clicked.connect(self.save_requirements)
 
@@ -669,9 +700,8 @@ class InstallPackages(QWizardPage):
     def pop_results_table(self):
         """Refresh the results table.
         """
-        # adjust column width
         self.results_table.setColumnWidth(0, 200)  # name
-        self.results_table.setColumnWidth(1, 80)  # version
+        self.results_table.setColumnWidth(1, 80)   # version
         self.results_table.setColumnWidth(2, 110)  # release date
 
         self.results_table_model.setRowCount(0)
