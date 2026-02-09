@@ -1022,8 +1022,8 @@ def with_args():
     argument_list = full_cmd_arguments[1:]
 
     # tell getopts() the parameters
-    short_options = "Vdh"
-    long_options = ["version", "debug", "help"]
+    short_options = "Vdhwb"
+    long_options = ["version", "debug", "help", "wizard", "wizard-debug"]
 
     # use try-except to cover errors
     try:
@@ -1040,9 +1040,9 @@ def with_args():
         if arg in ("-h", "--help"):
             # show help message, then exit
             print(
-                f"VenviPy {get_data.__version__}  "
+                f"VenviPy v{get_data.__version__}  "
                 "( https://github.com/sinusphi/venvipy )\n\n"
-                "    -h --help           Show this help message and exit\n"
+                "    -h --help           Print this help message and exit\n"
                 "    -d --debug          Print debugging output\n"
                 "    -v --version        Print version and exit\n"
             )
@@ -1057,6 +1057,22 @@ def with_args():
             print(f"VenviPy {get_data.__version__}")
             sys.exit(0)
 
+        if arg in ("-w", "--wizard"):
+            os.system("clear")
+            app = QApplication(sys.argv)
+            venv_wizard = wizard.VenvWizard()
+            venv_wizard.basic_settings.pop_combo_box()
+            venv_wizard.exec()
+            sys.exit(0)
+
+        if arg in ("-b", "--wizard-debug"):
+            os.system("clear")
+            logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+            app = QApplication(sys.argv)
+            venv_wizard = wizard.VenvWizard()
+            venv_wizard.basic_settings.pop_combo_box()
+            venv_wizard.exec()
+            sys.exit(0)
 
 
 def main():
