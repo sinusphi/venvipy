@@ -1025,7 +1025,6 @@ def with_args():
     short_options = "Vdhwb"
     long_options = ["version", "debug", "help", "wizard", "wizard-debug"]
 
-    # use try-except to cover errors
     try:
         arguments, values = getopt.getopt(
             argument_list, short_options, long_options
@@ -1045,6 +1044,8 @@ def with_args():
                 "    -h --help           Print this help message and exit\n"
                 "    -d --debug          Print debugging output\n"
                 "    -v --version        Print version and exit\n"
+                "    -w --wizard         Launch venv wizard only\n"
+                "    -b --wizard-debug   Launch venv wizard with debug output\n"
             )
             sys.exit(0)
 
