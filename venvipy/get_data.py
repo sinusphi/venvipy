@@ -24,11 +24,12 @@ import os
 import sys
 import csv
 import time
+import json
 import shutil
 import sqlite3
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from subprocess import PIPE, STDOUT, run
 from dataclasses import dataclass
 
@@ -43,6 +44,7 @@ CFG_DIR = Path.home() / ".venvipy"
 DB_FILE = Path.home() / ".venvipy" / "py-installs"
 ACTIVE_DIR = Path.home() / ".venvipy" / "selected-dir"
 ACTIVE_VENV = Path.home() / ".venvipy" / "active-venv"
+TABS_STATE = Path.home() / ".venvipy" / "tabs-state.json"
 PYPI_SIMPLE_URL = "https://pypi.org/simple/"
 PYPI_JSON_URL = "https://pypi.org/pypi/{name}/json"
 PACKAGE_DB_PATH = Path.home() / ".venvipy" / "pypi_index.sqlite3"
@@ -58,7 +60,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PythonInfo:
-    """Info about Python installs."""
+    """
+    Info about Python installs.
+    """
     py_version: str
     py_path: str
 
@@ -135,6 +139,48 @@ def ensure_active_venv():
     if not os.path.exists(ACTIVE_VENV):
         with open(ACTIVE_VENV, "w+", encoding="utf-8") as f:
             f.write("")
+
+
+def default_tabs_state() -> Dict[str, Any]:
+    """Return the default structure for stored tabs.
+    """
+    return {
+        "tabs": [],
+        "active_index": 0,
+        "always_save_tabs": False,
+        "ask_before_saving_tabs": True
+    }
+
+
+def load_tabs_state() -> Dict[str, Any]:
+    """Load persisted tab information if present.
+    """
+    ensure_confdir()
+
+    if not os.path.exists(TABS_STATE):
+        return default_tabs_state()
+
+    try:
+        with open(TABS_STATE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return data
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Could not read tabs state file; starting fresh")
+
+    return default_tabs_state()
+
+
+def save_tabs_state(state: Dict[str, Any]) -> None:
+    """Persist tab information to disk.
+    """
+    ensure_confdir()
+
+    try:
+        with open(TABS_STATE, "w", encoding="utf-8") as f:
+            json.dump(state, f, indent=2)
+    except OSError as e:
+        logger.warning(f"Failed to save tabs state: {e}")
 
 
 def get_python_version(py_path):
@@ -259,7 +305,7 @@ def _get_windows_python_paths():
 
 def add_python(py_path):
     """
-    Write (append) a Python version and its path to `py-installs`.
+    Write (append) Python version and path to `py-installs`.
     """
     ensure_dbfile()
 
@@ -508,7 +554,9 @@ def get_comment(cfg_file):
 
 @dataclass
 class PackageInfo:
-    """_"""
+    """
+    Info about a PyPI package.
+    """
     pkg_name: str
     pkg_version: str
     pkg_info_2: str
@@ -685,7 +733,10 @@ def get_db_name(name: str, following: int) -> str:
 
 
 def get_pkg_info_2(name: str, ttl_sec: int = 24 * 3600) -> str:
-    """Return author (pkg_info_2) for `name`, cached in ~/.venvipy/pypi_index.sqlite3."""
+    """
+    Return author (pkg_info_2) for `name`,
+    cached in ~/.venvipy/pypi_index.sqlite3.
+    """
     if not name:
         return ""
 
@@ -747,7 +798,10 @@ def get_pkg_info_2(name: str, ttl_sec: int = 24 * 3600) -> str:
 
 
 def get_pkg_summary(name: str, ttl_sec: int = 24 * 3600) -> str:
-    """Return short description (PyPI 'summary') for `name`, cached in pkg_meta.summary."""
+    """
+    Return short description (PyPI 'summary')
+    for `name`, cached in pkg_meta.summary.
+    """
     if not name:
         return ""
 

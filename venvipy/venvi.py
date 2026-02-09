@@ -54,6 +54,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QSpacerItem,
     QSizePolicy,
+    QInputDialog,
+    QCheckBox,
     QMenuBar,
     QMenu,
     QStatusBar,
@@ -118,19 +120,16 @@ class MainWindow(QMainWindow):
         #] ICONS [#==========================================================[#
         #]===================================================================[#
 
-        python_icon = QIcon(":/img/python.png")
         find_icon = QIcon.fromTheme("edit-find")
-        manage_icon = QIcon.fromTheme("insert-object")
-        settings_icon = QIcon.fromTheme("preferences-system")
+        #python_icon = QIcon(":/img/python.png")
+        #manage_icon = QIcon.fromTheme("insert-object")
+        #settings_icon = QIcon.fromTheme("preferences-system")
 
         new_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogNewFolder)
         )
         exit_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop)
-        )
-        delete_icon = QIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
         )
         folder_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
@@ -150,6 +149,9 @@ class MainWindow(QMainWindow):
         self.dir_open_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
         )
+        #delete_icon = QIcon(
+        #    self.style().standardIcon(QStyle.StandardPixmap.SP_TrashIcon)
+        #)
 
 
         #]===================================================================[#
@@ -201,6 +203,10 @@ class MainWindow(QMainWindow):
         self.directory_line = QLineEdit()
         self.venv_tab_map = {}
         self.venv_tabs_data = []
+        self.tab_save_pref = {
+            "always_save_tabs": False,
+            "ask_before_saving_tabs": True
+        }
 
         #]===================================================================[#
         # spacer between manage button and exit button
@@ -265,6 +271,10 @@ class MainWindow(QMainWindow):
         self.venv_tabs.currentChanged.connect(self.on_venv_tab_changed)
         self.venv_tabs.setTabsClosable(True)
         self.venv_tabs.tabCloseRequested.connect(self.close_venv_tab)
+        self.venv_tabs.tabBarDoubleClicked.connect(self.rename_venv_tab)
+        tab_bar = self.venv_tabs.tabBar()
+        tab_bar.setMovable(True)
+        tab_bar.tabMoved.connect(self.on_venv_tab_moved)
 
         # add widgets to layout
         v_layout_1.addWidget(interpreter_table_title)
@@ -275,7 +285,13 @@ class MainWindow(QMainWindow):
         grid_layout.addLayout(v_layout_1, 0, 0, 1, 1)
 
         self.setCentralWidget(centralwidget)
-        self.create_venv_tab("venv #01", get_data.get_active_dir_str())
+        restored = self.restore_tabs_from_state()
+        if not restored:
+            initial_dir = get_data.get_active_dir_str()
+            initial_title = self.next_venv_tab_title(initial_dir)
+            self.create_venv_tab(initial_title, initial_dir)
+
+        self.on_venv_tab_changed(self.venv_tabs.currentIndex())
 
 
         #]===================================================================[#
@@ -427,12 +443,103 @@ class MainWindow(QMainWindow):
 
 
     def on_close(self):
-        """Stop all threads, then close the application.
+        """Request application shutdown.
         """
-        self.venv_wizard.basic_settings.thread.exit()
-        for tab_data in self.venv_tabs_data:
-            tab_data["table"].thread.exit()
         self.close()
+
+
+    def closeEvent(self, event):
+        """Handle persistence and shutdown when the window closes.
+        """
+        if not self.handle_tab_persistence_on_close():
+            event.ignore()
+            return
+
+        self.shutdown_threads()
+        event.accept()
+        super().closeEvent(event)
+
+
+    def shutdown_threads(self):
+        """Stop background threads gracefully.
+        """
+        if hasattr(self.venv_wizard, "basic_settings"):
+            thread = getattr(self.venv_wizard.basic_settings, "thread", None)
+            if thread is not None:
+                thread.exit()
+
+        for tab_data in self.venv_tabs_data:
+            table = tab_data.get("table")
+            if table is not None and hasattr(table, "thread"):
+                table.thread.exit()
+
+
+    def handle_tab_persistence_on_close(self):
+        """Ask whether to save tabs (or auto-save) when closing.
+        """
+        tab_count = self.venv_tabs.count()
+
+        if self.tab_save_pref.get("always_save_tabs"):
+            self.save_tabs_state()
+            return True
+
+        if not self.tab_save_pref.get("ask_before_saving_tabs", True):
+            # Safety net: default to saving when prompting is disabled.
+            self.save_tabs_state()
+            return True
+
+        # Only prompt if there is at least one tab open.
+        if tab_count == 0:
+            return True
+        # Skip prompt when no tab has a directory loaded.
+        any_dir_loaded = False
+        for i in range(tab_count):
+            tab_widget = self.venv_tabs.widget(i)
+            tab_data = self.get_tab_data(tab_widget)
+            if tab_data and tab_data.get("path"):
+                any_dir_loaded = True
+                break
+        if not any_dir_loaded:
+            return True
+
+        msg_box = QMessageBox(
+            QMessageBox.Icon.Question,
+            "Save tabs?",
+            (
+                f"There {'is' if tab_count == 1 else 'are'} "
+                f"{tab_count} open tab{'s' if tab_count != 1 else ''}.\n"
+                "Save them for the next start?"
+            ),
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No
+            | QMessageBox.StandardButton.Cancel,
+            self
+        )
+
+        dont_ask_checkbox = QCheckBox("Don't ask again. Always save tabs.")
+        msg_box.setCheckBox(dont_ask_checkbox)
+
+        result = msg_box.exec()
+
+        if result == QMessageBox.StandardButton.Cancel:
+            return False
+
+        if result == QMessageBox.StandardButton.No:
+            state = self.collect_tabs_state()
+            state["tabs"] = []
+            state["active_index"] = 0
+            get_data.save_tabs_state(state)
+            self.set_active_dir("")
+            return True
+
+        if dont_ask_checkbox.isChecked():
+            self.tab_save_pref["always_save_tabs"] = True
+            self.tab_save_pref["ask_before_saving_tabs"] = False
+
+        if result == QMessageBox.StandardButton.Yes:
+            self.save_tabs_state()
+
+        return True
 
 
     def changeEvent(self, event):
@@ -574,7 +681,21 @@ class MainWindow(QMainWindow):
             directory=current_dir
         )
         if directory != "":
-            title = self.next_venv_tab_title()
+            if self.venv_tabs.count() == 1:
+                current_data = self.get_tab_data()
+                if current_data and not current_data.get("path"):
+                    title = self.next_venv_tab_title(directory)
+                    current_data["path"] = directory
+                    current_data["title"] = title
+                    current_index = self.venv_tabs.currentIndex()
+                    if current_index >= 0:
+                        self.venv_tabs.setTabText(current_index, title)
+                    self.set_active_dir(directory)
+                    self.pop_venv_table(current_data["widget"])
+                    self.update_label(current_data)
+                    return
+
+            title = self.next_venv_tab_title(directory)
             tab_data = self.create_venv_tab(title, directory)
             self.venv_tabs.setCurrentWidget(tab_data["widget"])
             self.set_active_dir(directory)
@@ -672,7 +793,8 @@ class MainWindow(QMainWindow):
             "label": label,
             "table": venv_table,
             "model": model_venv_table,
-            "path": active_dir
+            "path": active_dir,
+            "title": title
         }
         self.venv_tabs_data.append(tab_data)
         self.venv_tab_map[tab_widget] = tab_data
@@ -683,9 +805,118 @@ class MainWindow(QMainWindow):
         return tab_data
 
 
-    def next_venv_tab_title(self):
-        """Return the next numbered venv tab title.
+    def restore_tabs_from_state(self):
+        """Recreate tabs based on the last saved state, if any.
         """
+        state = get_data.load_tabs_state() or {}
+
+        self.tab_save_pref["always_save_tabs"] = bool(
+            state.get("always_save_tabs", False)
+        )
+        self.tab_save_pref["ask_before_saving_tabs"] = bool(
+            state.get("ask_before_saving_tabs", True)
+        )
+        if not self.tab_save_pref["ask_before_saving_tabs"]:
+            self.tab_save_pref["always_save_tabs"] = True
+
+        tabs = state.get("tabs") or []
+        if not tabs:
+            return False
+
+        for tab in tabs:
+            path = tab.get("path", "")
+            title = tab.get("title") or self.next_venv_tab_title(path)
+            self.create_venv_tab(title, path)
+
+        active_index = state.get("active_index", 0)
+        if 0 <= active_index < self.venv_tabs.count():
+            self.venv_tabs.setCurrentIndex(active_index)
+
+        return True
+
+
+    def collect_tabs_state(self):
+        """Gather current tab information for persistence.
+        """
+        tabs = []
+        for i in range(self.venv_tabs.count()):
+            tab_widget = self.venv_tabs.widget(i)
+            tab_data = self.get_tab_data(tab_widget)
+            if tab_data is None:
+                continue
+            tabs.append({
+                "title": self.venv_tabs.tabText(i),
+                "path": tab_data.get("path", "")
+            })
+
+        active_index = self.venv_tabs.currentIndex()
+        if active_index < 0:
+            active_index = 0
+
+        return {
+            "tabs": tabs,
+            "active_index": active_index,
+            "always_save_tabs": self.tab_save_pref.get("always_save_tabs", False),
+            "ask_before_saving_tabs": self.tab_save_pref.get("ask_before_saving_tabs", True)
+        }
+
+
+    def save_tabs_state(self):
+        """Persist current tabs and preferences.
+        """
+        state = self.collect_tabs_state()
+        get_data.save_tabs_state(state)
+
+
+    def rename_venv_tab(self, index):
+        """Rename a venv tab via double-click.
+        """
+        if index < 0:
+            return
+
+        current_title = self.venv_tabs.tabText(index)
+        new_title, ok = QInputDialog.getText(
+            self,
+            "Rename tab",
+            "Tab name:",
+            text=current_title
+        )
+
+        if not ok:
+            return
+
+        new_title = new_title.strip()
+        if new_title == "":
+            return
+
+        self.venv_tabs.setTabText(index, new_title)
+
+        tab_widget = self.venv_tabs.widget(index)
+        tab_data = self.get_tab_data(tab_widget)
+        if tab_data is not None:
+            tab_data["title"] = new_title
+
+
+    def on_venv_tab_moved(self, _from, _to):
+        """Keep internal tab order in sync with the UI order.
+        """
+        new_order = []
+        for i in range(self.venv_tabs.count()):
+            tab_widget = self.venv_tabs.widget(i)
+            tab_data = self.get_tab_data(tab_widget)
+            if tab_data is not None:
+                new_order.append(tab_data)
+
+        self.venv_tabs_data = new_order
+
+
+    def next_venv_tab_title(self, directory=None):
+        """Return the default title for a new venv tab.
+        """
+        if directory:
+            folder_name = Path(directory).name
+            if folder_name:
+                return folder_name
         return f"venv #{len(self.venv_tabs_data) + 1:02d}"
 
 
