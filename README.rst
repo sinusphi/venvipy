@@ -52,38 +52,43 @@ Screenshots
 
 **Main menu**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-1.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-1_1.png
+   :alt: Application Main menu screenshot
+
+|
+
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-1_2.png
    :alt: Application Main menu screenshot
 
 |
 
 **Wizard**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2_1.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-2_1.png
    :alt: Wizard screenshot 1
 
 |
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-2_2.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-2_2.png
    :alt: Wizard screenshot 2
 
 |
 
 **Package installer**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-4_1.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-4_1.png
    :alt: Package installer screenshot 1
 
 |
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-4_2.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-4_2.png
    :alt: Package installer screenshot 2
 
 |
 
 **Console output**
 
-.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/main/img/screen-3.png
+.. image:: https://raw.githubusercontent.com/sinusphi/venvipy/refs/heads/main/img/screen-3.png
    :alt: Console output screenshot
 
 |
