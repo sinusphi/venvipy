@@ -24,7 +24,7 @@ import logging
 from datetime import date
 
 from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, QSize
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -141,8 +141,8 @@ class ConsoleDialog(BaseDialog):
 
 
     def initUI(self):
-        self.resize(1115, 705)
         self.center()
+        self.expand_from_center_to(1375, 775)
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
         self.disable_window_buttons(close=True, minimize=True)
 
@@ -167,6 +167,14 @@ class ConsoleDialog(BaseDialog):
 
         v_layout = QVBoxLayout(self)
         v_layout.addWidget(self.console_window)
+
+    def expand_from_center_to(self, width, height):
+        """Resize while keeping the current center fixed."""
+        geom = self.geometry()
+        center = geom.center()
+        geom.setSize(QSize(width, height))
+        geom.moveCenter(center)
+        self.setGeometry(geom)
 
 
     @pyqtSlot(str)
@@ -278,13 +286,15 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
+    print(f"{'-'*20}\nTesting dialogs...\n")
+
     #progress_dialog = ProgBarDialog()
     #progress_dialog.show()
 
     #console_dialog = ConsoleDialog()
     #console_dialog.show()
 
-    info_about_venvipy = InfoAboutVenviPy()
-    info_about_venvipy.show()
+    #info_about_venvipy = InfoAboutVenviPy()
+    #info_about_venvipy.show()
 
-    sys.exit(app.exec())
+    #sys.exit(app.exec())
