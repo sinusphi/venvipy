@@ -549,7 +549,7 @@ class VenvTable(BaseTable):
                     self.manager.started.connect(self.console.exec)
                     self.manager.text_changed.connect(self.console.update_status)
                     self.manager.run_pip(
-                        creator.cmds[0], [creator.opts[3], project_dir]
+                        creator.cmds[0], [project_dir]
                     )
 
                     # clear the content on window close
