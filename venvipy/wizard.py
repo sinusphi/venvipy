@@ -107,6 +107,16 @@ class VenvWizard(QWizard):
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
         self.setStyleSheet(WIZARD_QSS)
+        self.setOption(QWizard.WizardOption.HaveCustomButton1, True)
+        self.setButtonText(QWizard.WizardButton.CustomButton1, "&Restart")
+        self.setButtonLayout([
+            QWizard.WizardButton.Stretch,
+            QWizard.WizardButton.BackButton,
+            QWizard.WizardButton.NextButton,
+            QWizard.WizardButton.CustomButton1,
+            QWizard.WizardButton.FinishButton,
+            QWizard.WizardButton.CancelButton
+        ])
 
         self.basic_settings = BasicSettings()
         self.basic_settings_id = self.addPage(self.basic_settings)
@@ -119,6 +129,9 @@ class VenvWizard(QWizard):
 
         self.cancel_button = self.button(QWizard.WizardButton.CancelButton)
         self.cancel_button.clicked.connect(self.force_exit)
+        self.restart_button = self.button(QWizard.WizardButton.CustomButton1)
+        self.restart_button.clicked.connect(self.restart)
+        self.restart_button.hide()
         self.finished.connect(self.force_exit)
         self.rejected.connect(self.force_exit)
         self.accepted.connect(self.force_exit)
@@ -378,6 +391,7 @@ class BasicSettings(QWizardPage):
         next_button = self.wizard().button(QWizard.WizardButton.NextButton)
         disconnect_button_clicked(next_button)
         next_button.clicked.connect(self.execute_venv_create)
+        self.wizard().button(QWizard.WizardButton.CustomButton1).hide()
 
         # clear comment line
         self.comment_line.clear()
@@ -632,6 +646,7 @@ class InstallPackages(QWizardPage):
         self.venv_name = self.field("venv_name")
         self.venv_location = self.field("venv_location")
         self.requirements = self.field("requirements")
+        self.wizard().button(QWizard.WizardButton.CustomButton1).hide()
 
         # run the installer if self.requirements holds a str
         if len(self.requirements) > 0:
@@ -907,12 +922,9 @@ class FinalPage(QWizardPage):
         cancel_button = self.wizard().button(QWizard.WizardButton.CancelButton)
         QTimer.singleShot(0, lambda: cancel_button.hide())
 
-        # reset wizard
-        finish_button = self.wizard().button(QWizard.WizardButton.FinishButton)
-        finish_button.clicked.connect(self.wizard().restart)
-
-        if __name__ == "__main__":
-            finish_button.clicked.connect(self.wizard().force_exit)
+        # show restart button left of 'Finish'
+        restart_button = self.wizard().button(QWizard.WizardButton.CustomButton1)
+        QTimer.singleShot(0, lambda: restart_button.show())
 
         # call update_zen_line() to get a different line on every new session
         self.wizard().refresh.connect(self.update_zen_line)
