@@ -887,8 +887,8 @@ class VenvTable(BaseTable):
                     '[[ -f ~/.zshrc ]] && source ~/.zshrc\n'
                     f"source {shlex.quote(str(activate))}\n"
                     f"cd {shlex.quote(str(workdir))}\n"
-                    'echo VIRTUAL_ENV="$VIRTUAL_ENV"\n'
-                    "which python\n"
+                    #'echo VIRTUAL_ENV="$VIRTUAL_ENV"\n'
+                    #"which python\n"
                 ),
                 encoding="utf-8",
             )
