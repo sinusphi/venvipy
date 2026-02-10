@@ -36,14 +36,16 @@ Introduction
 ------------
 
 *VenviPy* is a desktop GUI to create, manage, and maintain many Python virtual
-environments from one place. It focuses on a fast workflow:
+environments from one place. It focuses on a fast, practical workflow:
 
-* create environments via a wizard (Python version, name, location, packages)
+* create environments via a wizard (Python version, location, pre-install packages)
 * keep an overview table of all environments in a directory
+* manage multiple environments at the same time with tabs
 * install / update / inspect packages with context-menu actions
+* open a console in the environment's context with one click
 
 VenviPy was originally built for \*NIX systems. Windows support exists via a
-platform abstraction layer, but should be considered experimental unless stated otherwise.
+platform abstraction layer, but should currently be considered experimental.
 
 |
 
@@ -120,11 +122,15 @@ Inspection & tooling
 * List detailed information about installed packages
 * Open a project's PyPI page in your browser. 
 
-And a lot more to come ...
-- *Open a terminal / shell in the environment's context and add a launcher for example to your taskbar or startmenu*
-- *Run scripts in the environment's context*
-- *Uninstall packages in a selected environment in Package Manager*
-- *Clone environments, created by non-installed Python versions without having to install anything*
+Roadmap ideas
+~~~~~~~~~~~~~
+
+* Add option to create a launcher and add it for example to your taskbar or startmenu
+* Run scripts in the environment's context
+* Uninstall packages in a selected environment in Package Manager
+* Clone environments, created by non-installed Python versions and has no requirements file
+
+More to come.
 
 |
 
@@ -133,6 +139,21 @@ Prerequisites
 
 * Python **3.7+** (PyQt6 6.10.2 requires Python >= 3.7)
 * A working ``venv`` module for the Python versions you want to use
+
+Quick start
+-----------
+
+If you already have Python and pip available, this is the fastest path:
+
+.. code-block:: bash
+
+    python -m venv .venv
+    source .venv/bin/activate  # Windows (PowerShell): .venv\Scripts\Activate.ps1
+    pip install -U pip
+    pip install venvipy
+    venvipy
+
+For full setup details and platform-specific notes, continue below.
 
 Linux (Debian/Ubuntu)
 ~~~~~~~~~~~~~~~~~~~~~
@@ -243,7 +264,7 @@ Clone and install dependencies:
     # for development and testing
     pip install -r requirements/dev.txt
 
-    # deployement and build deps 
+    # deployment and build dependencies
     pip install -r requirements/deploy.txt
 
 |
