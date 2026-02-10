@@ -25,6 +25,8 @@ COLORS = {
     "bg": "#0f1218",
     "surface": "#151a24",
     "surface_alt": "#1a2130",
+    "menu_bar_bg": "#0f1218",
+    "menu_bg": "#131a26",
     "panel": "#202938",
     "panel_alt": "#263144",
     "border": "#2c3850",
@@ -57,14 +59,13 @@ dark = f"""
     }}
 
     QMenuBar {{
-        background-color: {COLORS["bg"]};
+        background-color: {COLORS["menu_bar_bg"]};
         color: {COLORS["text"]};
         font: 600 13px;
-        border: none;
     }}
 
     QMenuBar::item {{
-        background-color: {COLORS["bg"]};
+        background-color: {COLORS["menu_bar_bg"]};
         color: {COLORS["text"]};
     }}
 
@@ -111,8 +112,9 @@ dark = f"""
     }}
 
     QMenu {{
-        background-color: {COLORS["surface_alt"]};
+        background-color: {COLORS["menu_bg"]};
         color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
     }}
 
     QMenu::item::selected {{
@@ -158,8 +160,8 @@ dark = f"""
     }}
 
     QDialogButtonBox QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 
     QToolTip {{
@@ -230,8 +232,8 @@ dark = f"""
     }}
 
     QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 
     QPushButton:pressed {{
@@ -375,8 +377,8 @@ light = f"""
     }}
                     
     QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
                     
     QTableView {{
@@ -487,8 +489,8 @@ light = f"""
     }}
 
     QDialogButtonBox QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 """
 
@@ -557,8 +559,8 @@ WIZARD_QSS = f"""
     }}
 
     QToolButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 
     QGroupBox {{
@@ -593,7 +595,7 @@ WIZARD_QSS = f"""
     }}
 
     QMenu {{
-        background-color: {COLORS["surface_alt"]};
+        background-color: {COLORS["menu_bg"]};
         color: {COLORS["text"]};
         border: 1px solid {COLORS["border"]};
     }}
@@ -638,8 +640,8 @@ WIZARD_QSS = f"""
     }}
 
     QMessageBox QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 """
 
@@ -691,7 +693,7 @@ PACKAGE_DIALOG_QSS = f"""
     }}
 
     QMenu {{
-        background-color: {COLORS["surface_alt"]};
+        background-color: {COLORS["menu_bg"]};
         color: {COLORS["text"]};
         border: 1px solid {COLORS["border"]};
     }}
@@ -719,8 +721,8 @@ PACKAGE_DIALOG_QSS = f"""
     }}
 
     QMessageBox QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 """
 
@@ -744,8 +746,8 @@ DIALOG_QSS = f"""
     }}
 
     QPushButton:hover {{
-        background-color: {COLORS["hover"]};
-        border-color: {COLORS["border_strong"]};
+        background-color: {COLORS["accent_strong"]};
+        border-color: {COLORS["accent"]};
     }}
 
     QProgressBar {{
