@@ -658,7 +658,7 @@ class VenvTable(BaseTable):
         venv = self.get_selected_item()
 
         if self.has_pip(active_dir, venv):
-            self.console.setWindowTitle(f"Packages installed in:  {venv}")
+            self.console.setWindowTitle(f"Packages in: {venv}")
 
             self.manager = PipManager(active_dir, venv)
             self.manager.started.connect(self.console.exec)
