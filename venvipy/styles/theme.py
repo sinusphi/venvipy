@@ -121,6 +121,32 @@ dark = f"""
         background-color: {COLORS["panel_alt"]};
     }}
 
+    QMenu QCheckBox {{
+        color: {COLORS["text"]};
+        background-color: transparent;
+        margin: 0px;
+        padding: 4px 12px 5px 4px;
+        spacing: 6px;
+    }}
+
+    QMenu QCheckBox:hover {{
+        background-color: {COLORS["panel_alt"]};
+    }}
+
+    QMenu QCheckBox::indicator {{
+        width: 10;
+        height: 10;
+        margin: 0px 6px 0px 0px;
+        border: 1px solid {COLORS["border_strong"]};
+        border-radius: 2px;
+        background-color: {COLORS["surface_alt"]};
+    }}
+
+    QMenu QCheckBox::indicator:checked {{
+        background-color: {COLORS["accent"]};
+        border-color: {COLORS["accent"]};
+    }}
+
     QDialog,
     QMessageBox,
     QInputDialog {{
