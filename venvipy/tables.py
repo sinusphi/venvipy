@@ -820,6 +820,7 @@ class VenvTable(BaseTable):
             return
 
         platform = get_platform()
+        env = os.environ.copy()
 
         if platform.is_windows():
             try:
@@ -855,8 +856,6 @@ class VenvTable(BaseTable):
             f.write("echo Python interpreter: \"$(command -v python)\"\n")
             f.write("echo ' '\n")
         os.chmod(rc_path, 0o600)
-
-        env = os.environ.copy()
 
         # remove inherited venv (the one VenviPy was launched with)
         dev_venv = env.pop("VIRTUAL_ENV", None)
