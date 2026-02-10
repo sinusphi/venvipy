@@ -268,6 +268,7 @@ dark = f"""
 
     QTableView {{
         background-color: {COLORS["surface_alt"]};
+        alternate-background-color: {COLORS["surface"]};
         color: {COLORS["text"]};
         border: 1px solid {COLORS["border"]};
         gridline-color: {COLORS["border"]};
@@ -282,7 +283,6 @@ dark = f"""
     }}
 
     QTableView::item {{
-        background-color: {COLORS["surface_alt"]};
         padding: 8px;
         color: {COLORS["text"]};
     }}
@@ -409,6 +409,7 @@ light = f"""
                     
     QTableView {{
         background-color: {COLORS["surface_alt"]};
+        alternate-background-color: {COLORS["surface"]};
         color: {COLORS["text"]};
         border: 1px solid {COLORS["border"]};
         gridline-color: {COLORS["border"]};
@@ -424,7 +425,6 @@ light = f"""
 
     QTableView::item {{
         padding: 8px;
-        background-color: {COLORS["surface_alt"]};
         color: {COLORS["text"]};
     }}
 
@@ -639,7 +639,24 @@ WIZARD_QSS = f"""
     }}
 
     QTableView {{
+        background-color: {COLORS["surface_alt"]};
+        alternate-background-color: {COLORS["surface"]};
+        color: {COLORS["text"]};
+        border: 1px solid {COLORS["border"]};
+        border-radius: 6px;
         gridline-color: {COLORS["border"]};
+    }}
+
+    QHeaderView::section {{
+        background-color: {COLORS["panel"]};
+        color: {COLORS["text"]};
+        padding: 6px;
+        border: 1px solid {COLORS["border"]};
+    }}
+
+    QTableView::item {{
+        padding: 8px;
+        color: {COLORS["text"]};
     }}
 
     QTableView::item:selected {{
@@ -700,6 +717,7 @@ PACKAGE_DIALOG_QSS = f"""
 
     QTableView {{
         background-color: {COLORS["surface_alt"]};
+        alternate-background-color: {COLORS["surface"]};
         color: {COLORS["text"]};
         border: 1px solid {COLORS["border"]};
         gridline-color: {COLORS["border"]};
