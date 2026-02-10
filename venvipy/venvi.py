@@ -63,7 +63,8 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QHBoxLayout,
     QLineEdit,
-    QTabWidget
+    QTabWidget,
+    QWidgetAction
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -326,6 +327,18 @@ class MainWindow(QMainWindow):
             triggered=self.select_active_dir
         )
 
+        self.always_save_tabs_checkbox = QCheckBox("Always save tabs", self)
+        self.always_save_tabs_checkbox.setChecked(
+            self.tab_save_pref.get("always_save_tabs", False)
+        )
+        self.always_save_tabs_checkbox.toggled.connect(
+            self.toggle_always_save_tabs
+        )
+        self.action_always_save_tabs = QWidgetAction(self)
+        self.action_always_save_tabs.setDefaultWidget(
+            self.always_save_tabs_checkbox
+        )
+
         self.action_exit = QAction(
             exit_icon,
             "&Quit",
@@ -386,6 +399,7 @@ class MainWindow(QMainWindow):
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_new_venv)
         menu_venv.addAction(self.action_select_active_dir)
+        menu_venv.addAction(self.action_always_save_tabs)
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_exit)
         menu_bar.addAction(menu_venv.menuAction())
@@ -540,6 +554,14 @@ class MainWindow(QMainWindow):
             self.save_tabs_state()
 
         return True
+
+
+    def toggle_always_save_tabs(self, enabled):
+        """Toggle automatic tab persistence on app close.
+        """
+        self.tab_save_pref["always_save_tabs"] = bool(enabled)
+        self.tab_save_pref["ask_before_saving_tabs"] = not bool(enabled)
+        self.save_tabs_state()
 
 
     def changeEvent(self, event):
