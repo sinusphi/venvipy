@@ -25,15 +25,13 @@ import webbrowser
 
 from PyQt6.QtGui import (
     QIcon,
-    QCursor,
     QPixmap,
     QStandardItem,
     QStandardItemModel,
     QAction
 )
-from PyQt6.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QFileDialog,
     QDialog,
     QHBoxLayout,
     QLabel,
@@ -51,9 +49,8 @@ from PyQt6.QtWidgets import (
 
 import venvipy_rc  # pylint: disable=unused-import
 import get_data
-import creator
-from manage_pip import PipManager
 from dialogs import ConsoleDialog
+from manage_pip import PipManager
 from styles.theme import PACKAGE_DIALOG_QSS
 from styles.custom import (
     package_manager_title_text,
@@ -65,10 +62,10 @@ logger = logging.getLogger(__name__)
 
 
 class PackagesTable(QTableView):
-    """Contains the Packages installed in the selected venv.
     """
-    context_triggered = pyqtSignal()
-    refresh_packages = pyqtSignal()
+    Contains the Packages installed in the selected venv.
+    """
+    remove_triggered = pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,8 +76,6 @@ class PackagesTable(QTableView):
         self.info_icon = QIcon(
             self.style().standardIcon(QStyle.StandardPixmap.SP_FileDialogInfoView)
         )
-
-        self.console = ConsoleDialog()
 
 
     def get_selected_item(self):
@@ -107,12 +102,13 @@ class PackagesTable(QTableView):
 
         menu = QMenu(self)
 
-        install_action = QAction(QIcon.fromTheme("software-install"), "&Install module", self)
-        install_action.triggered.connect(self.context_triggered.emit)
-        menu.addAction(install_action)
+        remove_action = QAction(self.delete_icon, "&Remove package", self)
+        remove_action.triggered.connect(self.remove_triggered.emit)
+        menu.addAction(remove_action)
 
+        # Keep this as the last context action in the package manager.
         open_pypi_action = QAction(self.info_icon, "&Open on PyPI", self)
-        open_pypi_action.triggered.connect(lambda: self.open_on_pypi(event))
+        open_pypi_action.triggered.connect(self.open_on_pypi)
         menu.addAction(open_pypi_action)
 
         pos = event.globalPos()
@@ -122,56 +118,16 @@ class PackagesTable(QTableView):
         menu.exec(pos)
 
 
-    def open_on_pypi(self, event):
+    def open_on_pypi(self):
         """
         Open pypi.org and show the project page
         of the selected package.
         """
         url = "https://pypi.org/project"
         package = self.get_selected_item()
+        if not package:
+            return
         webbrowser.open("/".join([url, package]))
-
-
-    def update_package(self, event):
-        """Run pip --update 'package'.
-        """
-        self.setEnabled(False)
-
-        # get the venv path
-        with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
-            venv_path = f.read()
-
-        split_venv_path = os.path.split(venv_path)
-        self.venv_location = split_venv_path[0]
-        self.venv_name = os.path.basename(venv_path)
-        self.pkg = self.get_selected_item()
-
-        msg_box_question = QMessageBox.question(
-            self,
-            "Confirm", f"Are you sure you want to update '{self.pkg}'?      ",
-            QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Yes
-        )
-
-        if msg_box_question == QMessageBox.StandardButton.Yes:
-            self.console.setWindowTitle(f"Updating {self.pkg}")
-
-            self.manager = PipManager(
-                self.venv_location,
-                self.venv_name
-            )
-            # open the console when recieving signal from manager
-            self.manager.started.connect(self.console.exec)
-            self.manager.text_changed.connect(self.console.update_status)
-
-            # start installing the selected package
-            logger.debug(f"Updating '{self.pkg}'...")
-            self.manager.run_pip(creator.cmds[0], [creator.opts[0], self.pkg])
-
-            # clear the content when closing console
-            if self.console.close:
-                self.console.console_window.clear()
-
-        self.setEnabled(True)
 
 
 
@@ -179,8 +135,6 @@ class PackageManager(QDialog):
     """
     The package manager dialog.
     """
-    refresh_packages = pyqtSignal()
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -193,16 +147,8 @@ class PackageManager(QDialog):
             self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload)
         )
 
-        # get the venv path from file
-        try:
-            with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
-                venv_path = f.read()
-        except FileNotFoundError:
-            venv_path = ""
-
-        split_venv_path = os.path.split(venv_path)
-        self.venv_location = split_venv_path[0]
-        self.venv_name = os.path.basename(venv_path)
+        self._load_active_venv()
+        self.console = ConsoleDialog()
 
         self.setStyleSheet(PACKAGE_DIALOG_QSS)
 
@@ -225,12 +171,9 @@ class PackageManager(QDialog):
         )
         logo.setPixmap(logo_scaled)
 
-        venv_name_colored = package_manager_venv_name_text(self.venv_name)
-
-        subtitle_label_1 = QLabel(
-            f"Listet below are the Python packages installed in {venv_name_colored} "
-        )
-        subtitle_label_1.setContentsMargins(22, 0, 0, 0)
+        self.subtitle_label_1 = QLabel()
+        self._set_subtitle()
+        self.subtitle_label_1.setContentsMargins(22, 0, 0, 0)
 
         subtitle_label_2 = QLabel(
             "Select one and right-click for available options. "
@@ -263,10 +206,8 @@ class PackageManager(QDialog):
             editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
-            #refresh_packages=self.pop_packages_table
-            #context_triggered=self.install_package
-            ### TODO: add signal
         )
+        self.packages_table.remove_triggered.connect(self.remove_package)
 
         # hide vertical header
         self.packages_table.verticalHeader().hide()
@@ -277,7 +218,7 @@ class PackageManager(QDialog):
         h_header.setStretchLastSection(True)
 
         # set table view model
-        self.packages_table_model = QStandardItemModel(0, 3, self)
+        self.packages_table_model = QStandardItemModel(0, 4, self)
         self.packages_table.setModel(self.packages_table_model)
 
         line_2 = QFrame(self)
@@ -287,7 +228,7 @@ class PackageManager(QDialog):
 
         grid_layout.addWidget(title_label, 0, 0, 1, 2)
         grid_layout.addWidget(logo, 0, 2, 1, 1)
-        grid_layout.addWidget(subtitle_label_1, 1, 0, 1, 2)
+        grid_layout.addWidget(self.subtitle_label_1, 1, 0, 1, 2)
         grid_layout.addWidget(subtitle_label_2, 2, 0, 1, 2)
         grid_layout.addWidget(line_1, 3, 0, 1, 3)
         grid_layout.addWidget(pkg_name_label, 4, 0, 1, 1)
@@ -301,13 +242,38 @@ class PackageManager(QDialog):
 
 
     def center(self):
-        """Center window."""
+        """Center window.
+        """
         qr = self.frameGeometry()
         screen = self.screen() or QApplication.primaryScreen()
         if screen:
             cp = screen.availableGeometry().center()
             qr.moveCenter(cp)
             self.move(qr.topLeft())
+
+
+    def _load_active_venv(self):
+        """Load active venv path from file.
+        """
+        try:
+            with open(get_data.ACTIVE_VENV, "r", encoding="utf-8") as f:
+                venv_path = f.read().strip()
+        except FileNotFoundError:
+            venv_path = ""
+
+        split_venv_path = os.path.split(venv_path)
+        self.venv_location = split_venv_path[0]
+        self.venv_name = os.path.basename(venv_path)
+
+
+    def _set_subtitle(self):
+        """Update subtitle with current venv name.
+        """
+        venv_name = self.venv_name or "(none)"
+        venv_name_colored = package_manager_venv_name_text(venv_name)
+        self.subtitle_label_1.setText(
+            f"Listed below are the Python packages installed in {venv_name_colored} "
+        )
 
 
     def on_close(self):
@@ -319,6 +285,9 @@ class PackageManager(QDialog):
     def launch(self):
         """Launches the manager.
         """
+        self._load_active_venv()
+        self._set_subtitle()
+
         # count whether changes has been made to venv
         #self.venv_modified = 0
 
@@ -340,18 +309,53 @@ class PackageManager(QDialog):
         self.packages_table.setColumnWidth(1, 80)  # version
         self.packages_table.setColumnWidth(2, 150)  # release
 
-        # connect to pop_packages_table method and call it
-        self.refresh_packages.connect(self.pop_packages_table)
-        self.refresh_packages.emit()
+        self.pop_packages_table()
 
         # launch the dialog via exec_() method
         self.exec()
+
+
+    def remove_package(self):
+        """Uninstall selected package from the current environment."""
+        package = self.packages_table.get_selected_item()
+        if not package:
+            return
+
+        msg_box_warning = QMessageBox.warning(
+            self,
+            "Confirm",
+            (
+                f"Remove package '{package}' from this environment?\n\n"
+                "This will run: pip uninstall --yes"
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
+        )
+        if msg_box_warning != QMessageBox.StandardButton.Yes:
+            return
+
+        venv_path = os.path.join(self.venv_location, self.venv_name)
+        if not os.path.isdir(venv_path):
+            QMessageBox.information(self, "Info", "No active environment selected.")
+            return
+
+        logger.debug(f"Removing package '{package}'...")
+        self.console.console_window.clear()
+        self.console.setWindowTitle(f"Removing {package}")
+
+        self.manager = PipManager(self.venv_location, self.venv_name)
+        self.manager.started.connect(self.console.exec)
+        self.manager.text_changed.connect(self.console.update_status)
+        self.manager.finished.connect(self.pop_packages_table)
+        self.manager.run_pip("uninstall", ["--yes", package])
 
 
     def pop_packages_table(self):
         """Fill (refresh) the packages table content.
         """
         self.packages_table_model.setRowCount(0)
+        venv_path = os.path.join(self.venv_location, self.venv_name)
+        if not os.path.isdir(venv_path):
+            return
 
         for info in get_data.get_installed_packages(
             self.venv_location,
