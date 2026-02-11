@@ -3,6 +3,7 @@ __pycache__/
 .vscode/
 testenv/
 gui-dev/
+*.egg-info/
 build/
 tests/
 dist/
@@ -10,6 +11,6 @@ dist/
 dev_requirements.txt
 MODEL.md
 AGENT.md
-*.egg-info/
+push.sh
 *.qrc
 *.in
