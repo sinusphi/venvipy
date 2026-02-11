@@ -82,10 +82,26 @@ class PackagesTable(QTableView):
         """
         Return `str` from `name` column of the selected row.
         """
-        listed_items = self.selectionModel().selectedRows()
-        for index in listed_items:
+        selected_items = self.get_selected_items()
+        if selected_items:
+            return selected_items[0]
+        return None
+
+
+    def get_selected_items(self):
+        """Return list of selected package names from `name` column.
+        """
+        selection_model = self.selectionModel()
+        if not selection_model:
+            return []
+
+        selected_items = []
+        listed_items = selection_model.selectedRows(0)
+        for index in sorted(listed_items, key=lambda item: item.row()):
             selected_item = index.data()
-            return selected_item
+            if selected_item and selected_item not in selected_items:
+                selected_items.append(selected_item)
+        return selected_items
 
 
     def contextMenuEvent(self, event):
@@ -98,11 +114,18 @@ class PackagesTable(QTableView):
             if not idx.isValid():
                 return
 
-        self.selectRow(idx.row())
+        selection_model = self.selectionModel()
+        if selection_model and not selection_model.isRowSelected(idx.row(), idx.parent()):
+            self.selectRow(idx.row())
 
         menu = QMenu(self)
 
-        remove_action = QAction(self.delete_icon, "&Remove package", self)
+        if len(self.get_selected_items()) > 1:
+            remove_label = "&Remove selected packages"
+        else:
+            remove_label = "&Remove package"
+
+        remove_action = QAction(self.delete_icon, remove_label, self)
         remove_action.triggered.connect(self.remove_triggered.emit)
         menu.addAction(remove_action)
 
@@ -176,7 +199,7 @@ class PackageManager(QDialog):
         self.subtitle_label_1.setContentsMargins(22, 0, 0, 0)
 
         subtitle_label_2 = QLabel(
-            "Select one and right-click for available options. "
+            "Select one or multiple (Ctrl+Click) and right-click for options. "
         )
         subtitle_label_2.setContentsMargins(22, 0, 0, 0)
 
@@ -203,6 +226,7 @@ class PackageManager(QDialog):
         # packages table
         self.packages_table = PackagesTable(
             selectionBehavior=QAbstractItemView.SelectionBehavior.SelectRows,
+            selectionMode=QAbstractItemView.SelectionMode.ExtendedSelection,
             editTriggers=QAbstractItemView.EditTrigger.NoEditTriggers,
             alternatingRowColors=True,
             sortingEnabled=True,
@@ -316,16 +340,27 @@ class PackageManager(QDialog):
 
 
     def remove_package(self):
-        """Uninstall selected package from the current environment."""
-        package = self.packages_table.get_selected_item()
-        if not package:
+        """Uninstall selected packages from the current environment."""
+        packages = self.packages_table.get_selected_items()
+        if not packages:
             return
+
+        package_count = len(packages)
+        if package_count == 1:
+            selection_info = f"package '{packages[0]}'"
+        else:
+            selection_info = f"{package_count} packages"
+
+        preview_items = ", ".join(packages[:5])
+        if package_count > 5:
+            preview_items += ", ..."
 
         msg_box_warning = QMessageBox.warning(
             self,
             "Confirm",
             (
-                f"Remove package '{package}' from this environment?\n\n"
+                f"Remove {selection_info} from this environment?\n\n"
+                f"{preview_items}\n\n"
                 "This will run: pip uninstall --yes"
             ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel
@@ -338,15 +373,18 @@ class PackageManager(QDialog):
             QMessageBox.information(self, "Info", "No active environment selected.")
             return
 
-        logger.debug(f"Removing package '{package}'...")
+        logger.debug(f"Removing package(s): {', '.join(packages)}")
         self.console.console_window.clear()
-        self.console.setWindowTitle(f"Removing {package}")
+        if package_count == 1:
+            self.console.setWindowTitle(f"Removing {packages[0]}")
+        else:
+            self.console.setWindowTitle(f"Removing {package_count} packages")
 
         self.manager = PipManager(self.venv_location, self.venv_name)
         self.manager.started.connect(self.console.exec)
         self.manager.text_changed.connect(self.console.update_status)
         self.manager.finished.connect(self.pop_packages_table)
-        self.manager.run_pip("uninstall", ["--yes", package])
+        self.manager.run_pip("uninstall", ["--yes", *packages])
 
 
     def pop_packages_table(self):
