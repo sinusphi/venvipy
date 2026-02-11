@@ -24,7 +24,7 @@ import logging
 from datetime import date
 
 from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, pyqtSlot, QSize
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -46,12 +46,22 @@ logger = logging.getLogger(__name__)
 
 WINDOW_ICON_PATH = ":/img/profile.png"
 ABOUT_LOGO_PATH = ":/img/default.png"
+CONSOLE_DIALOG_WIDTH = 1375
+CONSOLE_DIALOG_HEIGHT = 775
 
 
 def center_window(dialog):
-    """Center dialog on the active screen.
+    """Center dialog on parent window if available, else on current screen.
     """
     qr = dialog.frameGeometry()
+    parent = dialog.parentWidget()
+    if parent:
+        anchor = parent.window()
+        if anchor:
+            qr.moveCenter(anchor.frameGeometry().center())
+            dialog.move(qr.topLeft())
+            return
+
     screen = dialog.screen() or QApplication.primaryScreen()
     if screen:
         cp = screen.availableGeometry().center()
@@ -134,15 +144,14 @@ class ConsoleDialog(BaseDialog):
     Dialog box printing the output to a console-like 
     widget when running commands.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         self.initUI()
 
 
     def initUI(self):
-        self.center()
-        self.expand_from_center_to(1375, 775)
+        self.resize(CONSOLE_DIALOG_WIDTH, CONSOLE_DIALOG_HEIGHT)
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
         self.disable_window_buttons(close=True, minimize=True)
 
@@ -161,20 +170,22 @@ class ConsoleDialog(BaseDialog):
         self.console_window.setReadOnly(True)
         self.console_window.setFont(QFont("Monospace", 11))
         self.console_window.setLineWrapMode(
-            QPlainTextEdit.LineWrapMode.NoWrap
+            QPlainTextEdit.LineWrapMode.WidgetWidth
         )
         self.console_window.setMaximumBlockCount(5000)
 
         v_layout = QVBoxLayout(self)
         v_layout.addWidget(self.console_window)
+        self.center_console()
 
-    def expand_from_center_to(self, width, height):
-        """Resize while keeping the current center fixed."""
-        geom = self.geometry()
-        center = geom.center()
-        geom.setSize(QSize(width, height))
-        geom.moveCenter(center)
-        self.setGeometry(geom)
+    def showEvent(self, event):
+        """Re-center on each show to avoid platform-specific drift."""
+        super().showEvent(event)
+        self.center_console()
+
+    def center_console(self):
+        """Center console consistently relative to parent/main window."""
+        self.center()
 
 
     @pyqtSlot(str)

@@ -125,7 +125,7 @@ class VenvTable(BaseTable):
         )
 
         self.progress_bar = ProgBarDialog()
-        self.console = ConsoleDialog()
+        self.console = ConsoleDialog(self)
         self.thread = QThread(self)
         self.m_install_worker = InstallWorker()
 
@@ -319,6 +319,7 @@ class VenvTable(BaseTable):
         context_menu.addAction(install_wheel_action)
 
         context_menu.addMenu(manage_sub_menu)
+        manage_sub_menu.addAction(manage_packages_action)
         manage_sub_menu.addAction(install_packages_action)
         manage_sub_menu.addAction(install_requires_action)
         manage_sub_menu.addAction(install_local_action)
