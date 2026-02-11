@@ -595,7 +595,7 @@ class InstallPackages(QWizardPage):
             "click next."
         )
 
-        self.console = ConsoleDialog()
+        self.console = ConsoleDialog(self)
 
         #]===================================================================[#
         #] PAGE CONTENT [#===================================================[#

@@ -143,7 +143,7 @@ class PackageInstaller(QDialog):
         self.center()
         self.setWindowIcon(QIcon(":/img/profile.png"))
 
-        self.console = ConsoleDialog()
+        self.console = ConsoleDialog(self)
 
         self.setStyleSheet(PACKAGE_DIALOG_QSS)
 

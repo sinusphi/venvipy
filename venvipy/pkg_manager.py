@@ -171,7 +171,7 @@ class PackageManager(QDialog):
         )
 
         self._load_active_venv()
-        self.console = ConsoleDialog()
+        self.console = ConsoleDialog(self)
 
         self.setStyleSheet(PACKAGE_DIALOG_QSS)
 
@@ -379,6 +379,7 @@ class PackageManager(QDialog):
             self.console.setWindowTitle(f"Removing {packages[0]}")
         else:
             self.console.setWindowTitle(f"Removing {package_count} packages")
+        self.console.center_console()
 
         self.manager = PipManager(self.venv_location, self.venv_name)
         self.manager.started.connect(self.console.exec)
