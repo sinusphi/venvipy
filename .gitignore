@@ -8,7 +8,7 @@ build/
 tests/
 dist/
 
-dev_requirements.txt
+projectplan.md
 MODEL.md
 AGENT.md
 push.sh
