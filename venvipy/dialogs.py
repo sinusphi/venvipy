@@ -390,11 +390,11 @@ class LauncherDialog(BaseDialog):
 
     def _build_ui(self):
         self.setWindowTitle("Create launcher")
-        self.setFixedSize(520, 330)
+        self.setFixedSize(500, 370)
         self.center()
         self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
         self.disable_window_buttons(close=False, minimize=True)
-        self.setContentsMargins(10, 0, 10, 5)
+        self.setContentsMargins(15, 2, 15, 5)
 
         self.setStyleSheet(
             DIALOG_QSS + """
@@ -437,8 +437,7 @@ class LauncherDialog(BaseDialog):
         )
 
         header_label = QLabel(""" You  can  create  a  desktop  shortcut  and/or  a  startmenu  shortcut.  
- Select  the  launchers  you  want  to  create.  
- Click  Apply  to  confirm  your selection."""
+ Select  the  launchers  you  want  to  create."""
         )
         header_label.setObjectName("launcherHeader")
         header_label.setWordWrap(True)
