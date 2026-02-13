@@ -25,7 +25,7 @@ from datetime import date
 from typing import Any, Dict
 
 from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -373,6 +373,7 @@ class LauncherDialog(BaseDialog):
     """
     Dialog for managing Desktop and Startmenu launchers.
     """
+    apply_requested = pyqtSignal(dict)
     STATE_KEYS = (
         "desktop_venvipy",
         "desktop_wizard",
@@ -380,8 +381,9 @@ class LauncherDialog(BaseDialog):
         "startmenu_wizard",
     )
 
-    def __init__(self, initial_state=None, parent=None):
+    def __init__(self, initial_state=None, first_launch=False, parent=None):
         super().__init__(parent)
+        self.first_launch = bool(first_launch)
         self._initial_state = self.default_state()
         self._updating = False
         self._build_ui()
@@ -401,6 +403,10 @@ class LauncherDialog(BaseDialog):
             QLabel#launcherHeader {
                 font: 500 12px;
                 color: #c7d2e3;
+            }
+            QLabel#launcherWelcome {
+                font: 700 14px;
+                color: #d9e3f2;
             }
             QGroupBox#launcherGroup {
                 font: 600 13.5px;
@@ -436,8 +442,12 @@ class LauncherDialog(BaseDialog):
             """
         )
 
-        header_label = QLabel(""" You  can  create  a  desktop  shortcut  and/or  a  startmenu  shortcut.  
- Select  the  launchers  you  want  to  create."""
+        welcome_label = QLabel("Welcome to VenviPy")
+        welcome_label.setObjectName("launcherWelcome")
+        welcome_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        header_label = QLabel(""" Here you  can  create  desktop  and  startmenu  shortcuts.  Select  the  
+ launchers  you  want  to  create. This  can  be  changed  later  in  settings."""
         )
         header_label.setObjectName("launcherHeader")
         header_label.setWordWrap(True)
@@ -462,7 +472,8 @@ class LauncherDialog(BaseDialog):
         startmenu_layout.addWidget(self.startmenu_venvipy_cb, 0, 0)
         startmenu_layout.addWidget(self.startmenu_wizard_cb, 1, 0)
 
-        self.cancel_button = QPushButton("Cancel", self)
+        close_label = "Skip" if self.first_launch else "Done"
+        self.cancel_button = QPushButton(close_label, self)
         self.cancel_button.setObjectName("launcherCancelButton")
         #self.cancel_button.setFixedSize(96, 30)
         self.cancel_button.clicked.connect(self.reject)
@@ -483,6 +494,8 @@ class LauncherDialog(BaseDialog):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 14, 16, 14)
         layout.setSpacing(12)
+        if self.first_launch:
+            layout.addWidget(welcome_label)
         layout.addWidget(header_label)
         layout.addWidget(desktop_group)
         layout.addWidget(startmenu_group)
@@ -566,7 +579,7 @@ class LauncherDialog(BaseDialog):
     def _on_apply_clicked(self):
         if not self.has_changes():
             return
-        self.accept()
+        self.apply_requested.emit(self.state())
 
 
 if __name__ == "__main__":
