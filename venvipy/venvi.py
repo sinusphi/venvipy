@@ -45,7 +45,6 @@ from PyQt6.QtWidgets import (
     QStyle,
     QMainWindow,
     QApplication,
-    QDialog,
     QFileDialog,
     QLabel,
     QToolButton,
@@ -628,22 +627,34 @@ class MainWindow(QMainWindow):
         """
         platform = get_platform()
         current_state = platform.get_launcher_state()
-        launcher_dialog = LauncherDialog(initial_state=current_state, parent=self)
-        if launcher_dialog.exec() != QDialog.DialogCode.Accepted:
-            if mark_prompt_shown:
-                self._save_launcher_state_preferences(
-                    launcher_state=current_state,
-                    prompt_shown=True
-                )
-            return None
-
-        desired_state = launcher_dialog.state()
-        result = self.apply_launcher_state_with_feedback(desired_state)
-        self._save_launcher_state_preferences(
-            launcher_state=result.get("after", desired_state),
-            prompt_shown=True if mark_prompt_shown else None
+        launcher_dialog = LauncherDialog(
+            initial_state=current_state,
+            first_launch=mark_prompt_shown,
+            parent=self
         )
-        return result
+        last_result = {"after": current_state}
+
+        def on_apply_requested(desired_state):
+            nonlocal last_result
+            result = self.apply_launcher_state_with_feedback(desired_state)
+            applied_state = result.get("after", desired_state)
+            launcher_dialog.set_state(applied_state)
+            self._save_launcher_state_preferences(
+                launcher_state=applied_state,
+                prompt_shown=True if mark_prompt_shown else None
+            )
+            last_result = result
+
+        launcher_dialog.apply_requested.connect(on_apply_requested)
+        launcher_dialog.exec()
+
+        if mark_prompt_shown:
+            self._save_launcher_state_preferences(
+                launcher_state=last_result.get("after", current_state),
+                prompt_shown=True
+            )
+
+        return last_result
 
 
     def changeEvent(self, event):
