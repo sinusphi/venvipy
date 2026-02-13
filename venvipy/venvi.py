@@ -75,7 +75,8 @@ from styles import theme
 from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
-from dialogs import InfoAboutVenviPy
+from dialogs import InfoAboutVenviPy, show_launcher_apply_result
+from platforms import get_platform
 from tables import VenvTable, InterpreterTable
 
 
@@ -562,6 +563,15 @@ class MainWindow(QMainWindow):
         self.tab_save_pref["always_save_tabs"] = bool(enabled)
         self.tab_save_pref["ask_before_saving_tabs"] = not bool(enabled)
         self.save_tabs_state()
+
+
+    def apply_launcher_state_with_feedback(self, desired_state):
+        """Apply launcher changes and show success/error feedback dialog.
+        """
+        platform = get_platform()
+        result = platform.apply_launcher_state(desired_state)
+        show_launcher_apply_result(result, parent=self)
+        return result
 
 
     def changeEvent(self, event):
