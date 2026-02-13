@@ -45,6 +45,7 @@ from PyQt6.QtWidgets import (
     QStyle,
     QMainWindow,
     QApplication,
+    QDialog,
     QFileDialog,
     QLabel,
     QToolButton,
@@ -75,7 +76,11 @@ from styles import theme
 from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
-from dialogs import InfoAboutVenviPy, show_launcher_apply_result
+from dialogs import (
+    InfoAboutVenviPy,
+    LauncherDialog,
+    show_launcher_apply_result
+)
 from platforms import get_platform
 from tables import VenvTable, InterpreterTable
 
@@ -328,6 +333,14 @@ class MainWindow(QMainWindow):
             triggered=self.select_active_dir
         )
 
+        self.action_create_launcher = QAction(
+            folder_icon,
+            "Create launcher",
+            self,
+            statusTip="Create or remove launcher shortcuts",
+            triggered=self.open_launcher_dialog
+        )
+
         self.always_save_tabs_checkbox = QCheckBox("Always save tabs", self)
         self.always_save_tabs_checkbox.setChecked(
             self.tab_save_pref.get("always_save_tabs", False)
@@ -400,6 +413,7 @@ class MainWindow(QMainWindow):
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_new_venv)
         menu_venv.addAction(self.action_select_active_dir)
+        menu_venv.addAction(self.action_create_launcher)
         menu_venv.addAction(self.action_always_save_tabs)
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_exit)
@@ -572,6 +586,18 @@ class MainWindow(QMainWindow):
         result = platform.apply_launcher_state(desired_state)
         show_launcher_apply_result(result, parent=self)
         return result
+
+    def open_launcher_dialog(self):
+        """Open launcher management dialog with current launcher state.
+        """
+        platform = get_platform()
+        current_state = platform.get_launcher_state()
+        launcher_dialog = LauncherDialog(initial_state=current_state, parent=self)
+        if launcher_dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+
+        desired_state = launcher_dialog.state()
+        return self.apply_launcher_state_with_feedback(desired_state)
 
 
     def changeEvent(self, event):
