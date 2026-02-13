@@ -58,8 +58,14 @@ class LinuxPlatform(Platform):
         if launcher_key not in file_names:
             raise ValueError(f"Unsupported launcher key: {launcher_key}")
 
+        # workaround for german desktop folder name "Schreibtisch"
+        # will be removed after translations are implemented
+        desktop_dir = "Schreibtisch" if "Schreibtisch" in str(
+            Path.home() / "Schreibtisch"
+            ) else "Desktop"
+
         if launcher_key.startswith("desktop_"):
-            base_dir = Path.home() / "Desktop"
+            base_dir = Path.home() / desktop_dir
         else:
             base_dir = Path.home() / ".local" / "share" / "applications"
 

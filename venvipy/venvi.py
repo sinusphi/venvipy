@@ -431,6 +431,11 @@ class MainWindow(QMainWindow):
             if len(lines) < 2:
                 self.launching_without_python()
 
+        QtCore.QTimer.singleShot(
+            0,
+            self.maybe_show_first_launch_launcher_dialog
+        )
+
 
     def launching_without_python(self):
         """If no Python was found run with features disabled.
@@ -587,17 +592,58 @@ class MainWindow(QMainWindow):
         show_launcher_apply_result(result, parent=self)
         return result
 
-    def open_launcher_dialog(self):
+    def _save_launcher_state_preferences(
+        self,
+        launcher_state=None,
+        prompt_shown=None
+    ):
+        """Persist launcher preferences and first-launch prompt state.
+        """
+        state = get_data.load_launcher_state()
+
+        if isinstance(launcher_state, dict):
+            for key in (
+                "desktop_venvipy",
+                "desktop_wizard",
+                "startmenu_venvipy",
+                "startmenu_wizard",
+            ):
+                state[key] = bool(launcher_state.get(key, False))
+
+        if prompt_shown is not None:
+            state["prompt_shown"] = bool(prompt_shown)
+
+        get_data.save_launcher_state(state)
+
+    def maybe_show_first_launch_launcher_dialog(self):
+        """Show launcher dialog once on first application launch.
+        """
+        launcher_state = get_data.load_launcher_state()
+        if launcher_state.get("prompt_shown", False):
+            return
+        self.open_launcher_dialog(mark_prompt_shown=True)
+
+    def open_launcher_dialog(self, mark_prompt_shown=False):
         """Open launcher management dialog with current launcher state.
         """
         platform = get_platform()
         current_state = platform.get_launcher_state()
         launcher_dialog = LauncherDialog(initial_state=current_state, parent=self)
         if launcher_dialog.exec() != QDialog.DialogCode.Accepted:
+            if mark_prompt_shown:
+                self._save_launcher_state_preferences(
+                    launcher_state=current_state,
+                    prompt_shown=True
+                )
             return None
 
         desired_state = launcher_dialog.state()
-        return self.apply_launcher_state_with_feedback(desired_state)
+        result = self.apply_launcher_state_with_feedback(desired_state)
+        self._save_launcher_state_preferences(
+            launcher_state=result.get("after", desired_state),
+            prompt_shown=True if mark_prompt_shown else None
+        )
+        return result
 
 
     def changeEvent(self, event):
