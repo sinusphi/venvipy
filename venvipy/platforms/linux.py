@@ -113,7 +113,7 @@ class LinuxPlatform(Platform):
         )
 
         launcher_cmd = self._launcher_command(is_wizard)
-        icon_file = self._launcher_icon_path(is_wizard)
+        icon_file = self._launcher_icon_path()
 
         lines = [
             "[Desktop Entry]",
@@ -152,16 +152,11 @@ class LinuxPlatform(Platform):
         return " ".join(shlex.quote(part) for part in parts)
 
 
-    def _launcher_icon_path(self, wizard_only: bool) -> str:
-        """Resolve icon path from repository image assets.
+    def _launcher_icon_path(self) -> str:
+        """Resolve icon path from packaged Linux launcher icon.
         """
-        img_dir = Path(__file__).resolve().parents[2] / "img"
-        icon_name = "default.png" if wizard_only else "profile.png"
-        icon_path = img_dir / icon_name
+        icons_dir = Path(__file__).resolve().parents[1] / "icons"
+        icon_path = icons_dir / "icon_linux.png"
         if icon_path.exists():
             return str(icon_path)
-
-        fallback = img_dir / "profile.png"
-        if fallback.exists():
-            return str(fallback)
         return ""

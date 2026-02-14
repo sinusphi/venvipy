@@ -92,6 +92,7 @@ class WindowsPlatform(Platform):
             arguments=arguments,
             description=description,
             working_directory=str(Path.home()),
+            icon_location=self._launcher_icon_path(),
         )
 
     def _desktop_dir(self) -> Path:
@@ -145,6 +146,16 @@ class WindowsPlatform(Platform):
             args.append("--wizard")
         return str(interpreter), subprocess.list2cmdline(args)
 
+    def _launcher_icon_path(self) -> str:
+        """Resolve icon path from packaged Windows launcher icon.
+        """
+        icon_path = (
+            Path(__file__).resolve().parents[1] / "icons" / "icon_win.ico"
+        )
+        if icon_path.exists():
+            return str(icon_path)
+        return ""
+
     def _create_shortcut(
         self,
         shortcut_path: Path,
@@ -152,6 +163,7 @@ class WindowsPlatform(Platform):
         arguments: str,
         description: str,
         working_directory: str,
+        icon_location: str = "",
     ) -> None:
         powershell = shutil.which("powershell") or shutil.which("pwsh")
         if not powershell:
@@ -172,7 +184,12 @@ class WindowsPlatform(Platform):
             f"$Shortcut.Arguments = '{self._ps_quote(arguments)}'",
         ]
 
-        if target_path.lower().endswith(".exe"):
+        if icon_location:
+            script_lines.append(
+                "$Shortcut.IconLocation = "
+                f"'{self._ps_quote(icon_location)}'"
+            )
+        elif target_path.lower().endswith(".exe"):
             script_lines.append(
                 f"$Shortcut.IconLocation = '{self._ps_quote(target_path)},0'"
             )
