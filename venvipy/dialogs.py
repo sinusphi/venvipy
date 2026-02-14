@@ -22,9 +22,10 @@ This module contains some dialogs.
 import sys
 import logging
 from datetime import date
+from typing import Any, Dict
 
 from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -34,7 +35,10 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QApplication,
-    QGridLayout
+    QGridLayout,
+    QGroupBox,
+    QCheckBox,
+    QMessageBox
 )
 
 import venvipy_rc  # pylint: disable=unused-import
@@ -48,6 +52,79 @@ WINDOW_ICON_PATH = ":/img/profile.png"
 ABOUT_LOGO_PATH = ":/img/default.png"
 CONSOLE_DIALOG_WIDTH = 1375
 CONSOLE_DIALOG_HEIGHT = 775
+LAUNCHER_LABELS = {
+    "desktop_venvipy": "Desktop / VenviPy",
+    "desktop_wizard": "Desktop / Wizard only",
+    "startmenu_venvipy": "Startmenu / VenviPy",
+    "startmenu_wizard": "Startmenu / Wizard only",
+}
+
+
+def _launcher_apply_result_payload(result: Dict[str, Any]) -> Dict[str, str]:
+    """Build message payload for launcher apply result dialogs.
+    """
+    changed = list(result.get("changed") or [])
+    failed = dict(result.get("failed") or {})
+
+    if failed:
+        details = []
+        for key, err in failed.items():
+            label = LAUNCHER_LABELS.get(key, key)
+            details.append(f"{label}: {err}")
+        return {
+            "type": "error",
+            "title": "Launcher update failed",
+            "text": "Some launcher changes could not be applied.",
+            "info": (
+                f"{len(changed) - len(failed)} of {len(changed)} change(s) "
+                "were applied."
+            ),
+            "details": "\n".join(details),
+        }
+
+    if changed:
+        return {
+            "type": "success",
+            "title": "Launchers updated",
+            "text": "Launcher changes were applied successfully.",
+            "info": f"{len(changed)} change(s) were applied.",
+            "details": "",
+        }
+
+    return {
+        "type": "success",
+        "title": "No launcher changes",
+        "text": "No launcher changes were required.",
+        "info": "",
+        "details": "",
+    }
+
+
+def show_launcher_apply_result(
+    result: Dict[str, Any],
+    parent=None
+) -> Dict[str, str]:
+    """Show a result dialog after launcher apply operations.
+    """
+    payload = _launcher_apply_result_payload(result)
+
+    msg_box = QMessageBox(parent)
+    msg_box.setWindowIcon(QIcon(WINDOW_ICON_PATH))
+    msg_box.setWindowTitle(payload["title"])
+    msg_box.setText(payload["text"])
+    if payload["info"]:
+        msg_box.setInformativeText(payload["info"])
+    if payload["details"]:
+        msg_box.setDetailedText(payload["details"])
+    msg_box.setIcon(
+        QMessageBox.Icon.Critical
+        if payload["type"] == "error"
+        else QMessageBox.Icon.Information
+    )
+    msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+    msg_box.exec()
+
+    return payload
 
 
 def center_window(dialog):
@@ -292,6 +369,224 @@ class InfoAboutVenviPy(BaseDialog):
         self.setLayout(grid_layout)
 
 
+class LauncherDialog(BaseDialog):
+    """
+    Dialog for managing Desktop and Startmenu launchers.
+    """
+    apply_requested = pyqtSignal(dict)
+    STATE_KEYS = (
+        "desktop_venvipy",
+        "desktop_wizard",
+        "startmenu_venvipy",
+        "startmenu_wizard",
+    )
+
+    def __init__(self, initial_state=None, first_launch=False, parent=None):
+        super().__init__(parent)
+        self.first_launch = bool(first_launch)
+        self._initial_state = self.default_state()
+        self._updating = False
+        self._build_ui()
+        self.set_state(initial_state or self.default_state())
+
+
+    def _build_ui(self):
+        self.setWindowTitle("Create launcher")
+        self.setFixedSize(500, 370)
+        self.center()
+        self.setWindowIcon(QIcon(WINDOW_ICON_PATH))
+        self.disable_window_buttons(close=False, minimize=True)
+        self.setContentsMargins(15, 2, 15, 5)
+
+        self.setStyleSheet(
+            DIALOG_QSS + """
+            QLabel#launcherHeader {
+                font: 500 12px;
+                color: #c7d2e3;
+            }
+            QLabel#launcherWelcome {
+                font: 700 14px;
+                color: #d9e3f2;
+            }
+            QGroupBox#launcherGroup {
+                font: 600 13.5px;
+                border: 1px solid #3b465c;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+            }
+            QGroupBox#launcherGroup::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 4px;
+            }
+            QCheckBox {
+                font: 500 13px;
+                spacing: 8px;
+            }
+            QPushButton#launcherCancelButton,
+            QPushButton#launcherApplyButton {
+                min-width: 68px;
+                min-height: 22px;
+            }
+            QPushButton#launcherApplyButton[inactive="true"] {
+                background-color: #243042;
+                border: 1px solid #3b465c;
+                color: #8f9ab0;
+            }
+            QPushButton#launcherApplyButton[inactive="true"]:hover {
+                background-color: #2b3850;
+                border: 1px solid #52617d;
+                color: #a5b1c9;
+            }
+            """
+        )
+
+        welcome_label = QLabel("Welcome to VenviPy")
+        welcome_label.setObjectName("launcherWelcome")
+        welcome_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        header_label = QLabel(""" Here you  can  create  desktop  and  startmenu  shortcuts.  Select  the  
+ launchers  you  want  to  create. This  can  be  changed  later  in  settings."""
+        )
+        header_label.setObjectName("launcherHeader")
+        header_label.setWordWrap(True)
+
+        desktop_group = QGroupBox("Desktop launcher", self)
+        desktop_group.setObjectName("launcherGroup")
+        desktop_layout = QGridLayout(desktop_group)
+        desktop_layout.setContentsMargins(14, 10, 14, 12)
+        desktop_layout.setVerticalSpacing(10)
+        self.desktop_venvipy_cb = QCheckBox("VenviPy", desktop_group)
+        self.desktop_wizard_cb = QCheckBox("Wizard only", desktop_group)
+        desktop_layout.addWidget(self.desktop_venvipy_cb, 0, 0)
+        desktop_layout.addWidget(self.desktop_wizard_cb, 1, 0)
+
+        startmenu_group = QGroupBox("Startmenu shortcut", self)
+        startmenu_group.setObjectName("launcherGroup")
+        startmenu_layout = QGridLayout(startmenu_group)
+        startmenu_layout.setContentsMargins(14, 10, 14, 12)
+        startmenu_layout.setVerticalSpacing(10)
+        self.startmenu_venvipy_cb = QCheckBox("VenviPy", startmenu_group)
+        self.startmenu_wizard_cb = QCheckBox("Wizard only", startmenu_group)
+        startmenu_layout.addWidget(self.startmenu_venvipy_cb, 0, 0)
+        startmenu_layout.addWidget(self.startmenu_wizard_cb, 1, 0)
+
+        close_label = "Skip" if self.first_launch else "Done"
+        self.cancel_button = QPushButton(close_label, self)
+        self.cancel_button.setObjectName("launcherCancelButton")
+        #self.cancel_button.setFixedSize(96, 30)
+        self.cancel_button.clicked.connect(self.reject)
+
+        self.apply_button = QPushButton("Apply", self)
+        self.apply_button.setObjectName("launcherApplyButton")
+        #self.apply_button.setFixedSize(96, 30)
+        self.apply_button.setProperty("inactive", True)
+        self.apply_button.clicked.connect(self._on_apply_clicked)
+
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 10, 0, 0)
+        button_layout.setSpacing(10)
+        button_layout.addStretch(1)
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addWidget(self.apply_button)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(12)
+        if self.first_launch:
+            layout.addWidget(welcome_label)
+        layout.addWidget(header_label)
+        layout.addWidget(desktop_group)
+        layout.addWidget(startmenu_group)
+        layout.addStretch(1)
+        layout.addLayout(button_layout)
+
+        for checkbox in self._checkboxes():
+            checkbox.toggled.connect(self._on_checkbox_toggled)
+
+    def _checkboxes(self):
+        return (
+            self.desktop_venvipy_cb,
+            self.desktop_wizard_cb,
+            self.startmenu_venvipy_cb,
+            self.startmenu_wizard_cb,
+        )
+
+    def default_state(self) -> Dict[str, bool]:
+        """Return a default launcher state with all flags disabled.
+        """
+        return {key: False for key in self.STATE_KEYS}
+
+    def normalize_state(self, state: Any) -> Dict[str, bool]:
+        """Normalize input state to the dialog schema.
+        """
+        normalized = self.default_state()
+        if not isinstance(state, dict):
+            return normalized
+
+        for key in self.STATE_KEYS:
+            normalized[key] = bool(state.get(key, False))
+
+        return normalized
+
+    def state(self) -> Dict[str, bool]:
+        """Return the currently selected launcher state.
+        """
+        return {
+            "desktop_venvipy": self.desktop_venvipy_cb.isChecked(),
+            "desktop_wizard": self.desktop_wizard_cb.isChecked(),
+            "startmenu_venvipy": self.startmenu_venvipy_cb.isChecked(),
+            "startmenu_wizard": self.startmenu_wizard_cb.isChecked(),
+        }
+
+    def set_state(self, state: Dict[str, Any]) -> None:
+        """Set dialog state and reset change tracking baseline.
+        """
+        normalized = self.normalize_state(state)
+        self._updating = True
+        self.desktop_venvipy_cb.setChecked(normalized["desktop_venvipy"])
+        self.desktop_wizard_cb.setChecked(normalized["desktop_wizard"])
+        self.startmenu_venvipy_cb.setChecked(normalized["startmenu_venvipy"])
+        self.startmenu_wizard_cb.setChecked(normalized["startmenu_wizard"])
+        self._updating = False
+
+        self._initial_state = normalized.copy()
+        self._update_apply_button_state()
+
+    def has_changes(self) -> bool:
+        """Return whether current selection differs from the baseline.
+        """
+        return self.state() != self._initial_state
+
+    def _on_checkbox_toggled(self, _checked):
+        if self._updating:
+            return
+        self._update_apply_button_state()
+
+    def mark_first_launch_completed(self):
+        """Switch close button label from first-launch to regular mode.
+        """
+        self.first_launch = False
+        self.cancel_button.setText("Done")
+
+    def _update_apply_button_state(self):
+        inactive = not self.has_changes()
+        self.apply_button.setProperty("inactive", inactive)
+        self.apply_button.setCursor(
+            Qt.CursorShape.ArrowCursor
+            if inactive
+            else Qt.CursorShape.PointingHandCursor
+        )
+        self.apply_button.style().unpolish(self.apply_button)
+        self.apply_button.style().polish(self.apply_button)
+        self.apply_button.update()
+
+    def _on_apply_clicked(self):
+        if not self.has_changes():
+            return
+        self.apply_requested.emit(self.state())
+
 
 if __name__ == "__main__":
 
@@ -307,5 +602,8 @@ if __name__ == "__main__":
 
     #info_about_venvipy = InfoAboutVenviPy()
     #info_about_venvipy.show()
+
+    launcher_dialog = LauncherDialog("desktop_venvipy")
+    launcher_dialog.exec()
 
     #sys.exit(app.exec())

@@ -75,13 +75,22 @@ from styles import theme
 from styles import custom
 from pkg_installer import PackageInstaller
 from pkg_manager import PackageManager
-from dialogs import InfoAboutVenviPy
+from dialogs import (
+    InfoAboutVenviPy,
+    LauncherDialog,
+    show_launcher_apply_result
+)
+from platforms import get_platform
 from tables import VenvTable, InterpreterTable
 
 
 LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
 logger = logging.getLogger()
 
+# Temporary dev switch for welcome-dialog work:
+# set to False (or comment out this line and use the else branch below)
+# to respect prompt_shown from launcher_state.json again.
+FORCE_PROMPT_SHOWN_FALSE = False
 
 
 class MainWindow(QMainWindow):
@@ -327,6 +336,14 @@ class MainWindow(QMainWindow):
             triggered=self.select_active_dir
         )
 
+        self.action_create_launcher = QAction(
+            folder_icon,
+            "Create launcher",
+            self,
+            statusTip="Create or remove launcher shortcuts",
+            triggered=self.open_launcher_dialog
+        )
+
         self.always_save_tabs_checkbox = QCheckBox("Always save tabs", self)
         self.always_save_tabs_checkbox.setChecked(
             self.tab_save_pref.get("always_save_tabs", False)
@@ -399,6 +416,7 @@ class MainWindow(QMainWindow):
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_new_venv)
         menu_venv.addAction(self.action_select_active_dir)
+        menu_venv.addAction(self.action_create_launcher)
         menu_venv.addAction(self.action_always_save_tabs)
         menu_venv.addSeparator()
         menu_venv.addAction(self.action_exit)
@@ -415,6 +433,11 @@ class MainWindow(QMainWindow):
                 lines = f.readlines()
             if len(lines) < 2:
                 self.launching_without_python()
+
+        QtCore.QTimer.singleShot(
+            0,
+            self.maybe_show_first_launch_launcher_dialog
+        )
 
 
     def launching_without_python(self):
@@ -562,6 +585,91 @@ class MainWindow(QMainWindow):
         self.tab_save_pref["always_save_tabs"] = bool(enabled)
         self.tab_save_pref["ask_before_saving_tabs"] = not bool(enabled)
         self.save_tabs_state()
+
+
+    def apply_launcher_state_with_feedback(self, desired_state):
+        """Apply launcher changes and show success/error feedback dialog.
+        """
+        platform = get_platform()
+        result = platform.apply_launcher_state(desired_state)
+        show_launcher_apply_result(result, parent=self)
+        return result
+
+    def _save_launcher_state_preferences(
+        self,
+        launcher_state=None,
+        prompt_shown=None
+    ):
+        """Persist launcher preferences and first-launch prompt state.
+        """
+        state = get_data.load_launcher_state()
+
+        if isinstance(launcher_state, dict):
+            for key in (
+                "desktop_venvipy",
+                "desktop_wizard",
+                "startmenu_venvipy",
+                "startmenu_wizard",
+            ):
+                state[key] = bool(launcher_state.get(key, False))
+
+        if prompt_shown is not None and not FORCE_PROMPT_SHOWN_FALSE:
+            state["prompt_shown"] = bool(prompt_shown)
+
+        get_data.save_launcher_state(state)
+
+    def maybe_show_first_launch_launcher_dialog(self):
+        """Show launcher dialog once on first application launch.
+        """
+        launcher_state = get_data.load_launcher_state()
+        prompt_shown = (
+            False
+            if FORCE_PROMPT_SHOWN_FALSE
+            else launcher_state.get("prompt_shown", False)
+        )
+        if prompt_shown:
+            return
+        self.open_launcher_dialog(mark_prompt_shown=True)
+
+    def open_launcher_dialog(self, mark_prompt_shown=False):
+        """Open launcher management dialog with current launcher state.
+        """
+        platform = get_platform()
+        current_state = platform.get_launcher_state()
+        launcher_dialog = LauncherDialog(
+            initial_state=current_state,
+            first_launch=mark_prompt_shown,
+            parent=self
+        )
+        last_result = {"after": current_state}
+
+        def on_apply_requested(desired_state):
+            nonlocal last_result
+            result = self.apply_launcher_state_with_feedback(desired_state)
+            applied_state = result.get("after", desired_state)
+            launcher_dialog.set_state(applied_state)
+            if (
+                mark_prompt_shown
+                and result.get("changed")
+                and not result.get("failed")
+            ):
+                launcher_dialog.mark_first_launch_completed()
+            self._save_launcher_state_preferences(
+                launcher_state=applied_state,
+                prompt_shown=True if mark_prompt_shown else None
+            )
+            last_result = result
+
+        launcher_dialog.apply_requested.connect(on_apply_requested)
+        launcher_dialog.exec()
+
+        if mark_prompt_shown and not FORCE_PROMPT_SHOWN_FALSE:
+            self._save_launcher_state_preferences(
+                launcher_state=last_result.get("after", current_state),
+                prompt_shown=True
+            )
+
+        return last_result
 
 
     def changeEvent(self, event):

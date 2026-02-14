@@ -45,6 +45,7 @@ DB_FILE = Path.home() / ".venvipy" / "py-installs"
 ACTIVE_DIR = Path.home() / ".venvipy" / "selected-dir"
 ACTIVE_VENV = Path.home() / ".venvipy" / "active-venv"
 TABS_STATE = Path.home() / ".venvipy" / "tabs-state.json"
+LAUNCHER_STATE = Path.home() / ".venvipy" / "launcher-state.json"
 PYPI_SIMPLE_URL = "https://pypi.org/simple/"
 PYPI_JSON_URL = "https://pypi.org/pypi/{name}/json"
 PACKAGE_DB_PATH = Path.home() / ".venvipy" / "pypi_index.sqlite3"
@@ -181,6 +182,69 @@ def save_tabs_state(state: Dict[str, Any]) -> None:
             json.dump(state, f, indent=2)
     except OSError as e:
         logger.warning(f"Failed to save tabs state: {e}")
+
+
+def default_launcher_state() -> Dict[str, Any]:
+    """Return the default structure for launcher preferences.
+    """
+    return {
+        "prompt_shown": False,
+        "desktop_venvipy": False,
+        "desktop_wizard": False,
+        "startmenu_venvipy": False,
+        "startmenu_wizard": False
+    }
+
+
+def normalize_launcher_state(state: Any) -> Dict[str, Any]:
+    """Normalize persisted launcher state to the expected schema.
+    """
+    defaults = default_launcher_state()
+    if not isinstance(state, dict):
+        return defaults
+
+    normalized = defaults.copy()
+    normalized["prompt_shown"] = bool(state.get("prompt_shown", False))
+
+    for key in (
+            "desktop_venvipy",
+            "desktop_wizard",
+            "startmenu_venvipy",
+            "startmenu_wizard"
+        ):
+        normalized[key] = bool(state.get(key, False))
+
+    return normalized
+
+
+def load_launcher_state() -> Dict[str, Any]:
+    """Load persisted launcher settings if present.
+    """
+    ensure_confdir()
+
+    if not os.path.exists(LAUNCHER_STATE):
+        return default_launcher_state()
+
+    try:
+        with open(LAUNCHER_STATE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Could not read launcher state file; using defaults")
+        return default_launcher_state()
+
+    return normalize_launcher_state(data)
+
+
+def save_launcher_state(state: Dict[str, Any]) -> None:
+    """Persist launcher settings to disk.
+    """
+    ensure_confdir()
+
+    try:
+        with open(LAUNCHER_STATE, "w", encoding="utf-8") as f:
+            json.dump(normalize_launcher_state(state), f, indent=2)
+    except OSError as e:
+        logger.warning(f"Failed to save launcher state: {e}")
 
 
 def get_python_version(py_path):

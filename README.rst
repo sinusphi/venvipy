@@ -120,15 +120,19 @@ Inspection & tooling
 ~~~~~~~~~~~~~~~~~~~~
 
 * List detailed information about installed packages
-* Open a project's PyPI page in your browser. 
+* Open a project's PyPI page in your browser
+
+Launcher integration
+~~~~~~~~~~~~~~~~~~~~
+
+* Create or remove Desktop and Startmenu launchers from within the app
 
 Roadmap ideas
 ~~~~~~~~~~~~~
 
-* Add option to create a launcher and add it for example to your taskbar or startmenu
-* Run scripts in the environment's context
-* Uninstall packages in a selected environment in Package Manager
 * Clone environments, created by non-installed Python versions and has no requirements file
+* Run scripts in the environment's context
+* Run VenviPy or the Wizard only from context menu in file explorer/desktop
 
 More to come.
 
