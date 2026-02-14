@@ -564,6 +564,12 @@ class LauncherDialog(BaseDialog):
             return
         self._update_apply_button_state()
 
+    def mark_first_launch_completed(self):
+        """Switch close button label from first-launch to regular mode.
+        """
+        self.first_launch = False
+        self.cancel_button.setText("Done")
+
     def _update_apply_button_state(self):
         inactive = not self.has_changes()
         self.apply_button.setProperty("inactive", inactive)
