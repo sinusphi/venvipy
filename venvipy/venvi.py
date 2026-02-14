@@ -87,6 +87,10 @@ from tables import VenvTable, InterpreterTable
 LOG_FORMAT = "[%(levelname)s] - { %(name)s }: %(message)s"
 logger = logging.getLogger()
 
+# Temporary dev switch for welcome-dialog work:
+# set to False (or comment out this line and use the else branch below)
+# to respect prompt_shown from launcher_state.json again.
+FORCE_PROMPT_SHOWN_FALSE = True
 
 
 class MainWindow(QMainWindow):
@@ -609,7 +613,7 @@ class MainWindow(QMainWindow):
             ):
                 state[key] = bool(launcher_state.get(key, False))
 
-        if prompt_shown is not None:
+        if prompt_shown is not None and not FORCE_PROMPT_SHOWN_FALSE:
             state["prompt_shown"] = bool(prompt_shown)
 
         get_data.save_launcher_state(state)
@@ -618,7 +622,12 @@ class MainWindow(QMainWindow):
         """Show launcher dialog once on first application launch.
         """
         launcher_state = get_data.load_launcher_state()
-        if launcher_state.get("prompt_shown", False):
+        prompt_shown = (
+            False
+            if FORCE_PROMPT_SHOWN_FALSE
+            else launcher_state.get("prompt_shown", False)
+        )
+        if prompt_shown:
             return
         self.open_launcher_dialog(mark_prompt_shown=True)
 
@@ -639,6 +648,12 @@ class MainWindow(QMainWindow):
             result = self.apply_launcher_state_with_feedback(desired_state)
             applied_state = result.get("after", desired_state)
             launcher_dialog.set_state(applied_state)
+            if (
+                mark_prompt_shown
+                and result.get("changed")
+                and not result.get("failed")
+            ):
+                launcher_dialog.mark_first_launch_completed()
             self._save_launcher_state_preferences(
                 launcher_state=applied_state,
                 prompt_shown=True if mark_prompt_shown else None
@@ -648,7 +663,7 @@ class MainWindow(QMainWindow):
         launcher_dialog.apply_requested.connect(on_apply_requested)
         launcher_dialog.exec()
 
-        if mark_prompt_shown:
+        if mark_prompt_shown and not FORCE_PROMPT_SHOWN_FALSE:
             self._save_launcher_state_preferences(
                 launcher_state=last_result.get("after", current_state),
                 prompt_shown=True
