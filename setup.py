@@ -36,6 +36,9 @@ setup(
     python_requires=">=3.7",
     packages=["venvipy", "venvipy.platforms", "venvipy.styles"],
     include_package_data=True,
+    package_data={
+        "venvipy": ["icons/*.png", "icons/*.ico"],
+    },
     version=version,
     license="GPLv3+",
     description="A GUI for managing Python virtual environments.",
