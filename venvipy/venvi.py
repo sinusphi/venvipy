@@ -90,7 +90,7 @@ logger = logging.getLogger()
 # Temporary dev switch for welcome-dialog work:
 # set to False (or comment out this line and use the else branch below)
 # to respect prompt_shown from launcher_state.json again.
-FORCE_PROMPT_SHOWN_FALSE = True
+FORCE_PROMPT_SHOWN_FALSE = False
 
 
 class MainWindow(QMainWindow):
